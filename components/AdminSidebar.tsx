@@ -124,11 +124,11 @@ export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all",
                 isActive
-                  ? "bg-blue-600 text-white"
+                  ? "bg-yellow-400 text-black shadow-md"
                   : "text-white hover:bg-white/10"
               )}
             >
-              <item.icon className={cn("w-5 h-5", "text-white")} />
+              <item.icon className={cn("w-5 h-5", isActive ? "text-black" : "text-white")} />
               {item.name}
             </Link>
           );

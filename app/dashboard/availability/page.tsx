@@ -1,57 +1,86 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Clock from '@mui/icons-material/AccessTime';
 import { useRouter } from 'next/navigation';
 import BookingModal from '@/components/BookingModal';
-import { Calendar } from "@/components/ui/calendar"
-import { format } from "date-fns"
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import api from '@/lib/axios';
+import { toast } from 'sonner';
 
 export default function DashboardAvailabilityPage() {
   const router = useRouter();
   const isLoggedIn = true; // Mock authentication state
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<any>(null);
   const [calendarDate, setCalendarDate] = useState<Date | undefined>(new Date());
+  const [slots, setSlots] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleBookNow = (time: string) => {
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      if (!calendarDate) return;
+      setIsLoading(true);
+      try {
+        const dateStr = format(calendarDate, 'yyyy-MM-dd');
+        const res = await api.get(`/availability?date=${dateStr}&court_id=1`).catch(() => ({ data: [] }));
+        
+        const formatTime = (timeStr: string) => {
+          if (!timeStr) return '';
+          const [hours, minutes] = timeStr.split(':');
+          const d = new Date();
+          d.setHours(parseInt(hours, 10));
+          d.setMinutes(parseInt(minutes, 10));
+          return format(d, 'hh:mm a');
+        };
+
+        const backendSlots = res.data || [];
+        const hardcodedSlots = [];
+
+        for (let hour = 6; hour < 22; hour++) {
+          const startStr = `${hour.toString().padStart(2, '0')}:00:00`;
+          const endStr = `${(hour + 1).toString().padStart(2, '0')}:00:00`;
+          const backendSlot = backendSlots.find((bs: any) => bs.start_time === startStr);
+          
+          hardcodedSlots.push({
+            time: `${formatTime(startStr)} - ${formatTime(endStr)}`,
+            status: backendSlot ? backendSlot.status : 'Available',
+            start_time: startStr,
+            end_time: endStr,
+          });
+        }
+        setSlots(hardcodedSlots);
+      } catch (error) {
+        toast.error('Failed to load availability');
+        setSlots([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchAvailability();
+  }, [calendarDate]);
+
+  const handleBookNow = (slot: any) => {
     if (!isLoggedIn) {
       router.push('/login');
     } else {
       setSelectedSlot({
         date: calendarDate ? format(calendarDate, "EEEE, dd MMMM yyyy") : "No date selected",
-        time: time
+        time: slot.time,
+        court_id: 1,
+        start_time: slot.start_time,
+        end_time: slot.end_time,
+        rawDate: calendarDate ? format(calendarDate, 'yyyy-MM-dd') : ''
       });
       setIsModalOpen(true);
     }
   };
 
-  // Mock data for the slots to render them nicely
-  const slots = [
-    { time: '06:00 AM - 07:00 AM', status: 'Booked' },
-    { time: '07:00 AM - 08:00 AM', status: 'Booked' },
-    { time: '08:00 AM - 09:00 AM', status: 'Available' },
-    { time: '09:00 AM - 10:00 AM', status: 'Available' },
-    { time: '04:00 PM - 05:00 PM', status: 'Pending' },
-    { time: '05:00 PM - 06:00 PM', status: 'Booked' },
-    { time: '06:00 PM - 07:00 PM', status: 'Available' },
-    { time: '07:00 PM - 08:00 PM', status: 'Available' },
-    { time: '08:00 PM - 09:00 PM', status: 'Booked' },
-    { time: '09:00 PM - 10:00 PM', status: 'Available' },
-  ];
-
   return (
-    <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-10 pb-20">
+    <div className="p-6 md:p-10 w-full space-y-10 pb-20">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-2xl font-extrabold text-[#0f172a] tracking-tight mb-2">
-            Badminton Court Availability
-          </h1>
-          <p className="text-slate-500 text-body">
-            Choose a date to see available booking times.
-          </p>
-        </div>
+      <div className="flex justify-end gap-6">
 
         <div className="flex items-center gap-3 bg-white rounded-lg px-4 py-2 border border-slate-100 shadow-sm">
           <span className="text-slate-500 text-body-sm font-semibold">Operating Hours:</span>
@@ -125,7 +154,7 @@ export default function DashboardAvailabilityPage() {
                       <>
                         <span className="text-emerald-500 font-bold text-caption mr-2 bg-emerald-50 px-3 py-1.5 rounded-lg">Available</span>
                         <button
-                          onClick={() => handleBookNow(slot.time)}
+                          onClick={() => handleBookNow(slot)}
                           className="bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-caption px-5 py-2.5 rounded-lg transition shadow-sm"
                         >
                           Book Now
@@ -143,7 +172,7 @@ export default function DashboardAvailabilityPage() {
       <BookingModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        selectedSlot={selectedSlot}
+        selectedSlots={selectedSlot ? [selectedSlot] : []}
       />
     </div>
   );

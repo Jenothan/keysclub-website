@@ -8,7 +8,7 @@ import Menu from '@mui/icons-material/Menu';
 import { cn } from "@/lib/utils";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuthStore } from "@/store/authStore";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function DashboardLayout({
   children,
@@ -22,6 +22,15 @@ export default function DashboardLayout({
   const handleLogout = () => {
     logout();
     router.push('/login');
+  };
+
+  const pathname = usePathname();
+  const getPageTitle = () => {
+    if (pathname === '/dashboard') return 'Dashboard';
+    if (pathname.includes('/dashboard/availability')) return 'Availability';
+    if (pathname.includes('/dashboard/bookings')) return 'My Bookings';
+    if (pathname.includes('/dashboard/settings')) return 'Settings';
+    return 'User Dashboard';
   };
 
   return (
@@ -57,7 +66,7 @@ export default function DashboardLayout({
             >
               <Menu className="w-6 h-6" />
             </button>
-            <h2 className="text-xl font-extrabold text-[#0f172a] tracking-tight">User Dashboard</h2>
+            <h2 className="text-xl font-extrabold text-[#0f172a] tracking-tight">{getPageTitle()}</h2>
           </div>
           
           <div className="flex items-center gap-4">

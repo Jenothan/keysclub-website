@@ -7,7 +7,8 @@ import MapPin from '@mui/icons-material/LocationOn';
 import MessageCircle from '@mui/icons-material/Chat';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { submitContactForm } from '@/app/actions/contact';
+import api from '@/lib/axios';
+import { toast } from 'sonner';
 
 const Facebook = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -25,20 +26,34 @@ const Instagram = (props: React.SVGProps<SVGSVGElement>) => (
 
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState("");
+  const [websiteData, setWebsiteData] = useState<any>(null);
+
+  React.useEffect(() => {
+    api.get('/website-data').then(res => {
+      setWebsiteData(res.data);
+    }).catch(console.error);
+  }, []);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
-    setSubmitMessage("");
 
     const formData = new FormData(event.currentTarget);
-    const response = await submitContactForm(formData);
+    const data = {
+      name: formData.get('name'),
+      mobile: formData.get('mobile'),
+      subject: formData.get('type'),
+      message: formData.get('message'),
+    };
 
-    setIsSubmitting(false);
-    if (response.success) {
-      setSubmitMessage(response.message);
+    try {
+      await api.post('/inquiries', data);
+      toast.success('Inquiry submitted successfully! We will contact you soon.');
       (event.target as HTMLFormElement).reset();
+    } catch (error) {
+      toast.error('Failed to submit inquiry. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -69,7 +84,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Call Us</p>
-                <h3 className="font-extrabold text-[#0f172a] text-lg mb-1">+94 77 123 4567</h3>
+                <h3 className="font-extrabold text-[#0f172a] text-lg mb-1">{websiteData?.primary_phone || '+94 77 123 4567'}</h3>
                 <p className="text-slate-500 text-xs font-medium">Available Daily 6 AM - 10 PM</p>
               </div>
             </div>
@@ -81,7 +96,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email Inquiry</p>
-                <h3 className="font-extrabold text-[#0f172a] text-lg mb-1">info@keysclub.lk</h3>
+                <h3 className="font-extrabold text-[#0f172a] text-lg mb-1">{websiteData?.support_email || 'info@keysclub.lk'}</h3>
                 <p className="text-slate-500 text-xs font-medium">General & sports inquiries</p>
               </div>
             </div>
@@ -93,7 +108,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Visit Club</p>
-                <h3 className="font-extrabold text-[#0f172a] text-lg mb-1">Karanavai East, Point Pedro</h3>
+                <h3 className="font-extrabold text-[#0f172a] text-lg mb-1">{websiteData?.club_address || 'Karanavai East, Point Pedro'}</h3>
                 <p className="text-slate-500 text-xs font-medium">Jaffna District, Sri Lanka</p>
               </div>
             </div>
@@ -119,12 +134,6 @@ export default function ContactPage() {
           {/* Right Column - Form */}
           <div className="lg:col-span-8 bg-white rounded-2xl p-8 border border-slate-100 shadow-sm">
             <h2 className="text-xl font-extrabold text-[#0f172a] mb-8 tracking-tight">Send an Inquiry</h2>
-            
-            {submitMessage && (
-              <div className="mb-6 p-4 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-bold border border-emerald-100">
-                {submitMessage}
-              </div>
-            )}
 
             <form className="space-y-6" onSubmit={onSubmit}>
               

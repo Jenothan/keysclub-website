@@ -1,58 +1,34 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import LayoutGrid from '@mui/icons-material/GridView';
 import MoreVertical from '@mui/icons-material/MoreVert';
 import { Input } from '@/components/ui/input';
+import api from '@/lib/axios';
+import { format } from 'date-fns';
 
 export default function AdminUsersPage() {
-  const users = [
-    {
-      id: 'USR-001',
-      name: 'Ashan Perera',
-      mobile: '077 123 4567',
-      email: 'ashan@example.com',
-      joined: '12 Jan 2026',
-      status: 'Active'
-    },
-    {
-      id: 'USR-002',
-      name: 'Dilshan Silva',
-      mobile: '071 987 6543',
-      email: 'dilshan@example.com',
-      joined: '15 Feb 2026',
-      status: 'Active'
-    },
-    {
-      id: 'USR-003',
-      name: 'Kamil De Silva',
-      mobile: '076 543 2109',
-      email: 'kamil@example.com',
-      joined: '03 Mar 2026',
-      status: 'Inactive'
-    },
-    {
-      id: 'USR-004',
-      name: 'Sajith Bandara',
-      mobile: '075 111 2222',
-      email: 'sajith@example.com',
-      joined: '22 Apr 2026',
-      status: 'Active'
-    }
-  ];
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await api.get('/admin/users');
+        setUsers(response.data);
+      } catch (error) {
+        console.error('Failed to fetch users', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   return (
-    <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8 pb-20 min-h-screen">
+    <div className="p-6 md:p-10 w-full space-y-8 pb-20 min-h-screen">
       
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-extrabold text-[#0f172a] tracking-tight mb-2">
-          User Management
-        </h1>
-        <p className="text-slate-500 text-sm">
-          View and manage registered club members and users.
-        </p>
-      </div>
+
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center">
@@ -98,20 +74,16 @@ export default function AdminUsersPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {users.map((user, i) => (
-                <tr key={i} className="hover:bg-slate-50/50 transition-colors group">
-                  <td className="px-6 py-5 font-extrabold text-[#0f172a]">{user.id}</td>
+                <tr key={user.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <td className="px-6 py-5 font-extrabold text-[#0f172a]">USR-{user.id}</td>
                   <td className="px-6 py-5">
                     <p className="font-extrabold text-[#0f172a]">{user.name}</p>
                     <p className="text-slate-400 text-xs mt-0.5 font-medium">{user.email}</p>
                   </td>
-                  <td className="px-6 py-5 text-slate-500 font-medium">{user.mobile}</td>
-                  <td className="px-6 py-5 text-slate-500 font-medium">{user.joined}</td>
+                  <td className="px-6 py-5 text-slate-500 font-medium">{user.phone || '-'}</td>
+                  <td className="px-6 py-5 text-slate-500 font-medium">{user.created_at ? format(new Date(user.created_at), 'dd MMM yyyy') : '-'}</td>
                   <td className="px-6 py-5 text-center">
-                    {user.status === 'Active' ? (
-                      <span className="text-[#10b981] bg-emerald-50 font-extrabold text-[11px] px-3 py-1.5 rounded-md">Active</span>
-                    ) : (
-                      <span className="text-slate-500 bg-slate-100 font-extrabold text-[11px] px-3 py-1.5 rounded-md">Inactive</span>
-                    )}
+                    <span className="text-[#10b981] bg-emerald-50 font-extrabold text-[11px] px-3 py-1.5 rounded-md">Active</span>
                   </td>
                   <td className="px-4 py-5 w-16">
                     <div className="flex justify-center">

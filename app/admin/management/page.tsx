@@ -126,20 +126,10 @@ export default function AdminManagementPage() {
   }
 
   return (
-    <div className="p-6 md:p-10 max-w-6xl mx-auto pb-20 min-h-screen">
+    <div className="p-6 md:p-10 w-full pb-20 min-h-screen">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-extrabold text-[#0f172a] tracking-tight mb-2 flex items-center gap-2">
-            <ShieldCheck className="text-blue-600" />
-            Admin Management
-          </h1>
-          <p className="text-slate-500 text-sm">
-            Manage your administration team. Maximum 5 administrators allowed.
-          </p>
-        </div>
-        
+      <div className="flex justify-end mb-8">
         {formState === 'list' && (
           <button 
             onClick={() => setFormState('details')}

@@ -1,63 +1,48 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Calendar from '@mui/icons-material/CalendarMonth';
 import LayoutGrid from '@mui/icons-material/GridView';
 import MoreVertical from '@mui/icons-material/MoreVert';
 import { Input } from '@/components/ui/input';
+import api from '@/lib/axios';
+import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 export default function AdminBookingsPage() {
-  const allBookings = [
-    {
-      name: 'Ashan Perera',
-      mobile: '077 123 4567',
-      id: '#KC-89420',
-      requestDate: '25 Oct 2026',
-      selectedSlot: 'Tomorrow 06:00 PM',
-      notes: 'Requires extra shuttlecocks',
-      status: 'Pending'
-    },
-    {
-      name: 'Suresh Perera',
-      mobile: '077 765 4321',
-      id: '#KC-89419',
-      requestDate: '24 Oct 2026',
-      selectedSlot: 'Tomorrow 08:00 PM',
-      notes: 'Umpire chair requested',
-      status: 'Confirmed'
-    },
-    {
-      name: 'Mahela Jayawardene',
-      mobile: '071 222 3333',
-      id: '#KC-89418',
-      requestDate: '24 Oct 2026',
-      selectedSlot: '28 Oct 05:00 PM',
-      notes: 'None',
-      status: 'Rejected'
-    },
-    {
-      name: 'Kusal Mendis',
-      mobile: '072 333 4444',
-      id: '#KC-89417',
-      requestDate: '23 Oct 2026',
-      selectedSlot: '29 Oct 07:00 PM',
-      notes: 'Training practice pass holder',
-      status: 'Pending'
+  const [allBookings, setAllBookings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchBookings = async () => {
+    try {
+      const response = await api.get('/admin/bookings');
+      setAllBookings(response.data);
+    } catch (error) {
+      console.error('Failed to fetch bookings', error);
+      toast.error('Failed to load bookings');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchBookings();
+  }, []);
+
+  const handleAction = async (id: number, action: 'confirm' | 'reject') => {
+    try {
+      await api.post(`/admin/bookings/${id}/${action}`);
+      toast.success(`Booking ${action}ed successfully`);
+      fetchBookings(); // refresh the list
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || `Failed to ${action} booking`);
+    }
+  };
 
   return (
-    <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8 pb-20 min-h-screen">
+    <div className="p-6 md:p-10 w-full space-y-8 pb-20 min-h-screen">
       
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-extrabold text-[#0f172a] tracking-tight mb-2">
-          Booking Inquiries
-        </h1>
-        <p className="text-slate-500 text-sm">
-          Review and manage incoming hourly and full-day booking requests.
-        </p>
-      </div>
+
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center">
@@ -113,15 +98,31 @@ export default function AdminBookingsPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {allBookings.map((req, i) => (
-                <tr key={i} className="hover:bg-slate-50/50 transition-colors group">
+                <tr key={req.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-6 py-5">
-                    <p className="font-extrabold text-[#0f172a]">{req.name}</p>
-                    <p className="text-slate-400 text-xs mt-0.5 font-medium">{req.mobile}</p>
+                    {req.user ? (
+                      <>
+                        <p className="font-extrabold text-[#0f172a]">{req.user.name}</p>
+                        <p className="text-slate-400 text-xs mt-0.5 font-medium">{req.user.phone}</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-extrabold text-[#0f172a]">{req.customer_name || 'Walk-in Customer'}</p>
+                        <p className="text-slate-400 text-xs mt-0.5 font-medium">{req.customer_phone || '-'}</p>
+                      </>
+                    )}
+                    {req.booked_by && (
+                      <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded mt-1 inline-block">
+                        Booked by: {req.booked_by.name} ({req.booked_by.role})
+                      </span>
+                    )}
                   </td>
-                  <td className="px-6 py-5 font-extrabold text-[#0f172a]">{req.id}</td>
-                  <td className="px-6 py-5 text-slate-500 font-medium">{req.requestDate}</td>
-                  <td className="px-6 py-5 text-slate-500 font-medium">{req.selectedSlot}</td>
-                  <td className="px-6 py-5 text-slate-500 font-medium">{req.notes}</td>
+                  <td className="px-6 py-5 font-extrabold text-[#0f172a]">#KC-{req.id}</td>
+                  <td className="px-6 py-5 text-slate-500 font-medium">{req.created_at ? format(new Date(req.created_at), 'dd MMM yyyy') : '-'}</td>
+                  <td className="px-6 py-5 text-slate-500 font-medium">
+                    {req.booking_date ? format(new Date(req.booking_date), 'dd MMM') : ''} {req.start_time} - {req.end_time}
+                  </td>
+                  <td className="px-6 py-5 text-slate-500 font-medium">{req.notes || '-'}</td>
                   <td className="px-2 py-5 text-right whitespace-nowrap">
                     {req.status === 'Pending' && (
                       <span className="text-amber-500 bg-amber-50 font-extrabold text-[11px] px-3 py-1.5 rounded-md">Pending</span>
@@ -136,10 +137,10 @@ export default function AdminBookingsPage() {
                   <td className="px-4 py-5 w-24">
                     {req.status === 'Pending' ? (
                       <div className="flex flex-col gap-1.5">
-                        <button className="bg-[#10b981] hover:bg-[#059669] text-white text-[10px] font-extrabold px-3 py-1.5 rounded transition-colors text-center w-20 tracking-wide">
+                        <button onClick={() => handleAction(req.id, 'confirm')} className="bg-[#10b981] hover:bg-[#059669] text-white text-[10px] font-extrabold px-3 py-1.5 rounded transition-colors text-center w-20 tracking-wide">
                           Confirm
                         </button>
-                        <button className="bg-[#ef4444] hover:bg-[#dc2626] text-white text-[10px] font-extrabold px-3 py-1.5 rounded transition-colors text-center w-20 tracking-wide">
+                        <button onClick={() => handleAction(req.id, 'reject')} className="bg-[#ef4444] hover:bg-[#dc2626] text-white text-[10px] font-extrabold px-3 py-1.5 rounded transition-colors text-center w-20 tracking-wide">
                           Reject
                         </button>
                       </div>

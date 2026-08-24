@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Calendar from '@mui/icons-material/CalendarMonth';
@@ -11,35 +11,26 @@ import List from '@mui/icons-material/FormatListBulleted';
 import ArrowRight from '@mui/icons-material/ArrowForward';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
+import api from '@/lib/axios';
+import { format } from 'date-fns';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
-  const history = [
-    {
-      date: '24 Oct 2026',
-      time: '05:00 PM - 06:00 PM',
-      id: '#KC-89102',
-      status: 'Confirmed'
-    },
-    {
-      date: '20 Oct 2026',
-      time: '07:00 PM - 08:00 PM',
-      id: '#KC-88741',
-      status: 'Pending'
-    },
-    {
-      date: '15 Oct 2026',
-      time: '06:00 PM - 07:00 PM',
-      id: '#KC-88129',
-      status: 'Rejected'
-    },
-    {
-      date: '10 Oct 2026',
-      time: '04:00 PM - 05:00 PM',
-      id: '#KC-87241',
-      status: 'Cancelled'
+  const [history, setHistory] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const response = await api.get('/bookings?tab=upcoming');
+        setHistory(response.data.slice(0, 4));
+      } catch (error) {
+        console.error('Failed to fetch bookings', error);
+      }
+    };
+    if (user) {
+      fetchBookings();
     }
-  ];
+  }, [user]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -57,26 +48,9 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-10 pb-20">
+    <div className="p-6 md:p-10 w-full space-y-10 pb-20">
       
-      {/* Header Section */}
-      <div className="flex items-center gap-6">
-        <Image 
-          src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
-          alt="Profile"
-          width={72}
-          height={72}
-          className="rounded-full object-cover border-2 border-white shadow-md"
-        />
-        <div>
-          <h1 className="text-2xl font-extrabold text-[#0f172a] tracking-tight mb-2">
-            Welcome back, {user?.name ? user.name.split(' ')[0] : 'User'}!
-          </h1>
-          <p className="text-slate-500 text-body">
-            Here are your current bookings and activities at Point Pedro.
-          </p>
-        </div>
-      </div>
+
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -155,28 +129,32 @@ export default function DashboardPage() {
         <h2 className="text-2xl font-extrabold text-[#0f172a] mb-6 tracking-tight">My Booking History</h2>
         
         <div className="space-y-4">
-          {history.map((item, index) => (
+          {history.length > 0 ? history.map((item, index) => (
             <div 
-              key={index} 
+              key={item.id} 
               className="bg-white rounded-2xl p-5 border border-slate-100 shadow-[0_2px_10px_rgb(0,0,0,0.02)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-200 transition-colors cursor-pointer"
             >
               <div>
                 <h4 className="font-extrabold text-[#0f172a] text-body mb-1">Badminton Session</h4>
                 <div className="flex items-center gap-2 text-slate-500 text-body-sm">
-                  <span>{item.date}</span>
+                  <span>{item.booking_date ? format(new Date(item.booking_date), 'dd MMM yyyy') : ''}</span>
                   <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                  <span>{item.time}</span>
+                  <span>{item.start_time} - {item.end_time}</span>
                 </div>
               </div>
               
               <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
-                <span className="font-bold text-[#0f172a] text-body-sm">{item.id}</span>
+                <span className="font-bold text-[#0f172a] text-body-sm">#KC-{item.id}</span>
                 <span className={cn("font-bold text-[11px] px-3 py-1.5 rounded-lg w-24 text-center", getStatusBadge(item.status))}>
                   {item.status}
                 </span>
               </div>
             </div>
-          ))}
+          )) : (
+            <div className="bg-white rounded-2xl p-8 border border-slate-100 text-center text-slate-500 shadow-sm">
+              No recent bookings found. Check availability to book a court!
+            </div>
+          )}
         </div>
       </div>
 

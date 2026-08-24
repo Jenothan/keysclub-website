@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 import { useAuthStore } from "@/store/authStore";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 function AdminLayoutContent({
   children,
@@ -24,6 +24,19 @@ function AdminLayoutContent({
   const handleLogout = () => {
     logout();
     router.push('/login');
+  };
+
+  const pathname = usePathname();
+  const getPageTitle = () => {
+    if (pathname === '/admin') return 'Dashboard';
+    if (pathname.includes('/admin/bookings')) return 'Booking Management';
+    if (pathname.includes('/admin/users')) return 'Users';
+    if (pathname.includes('/admin/availability')) return 'Court Availability';
+    if (pathname.includes('/admin/inquiries')) return 'Inquiries';
+    if (pathname.includes('/admin/settings')) return 'Settings';
+    if (pathname.includes('/admin/management')) return 'Admin Management';
+    if (pathname.includes('/admin/website-data')) return 'Website Data Configuration';
+    return 'Admin Panel';
   };
 
   return (
@@ -78,8 +91,7 @@ function AdminLayoutContent({
             >
               <Menu className="w-6 h-6" />
             </button>
-            {/* Mobile Title (hidden on desktop) */}
-            <h2 className="lg:hidden text-lg font-extrabold text-[#0f172a] tracking-tight">Admin</h2>
+            <h2 className="text-xl font-extrabold text-[#0f172a] tracking-tight">{getPageTitle()}</h2>
           </div>
           
           <div className="flex items-center gap-4">

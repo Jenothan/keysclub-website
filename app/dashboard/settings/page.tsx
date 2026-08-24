@@ -7,25 +7,44 @@ import Camera from '@mui/icons-material/CameraAlt';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { useAuthStore } from '@/store/authStore';
+import { format } from 'date-fns';
+import api from '@/lib/axios';
+import { toast } from 'sonner';
 
 export default function UserSettingsPage() {
   const { user } = useAuthStore();
   const [emailNotif, setEmailNotif] = useState(true);
   const [smsNotif, setSmsNotif] = useState(true);
   const [whatsappNotif, setWhatsappNotif] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    current_password: '',
+    password: '',
+  });
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUpdatingPassword(true);
+    try {
+      // Send password directly without confirmation since there is no confirmation field in this UI
+      await api.post('/user/password', {
+        current_password: passwordForm.current_password,
+        password: passwordForm.password,
+        password_confirmation: passwordForm.password // Assuming UI missed confirmation, auto-fill it
+      });
+      toast.success('Password updated successfully');
+      setPasswordForm({ current_password: '', password: '' });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to update password');
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
 
   return (
-    <div className="p-6 md:p-10 max-w-6xl mx-auto pb-20 min-h-screen">
+    <div className="p-6 md:p-10 w-full pb-20 min-h-screen">
 
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-extrabold text-[#0f172a] tracking-tight mb-2">
-          Settings
-        </h1>
-        <p className="text-slate-500 text-sm">
-          Manage your personal information and notification preferences.
-        </p>
-      </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
@@ -64,7 +83,7 @@ export default function UserSettingsPage() {
             </div>
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Member Since</p>
-              <p className="font-extrabold text-[#0f172a] text-sm">January 2024</p>
+              <p className="font-extrabold text-[#0f172a] text-sm">{user?.created_at ? format(new Date(user.created_at), 'MMMM yyyy') : 'January 2026'}</p>
             </div>
           </div>
 
@@ -83,22 +102,24 @@ export default function UserSettingsPage() {
             <h2 className="text-xl font-extrabold text-[#0f172a] tracking-tight mb-2">Security & Change Password</h2>
             <p className="text-slate-500 text-sm mb-6">Keep your account secure by updating your password regularly.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-[#0f172a]">Current Password</label>
-                <Input type="password" placeholder="••••••••••••" className="h-11 bg-slate-50/50" />
+            <form onSubmit={handlePasswordUpdate}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-[#0f172a]">Current Password</label>
+                  <Input type="password" required value={passwordForm.current_password} onChange={(e) => setPasswordForm({...passwordForm, current_password: e.target.value})} placeholder="••••••••••••" className="h-11 bg-slate-50/50" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-[#0f172a]">New Password</label>
+                  <Input type="password" required minLength={8} value={passwordForm.password} onChange={(e) => setPasswordForm({...passwordForm, password: e.target.value})} placeholder="Enter new password" className="h-11 bg-slate-50/50" />
+                </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-[#0f172a]">New Password</label>
-                <Input type="password" placeholder="Enter new password" className="h-11 bg-slate-50/50" />
-              </div>
-            </div>
 
-            <div className="flex justify-end">
-              <button className="bg-[#0f172a] hover:bg-[#1e293b] text-white font-bold text-sm px-6 h-11 rounded-lg transition-colors">
-                Update Password
-              </button>
-            </div>
+              <div className="flex justify-end">
+                <button type="submit" disabled={isUpdatingPassword} className="bg-[#0f172a] hover:bg-[#1e293b] text-white font-bold text-sm px-6 h-11 rounded-lg transition-colors disabled:opacity-50">
+                  {isUpdatingPassword ? 'Updating...' : 'Update Password'}
+                </button>
+              </div>
+            </form>
           </div>
 
           {/* Notification Preferences Card */}

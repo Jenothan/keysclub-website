@@ -92,11 +92,11 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all",
                 isActive
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-900/20"
+                  ? "bg-yellow-400 text-black shadow-md shadow-yellow-900/20"
                   : "text-slate-300 hover:text-white hover:bg-white/5"
               )}
             >
-              <item.icon className={cn("w-5 h-5", isActive ? "text-white" : "text-slate-400")} />
+              <item.icon className={cn("w-5 h-5", isActive ? "text-black" : "text-slate-400")} />
               {item.name}
             </Link>
           );

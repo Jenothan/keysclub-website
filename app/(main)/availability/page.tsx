@@ -17,7 +17,7 @@ export default function AvailabilityPage() {
   const isLoggedIn = !!user;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string; court: string; court_id: number; start_time: string; end_time: string; rawDate: string } | null>(null);
+  const [selectedSlots, setSelectedSlots] = useState<any[]>([]);
   const [calendarDate, setCalendarDate] = useState<Date | undefined>(new Date());
   const [slots, setSlots] = useState<{ time: string; status: string; start_time: string; end_time: string; court_id: number }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +29,7 @@ export default function AvailabilityPage() {
       try {
         const dateStr = format(calendarDate, 'yyyy-MM-dd');
         // Defaulting court_id to 1 as per example, could be dynamic later
-        const res = await api.get(`/availability?date=${dateStr}&court_id=1`);
+        const res = await api.get(`/availability?date=${dateStr}&court_id=1`).catch(() => ({ data: [] }));
         
         // Helper to format "HH:mm:ss" to "hh:mm a"
         const formatTime = (timeStr: string) => {
@@ -41,12 +41,27 @@ export default function AvailabilityPage() {
           return format(d, 'hh:mm a');
         };
 
-        const formattedSlots = res.data.map((slot: any) => ({
-          ...slot,
-          time: `${formatTime(slot.start_time)} - ${formatTime(slot.end_time)}`
-        }));
+        const backendSlots = res.data || [];
+        const hardcodedSlots = [];
+
+        for (let hour = 6; hour < 22; hour++) {
+          const startStr = `${hour.toString().padStart(2, '0')}:00:00`;
+          const endStr = `${(hour + 1).toString().padStart(2, '0')}:00:00`;
+          
+          // Check if this time slot is booked in backend data
+          const backendSlot = backendSlots.find((bs: any) => bs.start_time === startStr);
+          
+          hardcodedSlots.push({
+            time: `${formatTime(startStr)} - ${formatTime(endStr)}`,
+            status: backendSlot ? backendSlot.status : 'Available',
+            start_time: startStr,
+            end_time: endStr,
+            court_id: backendSlot?.court_id || 1
+          });
+        }
         
-        setSlots(formattedSlots);
+        setSlots(hardcodedSlots);
+        setSelectedSlots([]); // Clear selection when date changes
       } catch (error) {
         toast.error('Failed to load availability');
         setSlots([]); // clear on error
@@ -57,11 +72,12 @@ export default function AvailabilityPage() {
     fetchAvailability();
   }, [calendarDate]);
 
-  const handleBookNow = (slot: any) => {
-    if (!isLoggedIn) {
-      router.push('/login');
+  const handleToggleSlot = (slot: any) => {
+    const isSelected = selectedSlots.some(s => s.start_time === slot.start_time);
+    if (isSelected) {
+      setSelectedSlots(selectedSlots.filter(s => s.start_time !== slot.start_time));
     } else {
-      setSelectedSlot({
+      setSelectedSlots([...selectedSlots, {
         date: calendarDate ? format(calendarDate, "EEEE, dd MMMM yyyy") : "No date selected", 
         time: slot.time,
         court: 'Court A - Professional Mat',
@@ -69,8 +85,17 @@ export default function AvailabilityPage() {
         start_time: slot.start_time,
         end_time: slot.end_time,
         rawDate: calendarDate ? format(calendarDate, 'yyyy-MM-dd') : ''
-      });
+      }]);
+    }
+  };
+
+  const handleBookSelected = () => {
+    if (!isLoggedIn) {
+      router.push('/login');
+    } else if (selectedSlots.length > 0) {
       setIsModalOpen(true);
+    } else {
+      toast.error('Please select at least one available slot.');
     }
   };
 
@@ -148,45 +173,78 @@ export default function AvailabilityPage() {
                     No slots available for this date.
                   </div>
                 ) : (
-                  slots.map((slot, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-[#f8fafc] hover:border-slate-200 hover:shadow-sm transition-all group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="bg-white p-2 rounded-lg shadow-sm text-slate-400 group-hover:text-blue-600 transition-colors">
-                          <Clock className="w-4 h-4" />
+                  slots.map((slot, index) => {
+                    const isSelected = selectedSlots.some(s => s.start_time === slot.start_time);
+                    return (
+                      <div
+                        key={index}
+                        onClick={() => slot.status === 'Available' && handleToggleSlot(slot)}
+                        className={`flex items-center justify-between p-4 rounded-xl border transition-all group ${
+                          slot.status === 'Available' ? 'cursor-pointer hover:border-blue-300 hover:shadow-sm bg-[#f8fafc]' : 'bg-slate-50 border-slate-100 opacity-70'
+                        } ${isSelected ? 'border-blue-500 bg-blue-50/30 shadow-[0_0_0_1px_rgba(59,130,246,1)]' : 'border-slate-100'}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {slot.status === 'Available' && (
+                            <div className="relative flex items-center justify-center w-5 h-5">
+                              <input 
+                                type="checkbox" 
+                                checked={isSelected}
+                                readOnly
+                                className="peer appearance-none w-5 h-5 border-2 border-slate-300 rounded focus:ring-blue-500 checked:bg-blue-600 checked:border-blue-600 transition-colors cursor-pointer"
+                              />
+                              <svg className={`absolute w-3 h-3 text-white pointer-events-none transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          )}
+                          <div className={`p-2 rounded-lg shadow-sm transition-colors ${isSelected ? 'bg-blue-600 text-white' : 'bg-white text-slate-400 group-hover:text-blue-600'}`}>
+                            <Clock className="w-4 h-4" />
+                          </div>
+                          <span className="font-bold text-slate-800 text-body-sm tracking-tight">{slot.time}</span>
                         </div>
-                        <span className="font-bold text-slate-800 text-body-sm tracking-tight">{slot.time}</span>
+
+                        <div className="flex items-center gap-3">
+                          {slot.status === 'Booked' && (
+                            <span className="text-red-500 font-bold text-caption">Booked</span>
+                          )}
+
+                          {slot.status === 'Pending' && (
+                            <span className="bg-orange-100 text-orange-600 font-bold text-caption px-3 py-1.5 rounded-full uppercase tracking-wider">
+                              Pending Admin
+                            </span>
+                          )}
+
+                          {slot.status === 'Available' && (
+                            <span className={`font-bold text-caption mr-2 ${isSelected ? 'text-blue-600' : 'text-emerald-500'}`}>
+                              {isSelected ? 'Selected' : 'Available'}
+                            </span>
+                          )}
+                        </div>
                       </div>
-
-                      <div className="flex items-center gap-3">
-                        {slot.status === 'Booked' && (
-                          <span className="text-red-500 font-bold text-caption">Booked</span>
-                        )}
-
-                        {slot.status === 'Pending' && (
-                          <span className="bg-orange-100 text-orange-600 font-bold text-caption px-3 py-1.5 rounded-full uppercase tracking-wider">
-                            Pending Admin Approval
-                          </span>
-                        )}
-
-                        {slot.status === 'Available' && (
-                          <>
-                            <span className="text-emerald-500 font-bold text-caption mr-2">Available</span>
-                            <button
-                              onClick={() => handleBookNow(slot)}
-                              className="bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-caption px-5 py-2.5 rounded-lg transition shadow-sm"
-                            >
-                              Book Now
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
+
+              {/* Action Area */}
+              {slots.length > 0 && (
+                <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-sm font-bold text-slate-500">
+                    {selectedSlots.length} slot{selectedSlots.length !== 1 && 's'} selected
+                  </div>
+                  <button
+                    onClick={handleBookSelected}
+                    disabled={selectedSlots.length === 0}
+                    className={`font-bold text-body-sm px-8 py-3 rounded-lg transition shadow-sm w-full sm:w-auto ${
+                      selectedSlots.length > 0 
+                        ? 'bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900' 
+                        : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                    }`}
+                  >
+                    Book Selected Slots
+                  </button>
+                </div>
+              )}
 
             </div>
           </div>
@@ -197,7 +255,7 @@ export default function AvailabilityPage() {
       <BookingModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        selectedSlot={selectedSlot}
+        selectedSlots={selectedSlots}
       />
     </div>
   );

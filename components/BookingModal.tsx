@@ -11,22 +11,19 @@ import { toast } from 'sonner';
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedSlot: {
-    date: string;
-    time: string;
-    court_id?: number;
-    start_time?: string;
-    end_time?: string;
-    rawDate?: string;
-  } | null;
+  selectedSlots: any[];
 }
 
-export default function BookingModal({ isOpen, onClose, selectedSlot }: BookingModalProps) {
+export default function BookingModal({ isOpen, onClose, selectedSlots }: BookingModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const { user } = useAuthStore();
   const [notes, setNotes] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingId, setBookingId] = useState('');
+
+  const isAdmin = user?.role === 'Admin' || user?.role === 'Super Admin';
 
   const steps = [
     { id: 1, name: 'Review & Notes' },
@@ -38,44 +35,46 @@ export default function BookingModal({ isOpen, onClose, selectedSlot }: BookingM
     if (isOpen) {
       setCurrentStep(1);
       setNotes('');
+      setCustomerName('');
+      setCustomerPhone('');
       setBookingId('');
     }
   }, [isOpen]);
 
   const handleSubmit = async () => {
-    if (!selectedSlot?.court_id || !selectedSlot?.start_time || !selectedSlot?.end_time) {
-      toast.error('Invalid slot selected');
+    if (!selectedSlots || selectedSlots.length === 0) {
+      toast.error('No slots selected');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      // API expects: { court_id, booking_date, start_time, end_time }
-      // We will extract booking_date from start_time or use calendarDate if passed
-      // Usually start_time is just "HH:mm" in some APIs, let's assume it's properly formatted.
-      // Or we can construct it if we have the date. Let's send what we have.
-      // We need booking_date in YYYY-MM-DD.
-      // Let's assume the API handles it if we send date, start_time, end_time.
-      // But the guide says: { court_id, booking_date, start_time, end_time }
-      // So we must pass it. Wait, the date string we have in selectedSlot is "EEEE, dd MMMM yyyy".
-      // We need the raw Date. We didn't pass it from AvailabilityPage.
-      // Let's assume start_time from API comes as "YYYY-MM-DD HH:mm:ss" or just "HH:mm".
-      // We will parse the date from selectedSlot or pass it explicitly.
-      // We will need to update AvailabilityPage to pass raw `booking_date` in `selectedSlot`. Let's assume we do.
-      
-      const payload = {
-        court_id: selectedSlot.court_id,
-        booking_date: (selectedSlot as any).rawDate, // We will update AvailabilityPage to pass this
-        start_time: selectedSlot.start_time,
-        end_time: selectedSlot.end_time,
-        notes: notes
-      };
+      const payloads = selectedSlots.map(slot => {
+        const payload: any = {
+          court_id: slot.court_id,
+          date: slot.rawDate,
+          start_time: slot.start_time,
+          end_time: slot.end_time,
+          notes: notes
+        };
+        if (isAdmin && (customerName || customerPhone)) {
+          payload.customer_name = customerName;
+          payload.customer_phone = customerPhone;
+        }
+        return payload;
+      });
 
-      const res = await api.post('/bookings', payload);
-      setBookingId(res.data?.id || `KEYS-${Date.now().toString().slice(-4)}`);
+      // In a real app, you might want a single API endpoint to accept an array of bookings.
+      // Here we simulate it by submitting each slot one by one or in parallel.
+      const responses = await Promise.all(
+        payloads.map(payload => api.post('/bookings', payload))
+      );
+      
+      // Use first booking ID or generate one for UI display
+      setBookingId(responses[0]?.data?.id || `KEYS-${Date.now().toString().slice(-4)}`);
       setCurrentStep(2);
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to submit booking');
+      toast.error(error.response?.data?.message || 'Failed to submit bookings');
     } finally {
       setIsSubmitting(false);
     }
@@ -135,19 +134,43 @@ export default function BookingModal({ isOpen, onClose, selectedSlot }: BookingM
                 <div className="space-y-3">
                   <div className="flex justify-between items-center text-body-sm">
                     <span className="text-slate-500">Date</span>
-                    <span className="font-semibold text-[#0f172a]">{selectedSlot?.date || '...'}</span>
+                    <span className="font-semibold text-[#0f172a]">{selectedSlots[0]?.date || '...'}</span>
                   </div>
-                  <div className="flex justify-between items-center text-body-sm">
-                    <span className="text-slate-500">Time</span>
-                    <span className="font-semibold text-[#0f172a]">{selectedSlot?.time || '...'}</span>
+                  <div className="flex flex-col gap-1 text-body-sm">
+                    <span className="text-slate-500">Selected Times</span>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {selectedSlots.map((slot, i) => (
+                        <span key={i} className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md font-semibold text-xs border border-blue-100">
+                          {slot.time}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                   <div className="flex justify-between items-center text-body-sm">
                     <span className="text-slate-500">Name</span>
-                    <span className="font-semibold text-[#0f172a]">{user?.name}</span>
+                    {isAdmin ? (
+                      <Input 
+                        value={customerName} 
+                        onChange={e => setCustomerName(e.target.value)} 
+                        placeholder="Walk-in Customer Name" 
+                        className="h-8 text-right bg-transparent border-0 focus-visible:ring-0 p-0 font-semibold text-[#0f172a] placeholder:font-normal w-1/2" 
+                      />
+                    ) : (
+                      <span className="font-semibold text-[#0f172a]">{user?.name}</span>
+                    )}
                   </div>
                   <div className="flex justify-between items-center text-body-sm">
                     <span className="text-slate-500">Mobile Number</span>
-                    <span className="font-semibold text-[#0f172a]">{user?.phone}</span>
+                    {isAdmin ? (
+                      <Input 
+                        value={customerPhone} 
+                        onChange={e => setCustomerPhone(e.target.value)} 
+                        placeholder="Customer Phone" 
+                        className="h-8 text-right bg-transparent border-0 focus-visible:ring-0 p-0 font-semibold text-[#0f172a] placeholder:font-normal w-1/2" 
+                      />
+                    ) : (
+                      <span className="font-semibold text-[#0f172a]">{user?.phone}</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -170,14 +193,14 @@ export default function BookingModal({ isOpen, onClose, selectedSlot }: BookingM
                   onClick={onClose}
                   disabled={isSubmitting}
                   variant="outline"
-                  className="w-full h-12 text-slate-700 font-bold text-body"
+                  className="flex-1 h-12 text-slate-700 font-bold text-body"
                 >
                   Cancel
                 </Button>
                 <Button 
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className="w-full h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-body"
+                  className="flex-1 h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-body"
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Booking'}
                 </Button>
@@ -205,11 +228,15 @@ export default function BookingModal({ isOpen, onClose, selectedSlot }: BookingM
                   </div>
                   <div className="flex justify-between items-center text-body-sm">
                     <span className="text-slate-500">Date</span>
-                    <span className="font-semibold text-[#0f172a]">{selectedSlot?.date}</span>
+                    <span className="font-semibold text-[#0f172a]">{selectedSlots[0]?.date}</span>
                   </div>
-                  <div className="flex justify-between items-center text-body-sm pb-4 border-b border-slate-200">
-                    <span className="text-slate-500">Time</span>
-                    <span className="font-semibold text-[#0f172a]">{selectedSlot?.time}</span>
+                  <div className="flex justify-between items-start text-body-sm pb-4 border-b border-slate-200">
+                    <span className="text-slate-500">Time(s)</span>
+                    <div className="flex flex-col items-end gap-1">
+                      {selectedSlots.map((slot, i) => (
+                        <span key={i} className="font-semibold text-[#0f172a]">{slot.time}</span>
+                      ))}
+                    </div>
                   </div>
                   <div className="flex justify-between items-center text-body-sm pt-1">
                     <span className="text-slate-500">Status</span>

@@ -1,69 +1,53 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import LayoutGrid from '@mui/icons-material/GridView';
 import MoreVertical from '@mui/icons-material/MoreVert';
 import MessageSquare from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import { Input } from '@/components/ui/input';
+import api from '@/lib/axios';
+import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 export default function AdminInquiriesPage() {
   const [subjectFilter, setSubjectFilter] = useState('All Subjects');
+  const [allInquiries, setAllInquiries] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const allInquiries = [
-    {
-      id: 'INQ-1042',
-      name: 'Ashan Perera',
-      mobile: '077 123 4567',
-      subject: 'Tournament',
-      date: '24 Oct 2026',
-      message: 'Looking to host a local community tournament with 32 teams over the weekend.',
-      status: 'Unread'
-    },
-    {
-      id: 'INQ-1043',
-      name: 'Point Pedro Sports Club',
-      mobile: '071 987 6543',
-      subject: 'Full Day Court Booking',
-      date: '23 Oct 2026',
-      message: 'We need the court for a full day training camp next month.',
-      status: 'Responded'
-    },
-    {
-      id: 'INQ-1044',
-      name: 'Kamil De Silva',
-      mobile: '076 543 2109',
-      subject: 'Others',
-      date: '20 Oct 2026',
-      message: 'Do you offer monthly subscription packages?',
-      status: 'Unread'
-    },
-    {
-      id: 'INQ-1045',
-      name: 'Jaffna Kings Academy',
-      mobile: '075 111 2222',
-      subject: 'Tournament',
-      date: '15 Oct 2026',
-      message: 'Inquiring about hosting an under-19 regional tournament.',
-      status: 'Responded'
+  const fetchInquiries = async () => {
+    try {
+      const response = await api.get('/admin/inquiries');
+      setAllInquiries(response.data);
+    } catch (error) {
+      console.error('Failed to fetch inquiries', error);
+      toast.error('Failed to load inquiries');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchInquiries();
+  }, []);
+
+  const handleResolve = async (id: number) => {
+    try {
+      await api.post(`/admin/inquiries/${id}/resolve`);
+      toast.success('Inquiry marked as resolved');
+      fetchInquiries();
+    } catch (error) {
+      toast.error('Failed to resolve inquiry');
+    }
+  };
 
   const filteredInquiries = subjectFilter === 'All Subjects' 
     ? allInquiries 
     : allInquiries.filter(i => i.subject === subjectFilter);
 
   return (
-    <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8 pb-20 min-h-screen">
+    <div className="p-6 md:p-10 w-full space-y-8 pb-20 min-h-screen">
       
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-extrabold text-[#0f172a] tracking-tight mb-2">
-          Contact Inquiries
-        </h1>
-        <p className="text-slate-500 text-sm">
-          Manage messages, tournament requests, and full-day booking inquiries from the website.
-        </p>
-      </div>
+
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center">
@@ -127,32 +111,32 @@ export default function AdminInquiriesPage() {
             <tbody className="divide-y divide-slate-100">
               {filteredInquiries.length > 0 ? (
                 filteredInquiries.map((inq, i) => (
-                  <tr key={i} className={`hover:bg-slate-50/50 transition-colors group ${inq.status === 'Unread' ? 'bg-blue-50/30' : ''}`}>
+                  <tr key={inq.id} className={`hover:bg-slate-50/50 transition-colors group ${inq.status === 'Pending' ? 'bg-blue-50/30' : ''}`}>
                     <td className="px-6 py-5">
                       <p className="font-extrabold text-[#0f172a]">{inq.name}</p>
                       <p className="text-slate-400 text-xs mt-0.5 font-medium">{inq.mobile}</p>
                     </td>
-                    <td className="px-6 py-5 font-extrabold text-[#0f172a]">{inq.id}</td>
+                    <td className="px-6 py-5 font-extrabold text-[#0f172a]">#INQ-{inq.id}</td>
                     <td className="px-6 py-5">
                       <span className="bg-slate-100 text-slate-600 font-bold text-[10px] px-2.5 py-1 rounded-md border border-slate-200">
-                        {inq.subject}
+                        {inq.subject || 'General'}
                       </span>
                     </td>
                     <td className="px-6 py-5 text-slate-500 font-medium max-w-[200px] truncate">
                       {inq.message}
                     </td>
-                    <td className="px-6 py-5 text-slate-500 font-medium">{inq.date}</td>
+                    <td className="px-6 py-5 text-slate-500 font-medium">{inq.created_at ? format(new Date(inq.created_at), 'dd MMM yyyy') : '-'}</td>
                     <td className="px-6 py-5 text-center">
-                      {inq.status === 'Unread' ? (
-                        <span className="text-blue-600 bg-blue-50 border border-blue-100 font-extrabold text-[11px] px-3 py-1.5 rounded-md">Unread</span>
+                      {inq.status === 'Pending' ? (
+                        <span className="text-blue-600 bg-blue-50 border border-blue-100 font-extrabold text-[11px] px-3 py-1.5 rounded-md">Pending</span>
                       ) : (
-                        <span className="text-[#10b981] bg-emerald-50 border border-emerald-100 font-extrabold text-[11px] px-3 py-1.5 rounded-md">Responded</span>
+                        <span className="text-[#10b981] bg-emerald-50 border border-emerald-100 font-extrabold text-[11px] px-3 py-1.5 rounded-md">Resolved</span>
                       )}
                     </td>
                     <td className="px-4 py-5 w-24">
-                      {inq.status === 'Unread' ? (
-                        <button className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-extrabold px-3 py-1.5 rounded transition-colors text-center w-full tracking-wide">
-                          Reply
+                      {inq.status === 'Pending' ? (
+                        <button onClick={() => handleResolve(inq.id)} className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-extrabold px-3 py-1.5 rounded transition-colors text-center w-full tracking-wide">
+                          Resolve
                         </button>
                       ) : (
                         <div className="flex justify-center">

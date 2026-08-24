@@ -22,6 +22,13 @@ export default function ProfilePage() {
   const [otpInput, setOtpInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  const [passwordForm, setPasswordForm] = useState({
+    current_password: '',
+    password: '',
+    password_confirmation: ''
+  });
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  
   // Handlers for Phone OTP Flow
   const handleStartPhoneChange = () => setPhoneState('NEW_PHONE');
   
@@ -78,18 +85,28 @@ export default function ProfilePage() {
     setOtpInput('');
   };
 
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordForm.password !== passwordForm.password_confirmation) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    setIsUpdatingPassword(true);
+    try {
+      await api.post('/user/password', passwordForm);
+      toast.success('Password updated successfully');
+      setPasswordForm({ current_password: '', password: '', password_confirmation: '' });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to update password');
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
+
   return (
-    <div className="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-10 pb-20">
+    <div className="p-6 md:p-10 w-full space-y-10 pb-20">
       
-      {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-extrabold text-[#0f172a] tracking-tight mb-2">
-          Profile Settings
-        </h1>
-        <p className="text-slate-500 text-body">
-          Manage your personal information and account security.
-        </p>
-      </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
@@ -227,24 +244,24 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <form className="space-y-6">
+            <form onSubmit={handlePasswordUpdate} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="sm:col-span-2">
                   <label className="block text-sm font-bold text-slate-700 mb-2">Current Password</label>
-                  <input type="password" placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-blue-500 transition-colors" />
+                  <input type="password" required value={passwordForm.current_password} onChange={(e) => setPasswordForm({...passwordForm, current_password: e.target.value})} placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-blue-500 transition-colors" />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">New Password</label>
-                  <input type="password" placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-blue-500 transition-colors" />
+                  <input type="password" required minLength={8} value={passwordForm.password} onChange={(e) => setPasswordForm({...passwordForm, password: e.target.value})} placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-blue-500 transition-colors" />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">Confirm New Password</label>
-                  <input type="password" placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-blue-500 transition-colors" />
+                  <input type="password" required minLength={8} value={passwordForm.password_confirmation} onChange={(e) => setPasswordForm({...passwordForm, password_confirmation: e.target.value})} placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-blue-500 transition-colors" />
                 </div>
               </div>
               <div className="flex justify-end">
-                <button type="button" className="bg-[#0f172a] hover:bg-slate-800 text-white font-bold px-8 py-3 rounded-lg transition-colors text-sm">
-                  Update Password
+                <button type="submit" disabled={isUpdatingPassword} className="bg-[#0f172a] hover:bg-slate-800 text-white font-bold px-8 py-3 rounded-lg transition-colors text-sm disabled:opacity-50">
+                  {isUpdatingPassword ? 'Updating...' : 'Update Password'}
                 </button>
               </div>
             </form>

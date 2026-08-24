@@ -1,57 +1,49 @@
-import React from 'react';
+"use client";
+
+import React, { useState, useEffect } from 'react';
 import Clock from '@mui/icons-material/AccessTime';
 import Calendar from '@mui/icons-material/CalendarMonth';
 import ShieldCheck from '@mui/icons-material/GppGood';
 import MessageSquare from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import api from '@/lib/axios';
 
 export default function AdminDashboardPage() {
-  const recentRequests = [
-    {
-      name: 'Ashan Perera',
-      mobile: '077 123 4567',
-      date: '27 Oct 2026',
-      time: '06:00 PM - 07:00 PM',
-      id: '#KC-89420',
-      status: 'Pending'
-    },
-    {
-      name: 'Dilshan Silva',
-      mobile: '071 987 6543',
-      date: '27 Oct 2026',
-      time: '07:00 PM - 08:00 PM',
-      id: '#KC-89421',
-      status: 'Pending'
-    },
-    {
-      name: 'Kamil De Silva',
-      mobile: '076 543 2109',
-      date: '28 Oct 2026',
-      time: '04:00 PM - 05:00 PM',
-      id: '#KC-89422',
-      status: 'Confirmed'
-    },
-    {
-      name: 'Sajith Bandara',
-      mobile: '075 111 2222',
-      date: '28 Oct 2026',
-      time: '05:00 PM - 06:00 PM',
-      id: '#KC-89423',
-      status: 'Rejected'
-    }
-  ];
+  const [stats, setStats] = useState({
+    todays_bookings: 0,
+    pending_requests: 0,
+    confirmed_bookings: 0,
+    new_inquiries: 0
+  });
+
+  const [recentRequests, setRecentRequests] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await api.get('/admin/stats');
+        setStats(response.data);
+      } catch (error) {
+        console.error('Failed to fetch stats', error);
+      }
+    };
+    
+    const fetchRecentBookings = async () => {
+      try {
+        const response = await api.get('/admin/bookings');
+        setRecentRequests(response.data.slice(0, 5)); // First 5
+      } catch (error) {
+        console.error('Failed to fetch bookings', error);
+      }
+    };
+
+    fetchStats();
+    fetchRecentBookings();
+  }, []);
 
   return (
-    <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8 pb-20">
+    <div className="p-6 md:p-10 w-full space-y-8 pb-20">
       
-      {/* Header Section */}
-      <div>
-        <h1 className="text-3xl font-extrabold text-[#0f172a] tracking-tight mb-2">
-          Dashboard Overview
-        </h1>
-        <p className="text-slate-500 text-sm">
-          Monitor court schedules, manage incoming booking inquiries, and oversee operations in Karanavai East.
-        </p>
-      </div>
+
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -65,7 +57,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <h3 className="text-3xl font-extrabold text-[#0f172a]">12</h3>
+            <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.todays_bookings.toString().padStart(2, '0')}</h3>
             <span className="text-lg font-bold text-[#0f172a]">Sessions</span>
           </div>
         </div>
@@ -79,7 +71,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <h3 className="text-3xl font-extrabold text-[#0f172a]">08</h3>
+            <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.pending_requests.toString().padStart(2, '0')}</h3>
             <span className="text-lg font-bold text-[#0f172a]">Slots</span>
           </div>
         </div>
@@ -93,7 +85,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <h3 className="text-3xl font-extrabold text-[#0f172a]">24</h3>
+            <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.confirmed_bookings.toString().padStart(2, '0')}</h3>
             <span className="text-lg font-bold text-[#0f172a]">Slots</span>
           </div>
         </div>
@@ -107,7 +99,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <h3 className="text-3xl font-extrabold text-[#0f172a]">03</h3>
+            <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.new_inquiries.toString().padStart(2, '0')}</h3>
             <span className="text-lg font-bold text-[#0f172a]">Messages</span>
           </div>
         </div>
@@ -137,12 +129,23 @@ export default function AdminDashboardPage() {
             </thead>
             <tbody>
               {recentRequests.map((req, i) => (
-                <tr key={i} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-4 font-bold text-[#0f172a]">{req.name}</td>
-                  <td className="px-6 py-4 text-slate-500 font-medium">{req.mobile}</td>
-                  <td className="px-6 py-4 text-slate-500 font-medium">{req.date}</td>
-                  <td className="px-6 py-4 text-slate-500 font-medium">{req.time}</td>
-                  <td className="px-6 py-4 font-extrabold text-[#0f172a]">{req.id}</td>
+                <tr key={req.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <td className="px-6 py-4">
+                    {req.user ? (
+                      <span className="font-bold text-[#0f172a] block">{req.user.name}</span>
+                    ) : (
+                      <span className="font-bold text-[#0f172a] block">{req.customer_name || 'Walk-in'}</span>
+                    )}
+                    {req.booked_by && (
+                      <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wide block mt-0.5">
+                        By {req.booked_by.role}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-slate-500 font-medium">{req.user?.phone || req.customer_phone || '-'}</td>
+                  <td className="px-6 py-4 text-slate-500 font-medium">{req.booking_date}</td>
+                  <td className="px-6 py-4 text-slate-500 font-medium">{req.start_time} - {req.end_time}</td>
+                  <td className="px-6 py-4 font-extrabold text-[#0f172a]">#KC-{req.id}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-4">
                       {req.status === 'Pending' && (
@@ -154,18 +157,6 @@ export default function AdminDashboardPage() {
                       {req.status === 'Rejected' && (
                         <span className="text-red-600 bg-red-50 font-bold text-xs px-2.5 py-1 rounded-md w-[80px] text-center">Rejected</span>
                       )}
-                      
-                      <div className="flex flex-col gap-1 ml-4 w-16">
-                        <button className="bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded transition-colors flex items-center justify-center w-full">
-                          Confirm
-                        </button>
-                        <button className="bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded transition-colors flex items-center justify-center w-full">
-                          Reject
-                        </button>
-                        <button className="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded transition-colors flex items-center justify-center w-full">
-                          Cancel
-                        </button>
-                      </div>
                     </div>
                   </td>
                 </tr>
