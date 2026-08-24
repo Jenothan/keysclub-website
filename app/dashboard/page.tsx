@@ -1,10 +1,14 @@
+"use client";
+
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Calendar, Clock, MapPin, Search, List, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/store/authStore';
 
 export default function DashboardPage() {
+  const { user } = useAuthStore();
   const history = [
     {
       date: '24 Oct 2026',
@@ -61,7 +65,7 @@ export default function DashboardPage() {
         />
         <div>
           <h1 className="text-2xl font-extrabold text-[#0f172a] tracking-tight mb-2">
-            Welcome back, Reginod!
+            Welcome back, {user?.name ? user.name.split(' ')[0] : 'User'}!
           </h1>
           <p className="text-slate-500 text-body">
             Here are your current bookings and activities at Point Pedro.

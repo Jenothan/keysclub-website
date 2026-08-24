@@ -5,6 +5,9 @@ import Image from "next/image";
 import Sidebar from "@/components/Sidebar";
 import { LogOut, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useAuthStore } from "@/store/authStore";
+import { useRouter } from "next/navigation";
 
 export default function DashboardLayout({
   children,
@@ -12,9 +15,17 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { user, logout } = useAuthStore();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc]">
+    <ProtectedRoute allowedRoles={['user']}>
+      <div className="flex min-h-screen bg-[#f8fafc]">
       
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
@@ -52,8 +63,8 @@ export default function DashboardLayout({
             {/* Profile */}
             <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
               <div className="text-right hidden sm:flex flex-col justify-center">
-                <span className="font-extrabold text-[#0f172a] text-sm leading-tight mb-0.5">Reginod Alestra</span>
-                <span className="text-slate-500 text-xs font-medium leading-none">+94 77 123 4567</span>
+                <span className="font-extrabold text-[#0f172a] text-sm leading-tight mb-0.5">{user?.name}</span>
+                <span className="text-slate-500 text-xs font-medium leading-none">{user?.phone}</span>
               </div>
               <Image
                 src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
@@ -67,7 +78,7 @@ export default function DashboardLayout({
             <div className="hidden sm:block w-px h-8 bg-slate-200 mx-1"></div>
             
             {/* Logout */}
-            <button className="hidden sm:flex items-center gap-2 text-slate-500 hover:text-red-600 transition-colors text-sm font-bold">
+            <button onClick={handleLogout} className="hidden sm:flex items-center gap-2 text-slate-500 hover:text-red-600 transition-colors text-sm font-bold">
               <LogOut className="w-5 h-5" />
               <span>Logout</span>
             </button>
@@ -81,5 +92,6 @@ export default function DashboardLayout({
 
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

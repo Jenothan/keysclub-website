@@ -1,15 +1,20 @@
-import React from 'react';
+"use client";
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
 export default function SignUpPage() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-[#f8fafc] overflow-y-auto md:overflow-hidden">
+    <div className="flex flex-col md:flex-row h-[100dvh] bg-white md:bg-[#f8fafc] overflow-hidden">
       {/* Left Pane (Image Background) */}
-      <div className="relative w-full md:w-[45%] lg:w-[50%] bg-[#0f172a] flex flex-col justify-center px-8 md:px-12 lg:px-20 py-12 md:py-0 overflow-hidden shrink-0">
+      <div className="hidden md:flex relative w-full md:w-[45%] lg:w-[50%] bg-[#0f172a] flex-col justify-center px-8 md:px-12 lg:px-20 py-12 md:py-0 overflow-hidden shrink-0">
         {/* Background Image */}
         <div
           className="absolute inset-0 z-0"
@@ -26,10 +31,12 @@ export default function SignUpPage() {
           {/* Top Section */}
           <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-auto gap-4 pt-4 md:pt-10">
             {/* Back Button */}
-            <Link href="/" className="inline-flex items-center gap-2 text-slate-300 hover:text-white transition group">
-              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-              <span className="font-semibold text-body-sm">Back</span>
-            </Link>
+            <div className="pt-6 px-6 pb-2 md:p-0 md:mb-auto flex-1">
+              <Link href="/" className="inline-flex items-center gap-2 text-slate-300 hover:text-white transition group">
+                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                <span className="font-semibold text-body-sm">Back</span>
+              </Link>
+            </div>
 
             {/* Pill */}
             <div className="inline-block border border-yellow-500/80 rounded-full px-4 py-1.5">
@@ -75,12 +82,21 @@ export default function SignUpPage() {
       </div>
 
       {/* Right Pane (Form) */}
-      <div className="w-full md:w-[55%] lg:w-[50%] flex items-center justify-center p-6 md:p-8 lg:p-12 relative overflow-y-auto">
-        <div className="w-full max-w-140 bg-white rounded-2xl shadow-[0_0_20px_rgba(30,58,138,0.4)] p-6 md:p-8 lg:p-10 z-10 my-auto">
+      <div className="w-full h-full md:w-[55%] lg:w-[50%] flex flex-col p-0 md:p-8 lg:p-12 relative overflow-hidden">
+        
+        {/* Mobile Back Button (only visible on mobile, replacing the desktop one which is in the left pane) */}
+        <div className="md:hidden pt-6 px-6 pb-2 shrink-0">
+          <Link href="/" className="inline-flex items-center gap-2 text-slate-800 hover:text-slate-900 transition group">
+            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            <span className="font-bold text-body-sm">Back</span>
+          </Link>
+        </div>
 
-          <div className="mb-6">
-            <h2 className="text-title font-extrabold text-[#0f172a] mb-2 tracking-tight">Create Your Account</h2>
-            <p className="text-slate-500 text-body">Join KEYS Club and start booking badminton courts</p>
+        <div className="w-full flex-1 flex flex-col justify-center md:justify-start md:h-auto md:max-w-140 bg-white md:rounded-2xl md:shadow-[0_0_20px_rgba(30,58,138,0.4)] px-6 py-4 md:p-8 lg:p-10 z-10 md:m-auto relative overflow-y-auto md:overflow-visible">
+
+          <div className="mb-4 md:mb-6 shrink-0">
+            <h2 className="text-2xl md:text-title font-extrabold text-[#0f172a] mb-1.5 tracking-tight">Create Your Account</h2>
+            <p className="text-slate-500 text-sm md:text-body leading-snug">Join KEYS Club and start booking badminton courts</p>
           </div>
 
           <form className="space-y-4">
@@ -124,37 +140,55 @@ export default function SignUpPage() {
                 <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
                   Password
                 </label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  className="block w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-900 text-body-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder:text-slate-400"
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    className="block w-full px-4 py-2.5 pr-12 rounded-lg border border-slate-200 bg-white text-slate-900 text-body-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder:text-slate-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
 
               <div>
                 <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
                   Confirm Password
                 </label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  className="block w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-900 text-body-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder:text-slate-400"
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    className="block w-full px-4 py-2.5 pr-12 rounded-lg border border-slate-200 bg-white text-slate-900 text-body-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder:text-slate-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="pt-2">
+            <div className="pt-1">
               <Button
                 type="submit"
-                className="w-full h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-body"
+                className="w-full h-11 md:h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-sm md:text-body"
               >
                 Create Account
               </Button>
             </div>
           </form>
 
-          <div className="mt-8 text-center">
-            <p className="text-slate-500 text-body-sm">
+          <div className="mt-4 md:mt-8 text-center shrink-0">
+            <p className="text-slate-500 text-xs md:text-body-sm">
               Already have an account? <Link href="/login" className="text-blue-600 font-bold hover:underline">Login</Link>
             </p>
           </div>

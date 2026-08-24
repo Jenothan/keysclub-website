@@ -4,16 +4,22 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { Camera, Lock, Phone, CheckCircle2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/store/authStore';
+import api from '@/lib/axios';
+import { toast } from 'sonner';
 
 type PhoneFlowState = 'INITIAL' | 'OLD_OTP' | 'NEW_PHONE' | 'NEW_OTP' | 'SUCCESS';
 
 export default function ProfilePage() {
+  const { user } = useAuthStore();
   const [phoneState, setPhoneState] = useState<PhoneFlowState>('INITIAL');
-  const [currentPhone, setCurrentPhone] = useState('+94 77 123 4567');
+  const [currentPhone, setCurrentPhone] = useState(user?.phone || '');
   const [newPhoneInput, setNewPhoneInput] = useState('');
+  const [otpInput, setOtpInput] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Handlers for Phone OTP Flow
-  const handleStartPhoneChange = () => setPhoneState('OLD_OTP');
+  const handleStartPhoneChange = () => setPhoneState('NEW_PHONE');
   
   const handleVerifyOldOtp = (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,24 +27,51 @@ export default function ProfilePage() {
     setPhoneState('NEW_PHONE');
   };
 
-  const handleSendNewPhoneOtp = (e: React.FormEvent) => {
+  const handleSendNewPhoneOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPhoneState('NEW_OTP');
+    setIsSubmitting(true);
+    try {
+      await api.post('/user/phone/request-otp', {
+        purpose: 'new_phone_verify',
+        new_phone: newPhoneInput
+      });
+      setPhoneState('NEW_OTP');
+      toast.success('OTP sent successfully');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to send OTP');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleVerifyNewOtp = (e: React.FormEvent) => {
+  const handleVerifyNewOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentPhone(newPhoneInput);
-    setPhoneState('SUCCESS');
-    setTimeout(() => {
-      setPhoneState('INITIAL');
-      setNewPhoneInput('');
-    }, 3000);
+    setIsSubmitting(true);
+    try {
+      await api.post('/user/phone/verify-otp', {
+        purpose: 'new_phone_verify',
+        new_phone: newPhoneInput,
+        otp: otpInput
+      });
+      setCurrentPhone(newPhoneInput);
+      setPhoneState('SUCCESS');
+      toast.success('Phone number updated successfully');
+      setTimeout(() => {
+        setPhoneState('INITIAL');
+        setNewPhoneInput('');
+        setOtpInput('');
+      }, 3000);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Invalid OTP');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const cancelPhoneChange = () => {
     setPhoneState('INITIAL');
     setNewPhoneInput('');
+    setOtpInput('');
   };
 
   return (
@@ -76,8 +109,8 @@ export default function ProfilePage() {
               </div>
             </div>
             
-            <h3 className="text-xl font-extrabold text-slate-900 mb-1">Reginod Alestra</h3>
-            <p className="text-sm font-medium text-slate-500 mb-6">Member since 2026</p>
+            <h3 className="text-xl font-extrabold text-slate-900 mb-1">{user?.name}</h3>
+            <p className="text-sm font-medium text-slate-500 mb-6">Member since {user?.created_at ? new Date(user.created_at).getFullYear() : '2026'}</p>
             
             <button className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold px-6 py-2.5 rounded-lg transition-colors text-sm">
               Change Picture
@@ -118,24 +151,7 @@ export default function ProfilePage() {
               )}
 
               {phoneState === 'OLD_OTP' && (
-                <form onSubmit={handleVerifyOldOtp} className="space-y-4">
-                  <div className="flex items-start gap-3 bg-blue-50 text-blue-700 p-4 rounded-lg">
-                    <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                    <p className="text-sm font-medium">To securely change your number, please enter the OTP sent to <strong>{currentPhone}</strong>.</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Enter OTP</label>
-                    <input required type="text" placeholder="XXXXXX" className="w-full max-w-xs bg-white border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-blue-500 text-lg tracking-widest font-mono" />
-                  </div>
-                  <div className="flex gap-3">
-                    <button type="submit" className="bg-[#0f172a] hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-lg transition-colors text-sm">
-                      Verify OTP
-                    </button>
-                    <button type="button" onClick={cancelPhoneChange} className="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold px-6 py-2.5 rounded-lg transition-colors text-sm">
-                      Cancel
-                    </button>
-                  </div>
-                </form>
+                <div></div> // Bypassed step for logged-in user in this flow
               )}
 
               {phoneState === 'NEW_PHONE' && (
@@ -152,8 +168,8 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div className="flex gap-3">
-                    <button type="submit" className="bg-[#0f172a] hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-lg transition-colors text-sm">
-                      Send OTP
+                    <button type="submit" disabled={isSubmitting} className="bg-[#0f172a] hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-lg transition-colors text-sm">
+                      {isSubmitting ? 'Sending...' : 'Send OTP'}
                     </button>
                     <button type="button" onClick={cancelPhoneChange} className="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold px-6 py-2.5 rounded-lg transition-colors text-sm">
                       Cancel
@@ -170,11 +186,11 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-slate-700 mb-2">Enter OTP</label>
-                    <input required type="text" placeholder="XXXXXX" className="w-full max-w-xs bg-white border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-blue-500 text-lg tracking-widest font-mono" />
+                    <input required value={otpInput} onChange={(e) => setOtpInput(e.target.value)} type="text" placeholder="XXXX" className="w-full max-w-xs bg-white border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-blue-500 text-lg tracking-widest font-mono" />
                   </div>
                   <div className="flex gap-3">
-                    <button type="submit" className="bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold px-6 py-2.5 rounded-lg transition-colors text-sm shadow-sm">
-                      Verify & Save
+                    <button type="submit" disabled={isSubmitting} className="bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold px-6 py-2.5 rounded-lg transition-colors text-sm shadow-sm">
+                      {isSubmitting ? 'Verifying...' : 'Verify & Save'}
                     </button>
                     <button type="button" onClick={cancelPhoneChange} className="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold px-6 py-2.5 rounded-lg transition-colors text-sm">
                       Cancel

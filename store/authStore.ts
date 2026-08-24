@@ -9,6 +9,7 @@ export interface User {
   phone: string;
   email: string;
   role: Role;
+  created_at?: string;
 }
 
 interface AuthState {

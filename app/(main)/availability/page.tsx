@@ -28,7 +28,23 @@ export default function AvailabilityPage() {
         const dateStr = format(calendarDate, 'yyyy-MM-dd');
         // Defaulting court_id to 1 as per example, could be dynamic later
         const res = await api.get(`/availability?date=${dateStr}&court_id=1`);
-        setSlots(res.data);
+        
+        // Helper to format "HH:mm:ss" to "hh:mm a"
+        const formatTime = (timeStr: string) => {
+          if (!timeStr) return '';
+          const [hours, minutes] = timeStr.split(':');
+          const d = new Date();
+          d.setHours(parseInt(hours, 10));
+          d.setMinutes(parseInt(minutes, 10));
+          return format(d, 'hh:mm a');
+        };
+
+        const formattedSlots = res.data.map((slot: any) => ({
+          ...slot,
+          time: `${formatTime(slot.start_time)} - ${formatTime(slot.end_time)}`
+        }));
+        
+        setSlots(formattedSlots);
       } catch (error) {
         toast.error('Failed to load availability');
         setSlots([]); // clear on error

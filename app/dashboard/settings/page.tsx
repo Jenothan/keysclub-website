@@ -5,8 +5,10 @@ import Image from 'next/image';
 import { Pencil, Camera } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { useAuthStore } from '@/store/authStore';
 
 export default function UserSettingsPage() {
+  const { user } = useAuthStore();
   const [emailNotif, setEmailNotif] = useState(true);
   const [smsNotif, setSmsNotif] = useState(true);
   const [whatsappNotif, setWhatsappNotif] = useState(false);
@@ -32,15 +34,15 @@ export default function UserSettingsPage() {
           <div className="flex flex-col items-center mb-8">
             <div className="relative w-28 h-28 rounded-full bg-slate-100 border-4 border-white shadow-md overflow-hidden mb-4 group cursor-pointer">
               <div className="w-full h-full bg-blue-600 flex items-center justify-center text-white text-3xl font-bold">
-                RA
+                {user?.name?.charAt(0) || 'U'}
               </div>
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Camera className="w-6 h-6 text-white" />
               </div>
             </div>
-            <h2 className="text-xl font-extrabold text-[#0f172a] mb-2 tracking-tight">Reginod Alestra</h2>
+            <h2 className="text-xl font-extrabold text-[#0f172a] mb-2 tracking-tight">{user?.name}</h2>
             <span className="bg-amber-50 text-amber-600 font-extrabold text-[11px] px-3 py-1 rounded-full border border-amber-100">
-              Premium Club Member
+              {user?.role}
             </span>
           </div>
 
@@ -49,15 +51,15 @@ export default function UserSettingsPage() {
           <div className="space-y-5 mb-8">
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Full Name</p>
-              <p className="font-extrabold text-[#0f172a] text-sm">Reginod Alestra</p>
+              <p className="font-extrabold text-[#0f172a] text-sm">{user?.name}</p>
             </div>
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Mobile Number</p>
-              <p className="font-extrabold text-[#0f172a] text-sm">+94 77 123 4567</p>
+              <p className="font-extrabold text-[#0f172a] text-sm">{user?.phone}</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email Address</p>
-              <p className="font-extrabold text-[#0f172a] text-sm">reginod@email.com</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Role</p>
+              <p className="font-extrabold text-[#0f172a] text-sm">{user?.role}</p>
             </div>
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Member Since</p>

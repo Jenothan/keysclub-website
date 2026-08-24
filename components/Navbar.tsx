@@ -3,18 +3,26 @@
 import Link from "next/link";
 import React, { useState } from "react";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LogOut, Menu, X } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button"
 
 export default function Navbar() {
   const pathname = usePathname();
-  const isLoggedIn = true; // Mock authentication state set to true to show dashboard
+  const router = useRouter();
+  const { user, logout } = useAuthStore();
+  const isLoggedIn = !!user;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
 
   const navLinks = [
     { name: "Home", href: "/" },
-    ...(isLoggedIn ? [{ name: "Dashboard", href: "/dashboard" }] : []),
+    ...(isLoggedIn ? [{ name: "Dashboard", href: (user?.role === 'Admin' || user?.role === 'Super Admin') ? "/admin" : "/dashboard" }] : []),
     { name: "Availability", href: "/availability" },
     { name: "About Us", href: "/about" },
     { name: "Contact", href: "/contact" },
@@ -58,8 +66,8 @@ export default function Navbar() {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
                   <div className="text-right flex flex-col justify-center">
-                    <span className="font-extrabold text-[#0f172a] text-body leading-tight mb-0.5">Reginod Alestra</span>
-                    <span className="text-slate-500 text-body-sm font-medium leading-none">+94 77 123 4567</span>
+                    <span className="font-extrabold text-[#0f172a] text-body leading-tight mb-0.5">{user?.name}</span>
+                    <span className="text-slate-500 text-body-sm font-medium leading-none">{user?.phone}</span>
                   </div>
                   <Image
                     src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
@@ -73,7 +81,7 @@ export default function Navbar() {
                 <div className="w-px h-8 bg-slate-200 mx-1"></div>
                 
                 {/* Logout */}
-                <button className="flex items-center gap-2 text-slate-500 hover:text-red-600 transition-colors text-sm font-bold">
+                <button onClick={handleLogout} className="flex items-center gap-2 text-slate-500 hover:text-red-600 transition-colors text-sm font-bold">
                   <LogOut className="w-5 h-5" />
                   <span className="hidden lg:inline">Logout</span>
                 </button>
@@ -132,11 +140,11 @@ export default function Navbar() {
                     className="rounded-full object-cover border border-slate-200 shadow-sm"
                   />
                   <div className="flex flex-col">
-                    <span className="font-extrabold text-[#0f172a] text-body leading-tight">Reginod Alestra</span>
-                    <span className="text-slate-500 text-body-sm font-medium">+94 77 123 4567</span>
+                    <span className="font-extrabold text-[#0f172a] text-body leading-tight">{user?.name}</span>
+                    <span className="text-slate-500 text-body-sm font-medium">{user?.phone}</span>
                   </div>
                 </div>
-                <button className="flex items-center gap-2 text-red-600 hover:bg-red-50 transition-colors font-bold w-full px-4 py-3 rounded-lg text-left">
+                <button onClick={handleLogout} className="flex items-center gap-2 text-red-600 hover:bg-red-50 transition-colors font-bold w-full px-4 py-3 rounded-lg text-left">
                   <LogOut className="w-5 h-5" />
                   Logout
                 </button>

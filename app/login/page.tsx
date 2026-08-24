@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import api from '@/lib/axios';
@@ -15,6 +15,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { setAuth } = useAuthStore();
 
@@ -46,22 +47,24 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col-reverse md:flex-row h-screen bg-[#f8fafc] overflow-y-auto md:overflow-hidden">
+    <div className="flex flex-col-reverse md:flex-row h-[100dvh] bg-white md:bg-[#f8fafc] overflow-hidden">
 
       {/* Left Pane (Form) */}
-      <div className="w-full md:w-[55%] lg:w-[50%] flex flex-col p-6 md:p-8 lg:p-12 relative overflow-y-auto">
+      <div className="w-full h-full md:w-[55%] lg:w-[50%] flex flex-col p-0 md:p-8 lg:p-12 relative overflow-hidden">
 
         {/* Back Button */}
-        <Link href="/" className="inline-flex items-center gap-2 text-slate-800 hover:text-slate-900 transition group mb-8 md:absolute md:top-10 md:left-12 z-10">
-          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-          <span className="font-bold text-body-sm">Back</span>
-        </Link>
+        <div className="pt-6 px-6 pb-2 md:p-0 md:absolute md:top-10 md:left-12 z-10 shrink-0">
+          <Link href="/" className="inline-flex items-center gap-2 text-slate-800 hover:text-slate-900 transition group">
+            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            <span className="font-bold text-body-sm">Back</span>
+          </Link>
+        </div>
 
-        <div className="w-full max-w-120 bg-white rounded-2xl shadow-[0_0_20px_rgba(30,58,138,0.4)] p-8 md:p-10 z-10 m-auto relative">
+        <div className="w-full flex-1 flex flex-col justify-center md:justify-start md:h-auto md:max-w-120 bg-white md:rounded-2xl md:shadow-[0_0_20px_rgba(30,58,138,0.4)] px-6 py-4 md:p-10 z-10 md:m-auto relative overflow-y-auto md:overflow-visible">
 
-          <div className="mb-8">
-            <h2 className="text-title font-extrabold text-[#0f172a] mb-2 tracking-tight">Welcome Back</h2>
-            <p className="text-slate-500 text-body">Login to manage your badminton bookings and details</p>
+          <div className="mb-6 md:mb-8 shrink-0">
+            <h2 className="text-2xl md:text-title font-extrabold text-[#0f172a] mb-1.5 tracking-tight">Welcome Back</h2>
+            <p className="text-slate-500 text-sm md:text-body leading-snug">Login to manage your badminton bookings and details</p>
           </div>
 
           <form className="space-y-6" onSubmit={handleLogin}>
@@ -83,14 +86,23 @@ export default function LoginPage() {
               <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
                 Password
               </label>
-              <Input
-                type="password"
-                placeholder="••••••••"
-                className="h-12 bg-white text-body-sm"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  className="h-12 bg-white text-body-sm pr-12"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
 
             <div className="flex justify-start">
@@ -99,20 +111,20 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <div className="pt-2">
+            <div className="pt-1">
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-body"
+                className="w-full h-11 md:h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-sm md:text-body"
               >
                 {isLoading ? 'Logging in...' : 'Login'}
               </Button>
             </div>
           </form>
 
-          <div className="my-8 flex items-center">
+          <div className="my-6 md:my-8 flex items-center shrink-0">
             <div className="grow border-t border-slate-100"></div>
-            <span className="px-4 text-caption text-slate-400">or</span>
+            <span className="px-4 text-xs md:text-caption text-slate-400">or</span>
             <div className="grow border-t border-slate-100"></div>
           </div>
 
@@ -126,7 +138,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right Pane (Image Background) */}
-      <div className="relative w-full md:w-[45%] lg:w-[50%] bg-[#0f172a] flex flex-col justify-center px-8 md:px-12 lg:px-20 py-12 md:py-0 overflow-hidden shrink-0">
+      <div className="hidden md:flex relative w-full md:w-[45%] lg:w-[50%] bg-[#0f172a] flex-col justify-center px-8 md:px-12 lg:px-20 py-12 md:py-0 overflow-hidden shrink-0">
         {/* Background Image */}
         <div
           className="absolute inset-0 z-0"
