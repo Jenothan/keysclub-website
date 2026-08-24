@@ -1,7 +1,9 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Phone, Mail } from "lucide-react";
+import MapPin from '@mui/icons-material/LocationOn';
+import Phone from '@mui/icons-material/Phone';
+import Mail from '@mui/icons-material/Email';
 
 const Facebook = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -100,9 +102,6 @@ export default function Footer() {
               </a>
               <a href="#" className="text-slate-400 hover:text-white transition">
                 <Instagram className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-slate-400 hover:text-white transition">
-                <Twitter className="w-5 h-5" />
               </a>
             </div>
           </div>

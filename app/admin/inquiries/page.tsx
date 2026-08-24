@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import { LayoutGrid, MoreVertical, MessageSquare } from 'lucide-react';
+import LayoutGrid from '@mui/icons-material/GridView';
+import MoreVertical from '@mui/icons-material/MoreVert';
+import MessageSquare from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import { Input } from '@/components/ui/input';
 
 export default function AdminInquiriesPage() {

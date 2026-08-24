@@ -1,6 +1,10 @@
 import React from "react";
 import Image from "next/image";
-import { Calendar, Clock, ShieldCheck, XCircle, MessageSquare } from "lucide-react";
+import Calendar from '@mui/icons-material/CalendarMonth';
+import Clock from '@mui/icons-material/AccessTime';
+import ShieldCheck from '@mui/icons-material/GppGood';
+import XCircle from '@mui/icons-material/Cancel';
+import MessageSquare from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import { Button } from "@/components/ui/button"
 
 export default function Home() {

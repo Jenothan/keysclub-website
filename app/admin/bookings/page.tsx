@@ -1,7 +1,9 @@
 "use client";
 
 import React from 'react';
-import { Calendar, LayoutGrid, MoreVertical } from 'lucide-react';
+import Calendar from '@mui/icons-material/CalendarMonth';
+import LayoutGrid from '@mui/icons-material/GridView';
+import MoreVertical from '@mui/icons-material/MoreVert';
 import { Input } from '@/components/ui/input';
 
 export default function AdminBookingsPage() {

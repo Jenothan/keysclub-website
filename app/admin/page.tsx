@@ -1,5 +1,8 @@
 import React from 'react';
-import { Clock, Calendar, ShieldCheck, MessageSquare } from 'lucide-react';
+import Clock from '@mui/icons-material/AccessTime';
+import Calendar from '@mui/icons-material/CalendarMonth';
+import ShieldCheck from '@mui/icons-material/GppGood';
+import MessageSquare from '@mui/icons-material/ChatBubbleOutlineOutlined';
 
 export default function AdminDashboardPage() {
   const recentRequests = [

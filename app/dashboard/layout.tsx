@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Sidebar from "@/components/Sidebar";
-import { LogOut, Menu } from "lucide-react";
+import LogOut from '@mui/icons-material/Logout';
+import Menu from '@mui/icons-material/Menu';
 import { cn } from "@/lib/utils";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuthStore } from "@/store/authStore";

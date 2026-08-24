@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import AdminSidebar from "@/components/AdminSidebar";
-import { LogOut, Menu } from "lucide-react";
+import LogOut from '@mui/icons-material/Logout';
+import Menu from '@mui/icons-material/Menu';
 import { cn } from "@/lib/utils";
 
 import { useAuthStore } from "@/store/authStore";

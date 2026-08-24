@@ -1,7 +1,8 @@
 "use client";
 
 import React from 'react';
-import { LayoutGrid, MoreVertical } from 'lucide-react';
+import LayoutGrid from '@mui/icons-material/GridView';
+import MoreVertical from '@mui/icons-material/MoreVert';
 import { Input } from '@/components/ui/input';
 
 export default function AdminUsersPage() {

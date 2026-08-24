@@ -1,7 +1,10 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Phone, Mail, MapPin, MessageCircle } from 'lucide-react';
+import Phone from '@mui/icons-material/Phone';
+import Mail from '@mui/icons-material/Email';
+import MapPin from '@mui/icons-material/LocationOn';
+import MessageCircle from '@mui/icons-material/Chat';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { submitContactForm } from '@/app/actions/contact';

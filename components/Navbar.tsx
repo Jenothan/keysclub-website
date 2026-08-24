@@ -4,7 +4,9 @@ import Link from "next/link";
 import React, { useState } from "react";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Menu, X } from "lucide-react";
+import LogOut from '@mui/icons-material/Logout';
+import Menu from '@mui/icons-material/Menu';
+import X from '@mui/icons-material/Close';
 import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button"
 
@@ -24,6 +26,7 @@ export default function Navbar() {
     { name: "Home", href: "/" },
     ...(isLoggedIn ? [{ name: "Dashboard", href: (user?.role === 'Admin' || user?.role === 'Super Admin') ? "/admin" : "/dashboard" }] : []),
     { name: "Availability", href: "/availability" },
+    { name: "Pricing", href: "/pricing" },
     { name: "About Us", href: "/about" },
     { name: "Contact", href: "/contact" },
   ];

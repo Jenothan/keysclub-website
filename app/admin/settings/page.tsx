@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Camera, Save, Phone, Mail, MapPin, DollarSign, Clock, Pencil } from 'lucide-react';
+import Camera from '@mui/icons-material/CameraAlt';
+import Save from '@mui/icons-material/Save';
+import Phone from '@mui/icons-material/Phone';
+import Mail from '@mui/icons-material/Email';
+import MapPin from '@mui/icons-material/LocationOn';
+import DollarSign from '@mui/icons-material/AttachMoney';
+import Clock from '@mui/icons-material/AccessTime';
+import Pencil from '@mui/icons-material/Edit';
 import { Input } from '@/components/ui/input';
 
 export default function AdminSettingsPage() {

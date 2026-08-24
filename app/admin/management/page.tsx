@@ -2,7 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import { ShieldAlert, Plus, Trash2, ShieldCheck, ArrowLeft, KeyRound, CheckCircle2 } from 'lucide-react';
+import ShieldAlert from '@mui/icons-material/GppBad';
+import Plus from '@mui/icons-material/Add';
+import Trash2 from '@mui/icons-material/Delete';
+import ShieldCheck from '@mui/icons-material/GppGood';
+import ArrowLeft from '@mui/icons-material/ArrowBack';
+import KeyRound from '@mui/icons-material/VpnKey';
+import CheckCircle2 from '@mui/icons-material/CheckCircleOutlined';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { OTPInput } from '@/components/OTPInput';

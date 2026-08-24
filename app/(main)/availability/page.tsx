@@ -1,6 +1,8 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import ChevronLeft from '@mui/icons-material/ChevronLeft';
+import ChevronRight from '@mui/icons-material/ChevronRight';
+import Clock from '@mui/icons-material/AccessTime';
 import { useRouter } from 'next/navigation';
 import BookingModal from '@/components/BookingModal';
 import { Calendar } from "@/components/ui/calendar"

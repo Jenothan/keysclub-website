@@ -4,7 +4,15 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Ticket, Users, CalendarDays, MessageSquare, Settings, X, Shield, Globe } from 'lucide-react';
+import LayoutDashboard from '@mui/icons-material/Dashboard';
+import Ticket from '@mui/icons-material/ConfirmationNumber';
+import Users from '@mui/icons-material/Group';
+import CalendarDays from '@mui/icons-material/CalendarToday';
+import MessageSquare from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import Settings from '@mui/icons-material/Settings';
+import X from '@mui/icons-material/Close';
+import Shield from '@mui/icons-material/Security';
+import Globe from '@mui/icons-material/Language';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
 

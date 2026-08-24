@@ -4,7 +4,11 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, CalendarDays, Ticket, Settings, X } from 'lucide-react';
+import LayoutDashboard from '@mui/icons-material/Dashboard';
+import CalendarDays from '@mui/icons-material/CalendarToday';
+import Ticket from '@mui/icons-material/ConfirmationNumber';
+import Settings from '@mui/icons-material/Settings';
+import X from '@mui/icons-material/Close';
 import { cn } from '@/lib/utils';
 
 export default function Sidebar({ onClose }: { onClose?: () => void }) {

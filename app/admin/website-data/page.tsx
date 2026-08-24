@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import { ShieldAlert, Globe, Save } from 'lucide-react';
+import ShieldAlert from '@mui/icons-material/GppBad';
+import Globe from '@mui/icons-material/Language';
+import Save from '@mui/icons-material/Save';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
 

@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Clock } from 'lucide-react';
+import Clock from '@mui/icons-material/AccessTime';
 import { useRouter } from 'next/navigation';
 import BookingModal from '@/components/BookingModal';
 import { Calendar } from "@/components/ui/calendar"

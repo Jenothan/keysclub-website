@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { Pencil, Camera } from 'lucide-react';
+import Pencil from '@mui/icons-material/Edit';
+import Camera from '@mui/icons-material/CameraAlt';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { useAuthStore } from '@/store/authStore';

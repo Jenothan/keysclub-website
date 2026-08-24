@@ -2,7 +2,11 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { Camera, Lock, Phone, CheckCircle2, AlertCircle } from 'lucide-react';
+import Camera from '@mui/icons-material/CameraAlt';
+import Lock from '@mui/icons-material/Lock';
+import Phone from '@mui/icons-material/Phone';
+import CheckCircle2 from '@mui/icons-material/CheckCircleOutlined';
+import AlertCircle from '@mui/icons-material/ErrorOutlineOutlined';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/axios';

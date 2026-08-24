@@ -1,19 +1,17 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Trophy,
-  Users,
-  Target,
-  Heart,
-  Calendar,
-  Medal,
-  Dumbbell,
-  CheckCircle2,
-  Clock,
-  ShieldCheck,
-  Activity
-} from "lucide-react";
+import Trophy from '@mui/icons-material/EmojiEvents';
+import Users from '@mui/icons-material/Group';
+import Target from '@mui/icons-material/Adjust';
+import Heart from '@mui/icons-material/Favorite';
+import Calendar from '@mui/icons-material/CalendarMonth';
+import Medal from '@mui/icons-material/WorkspacePremium';
+import Dumbbell from '@mui/icons-material/FitnessCenter';
+import CheckCircle2 from '@mui/icons-material/CheckCircleOutlined';
+import Clock from '@mui/icons-material/AccessTime';
+import ShieldCheck from '@mui/icons-material/GppGood';
+import Timeline from '@mui/icons-material/Timeline';
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
@@ -335,7 +333,7 @@ export default function AboutPage() {
               <p className="text-sm text-slate-500 leading-relaxed">Creating an inclusive and supportive sporting environment.</p>
             </div>
             <div className="bg-white p-6 rounded-xl border border-gray-100 hover:border-yellow-400 flex flex-col items-center shadow-sm hover:shadow-lg transition-all">
-              <Activity className="w-8 h-8 text-blue-600 mb-4" />
+              <Timeline className="w-8 h-8 text-blue-600 mb-4" />
               <h4 className="font-bold text-[#0f172a] mb-2">Healthy Living</h4>
               <p className="text-sm text-slate-500 leading-relaxed">Promoting an active and healthy lifestyle through sports.</p>
             </div>

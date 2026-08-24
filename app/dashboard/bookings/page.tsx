@@ -1,7 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, Clock, MapPin, Search, Filter } from 'lucide-react';
+import Calendar from '@mui/icons-material/CalendarMonth';
+import Clock from '@mui/icons-material/AccessTime';
+import MapPin from '@mui/icons-material/LocationOn';
+import Search from '@mui/icons-material/Search';
+import Filter from '@mui/icons-material/FilterList';
 import { cn } from '@/lib/utils';
 
 export default function MyBookingsPage() {

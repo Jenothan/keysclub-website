@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Check, ArrowLeft } from 'lucide-react';
+import Check from '@mui/icons-material/Check';
+import ArrowLeft from '@mui/icons-material/ArrowBack';
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
