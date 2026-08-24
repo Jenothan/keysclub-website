@@ -1,9 +1,10 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Phone, Mail, MapPin, MessageCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { submitContactForm } from '@/app/actions/contact';
 
 const Facebook = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -20,6 +21,24 @@ const Instagram = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export default function ContactPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
+
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setSubmitMessage("");
+
+    const formData = new FormData(event.currentTarget);
+    const response = await submitContactForm(formData);
+
+    setIsSubmitting(false);
+    if (response.success) {
+      setSubmitMessage(response.message);
+      (event.target as HTMLFormElement).reset();
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 py-16">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-0 space-y-12">
@@ -98,70 +117,51 @@ export default function ContactPage() {
           <div className="lg:col-span-8 bg-white rounded-2xl p-8 border border-slate-100 shadow-sm">
             <h2 className="text-xl font-extrabold text-[#0f172a] mb-8 tracking-tight">Send an Inquiry</h2>
             
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+            {submitMessage && (
+              <div className="mb-6 p-4 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-bold border border-emerald-100">
+                {submitMessage}
+              </div>
+            )}
+
+            <form className="space-y-6" onSubmit={onSubmit}>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-[#0f172a]">Full Name</label>
-                  <Input placeholder="E.g., Ashan Perera" className="h-11 bg-slate-50/50" />
+                  <Input name="name" required placeholder="E.g., Ashan Perera" className="h-11 bg-slate-50/50" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-[#0f172a]">Mobile Number</label>
-                  <Input placeholder="E.g., 771234567" className="h-11 bg-slate-50/50" />
+                  <Input name="mobile" required placeholder="E.g., 771234567" className="h-11 bg-slate-50/50" />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-[#0f172a]">Email Address</label>
-                <Input placeholder="E.g., ashan@example.com" type="email" className="h-11 bg-slate-50/50" />
+                <Input name="email" required placeholder="E.g., ashan@example.com" type="email" className="h-11 bg-slate-50/50" />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-[#0f172a]">Inquiry Type</label>
-                <select className="flex h-11 w-full rounded-md border border-input bg-slate-50/50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none">
-                  <option>General Inquiry</option>
-                  <option>Hosting Packages</option>
-                  <option>Full-day Bookings</option>
-                  <option>Sponsorships</option>
+                <label className="text-xs font-bold text-[#0f172a]">Subject</label>
+                <select name="subject" className="flex h-11 w-full rounded-md border border-input bg-slate-50/50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none">
+                  <option>Tournament</option>
+                  <option>Full Day Court Booking</option>
+                  <option>Others</option>
                 </select>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-[#0f172a]">Preferred Date</label>
-                  <Input placeholder="DD / MM / YYYY" className="h-11 bg-slate-50/50" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-[#0f172a]">Preferred Start Time</label>
-                  <Input placeholder="E.g., 08:00 AM" className="h-11 bg-slate-50/50" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-[#0f172a]">Preferred End Time</label>
-                  <Input placeholder="E.g., 05:00 PM" className="h-11 bg-slate-50/50" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-[#0f172a]">Number of Participants</label>
-                  <Input placeholder="E.g., 40" className="h-11 bg-slate-50/50" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-[#0f172a]">Organization/Club Name <span className="text-slate-400 font-normal">(Optional)</span></label>
-                  <Input placeholder="E.g., Point Pedro Sports Club" className="h-11 bg-slate-50/50" />
-                </div>
               </div>
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-[#0f172a]">Message/Additional Requirements</label>
                 <textarea 
+                  name="message"
+                  required
                   className="flex w-full rounded-md border border-input bg-slate-50/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[120px]" 
                   placeholder="Outline any custom equipment, boards, umpire needs or schedule preferences..."
                 />
               </div>
 
-              <Button className="w-full h-12 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold text-sm transition-colors rounded-lg">
-                Submit Inquiry
+              <Button disabled={isSubmitting} className="w-full h-12 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold text-sm transition-colors rounded-lg">
+                {isSubmitting ? "Submitting..." : "Submit Inquiry"}
               </Button>
             </form>
 

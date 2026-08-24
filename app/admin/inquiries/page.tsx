@@ -1,0 +1,202 @@
+"use client";
+
+import React, { useState } from 'react';
+import { LayoutGrid, MoreVertical, MessageSquare } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+
+export default function AdminInquiriesPage() {
+  const [subjectFilter, setSubjectFilter] = useState('All Subjects');
+
+  const allInquiries = [
+    {
+      id: 'INQ-1042',
+      name: 'Ashan Perera',
+      mobile: '077 123 4567',
+      subject: 'Tournament',
+      date: '24 Oct 2026',
+      message: 'Looking to host a local community tournament with 32 teams over the weekend.',
+      status: 'Unread'
+    },
+    {
+      id: 'INQ-1043',
+      name: 'Point Pedro Sports Club',
+      mobile: '071 987 6543',
+      subject: 'Full Day Court Booking',
+      date: '23 Oct 2026',
+      message: 'We need the court for a full day training camp next month.',
+      status: 'Responded'
+    },
+    {
+      id: 'INQ-1044',
+      name: 'Kamil De Silva',
+      mobile: '076 543 2109',
+      subject: 'Others',
+      date: '20 Oct 2026',
+      message: 'Do you offer monthly subscription packages?',
+      status: 'Unread'
+    },
+    {
+      id: 'INQ-1045',
+      name: 'Jaffna Kings Academy',
+      mobile: '075 111 2222',
+      subject: 'Tournament',
+      date: '15 Oct 2026',
+      message: 'Inquiring about hosting an under-19 regional tournament.',
+      status: 'Responded'
+    }
+  ];
+
+  const filteredInquiries = subjectFilter === 'All Subjects' 
+    ? allInquiries 
+    : allInquiries.filter(i => i.subject === subjectFilter);
+
+  return (
+    <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8 pb-20 min-h-screen">
+      
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-extrabold text-[#0f172a] tracking-tight mb-2">
+          Contact Inquiries
+        </h1>
+        <p className="text-slate-500 text-sm">
+          Manage messages, tournament requests, and full-day booking inquiries from the website.
+        </p>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center">
+        
+        <div className="relative flex-1 w-full">
+          <LayoutGrid className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Input 
+            placeholder="Search Name or ID..." 
+            className="pl-12 h-12 bg-white border-slate-200 focus:border-blue-500 w-full font-medium"
+          />
+        </div>
+
+        <div className="relative flex-1 w-full">
+          <select 
+            value={subjectFilter}
+            onChange={(e) => setSubjectFilter(e.target.value)}
+            className="h-12 w-full appearance-none bg-white border border-slate-200 rounded-md pl-4 pr-10 text-sm font-medium text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="All Subjects">All Subjects</option>
+            <option value="Tournament">Tournament</option>
+            <option value="Full Day Court Booking">Full Day Court Booking</option>
+            <option value="Others">Others</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </div>
+        </div>
+
+        <div className="relative flex-1 w-full">
+          <select className="h-12 w-full appearance-none bg-white border border-slate-200 rounded-md pl-4 pr-10 text-sm font-medium text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+            <option>All Statuses</option>
+            <option>Unread</option>
+            <option>Responded</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </div>
+        </div>
+
+        <button className="bg-[#0f172a] hover:bg-[#1e293b] text-white font-bold text-sm h-12 px-8 rounded-md transition-colors w-full md:w-auto shrink-0 shadow-md">
+          Apply Filters
+        </button>
+        
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col">
+        <div className="overflow-x-auto p-4 md:p-6 pb-0">
+          <table className="w-full text-sm text-left">
+            <thead className="text-xs font-extrabold text-slate-600 bg-slate-50/80">
+              <tr>
+                <th className="px-6 py-4 rounded-l-lg">Sender Details</th>
+                <th className="px-6 py-4">Inquiry ID</th>
+                <th className="px-6 py-4">Subject</th>
+                <th className="px-6 py-4">Message Preview</th>
+                <th className="px-6 py-4">Date</th>
+                <th className="px-6 py-4 text-center">Status</th>
+                <th className="px-4 py-4 rounded-r-lg"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredInquiries.length > 0 ? (
+                filteredInquiries.map((inq, i) => (
+                  <tr key={i} className={`hover:bg-slate-50/50 transition-colors group ${inq.status === 'Unread' ? 'bg-blue-50/30' : ''}`}>
+                    <td className="px-6 py-5">
+                      <p className="font-extrabold text-[#0f172a]">{inq.name}</p>
+                      <p className="text-slate-400 text-xs mt-0.5 font-medium">{inq.mobile}</p>
+                    </td>
+                    <td className="px-6 py-5 font-extrabold text-[#0f172a]">{inq.id}</td>
+                    <td className="px-6 py-5">
+                      <span className="bg-slate-100 text-slate-600 font-bold text-[10px] px-2.5 py-1 rounded-md border border-slate-200">
+                        {inq.subject}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5 text-slate-500 font-medium max-w-[200px] truncate">
+                      {inq.message}
+                    </td>
+                    <td className="px-6 py-5 text-slate-500 font-medium">{inq.date}</td>
+                    <td className="px-6 py-5 text-center">
+                      {inq.status === 'Unread' ? (
+                        <span className="text-blue-600 bg-blue-50 border border-blue-100 font-extrabold text-[11px] px-3 py-1.5 rounded-md">Unread</span>
+                      ) : (
+                        <span className="text-[#10b981] bg-emerald-50 border border-emerald-100 font-extrabold text-[11px] px-3 py-1.5 rounded-md">Responded</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-5 w-24">
+                      {inq.status === 'Unread' ? (
+                        <button className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-extrabold px-3 py-1.5 rounded transition-colors text-center w-full tracking-wide">
+                          Reply
+                        </button>
+                      ) : (
+                        <div className="flex justify-center">
+                          <button className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
+                            <MoreVertical className="w-5 h-5" />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="px-6 py-10 text-center text-slate-500 font-medium">
+                    <div className="flex flex-col items-center justify-center">
+                      <MessageSquare className="w-8 h-8 text-slate-300 mb-3" />
+                      <p>No inquiries found for the selected subject.</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-4 border-t border-slate-100 p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="text-slate-500 text-xs font-bold">
+            Showing {filteredInquiries.length} inquiries
+          </div>
+          
+          <div className="flex items-center gap-1.5">
+            <button className="px-3 py-1.5 border border-slate-200 text-slate-500 text-xs font-bold rounded-md hover:bg-slate-50 transition-colors disabled:opacity-50" disabled>
+              Previous
+            </button>
+            <button className="w-7 h-7 flex items-center justify-center bg-blue-600 text-white text-xs font-bold rounded-md shadow-sm">
+              1
+            </button>
+            <button className="px-3 py-1.5 border border-slate-200 text-slate-500 text-xs font-bold rounded-md hover:bg-slate-50 transition-colors disabled:opacity-50" disabled>
+              Next
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  );
+}

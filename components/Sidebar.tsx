@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, CalendarDays, Ticket, User, X } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Ticket, Settings, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
@@ -27,15 +27,29 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
       icon: Ticket
     },
     {
-      name: 'Profile',
-      href: '/dashboard/profile',
-      icon: User
+      name: 'Settings',
+      href: '/dashboard/settings',
+      icon: Settings
     }
   ];
 
   return (
-    <div className="w-64 bg-[#0f172a] text-white flex flex-col h-screen sticky top-0 shadow-xl">
-      {/* Sidebar Header with Logo */}
+    <div className="relative w-64 text-white flex flex-col h-screen sticky top-0 shadow-xl overflow-hidden">
+      {/* Background Image & Overlay */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/about-us.avif"
+          alt="Sidebar Background"
+          fill
+          className="object-cover object-center"
+          priority
+        />
+        <div className="absolute inset-0 bg-[#0f172a]/60" />
+      </div>
+
+      {/* Sidebar Content */}
+      <div className="relative z-10 flex flex-col h-full w-full">
+        {/* Sidebar Header with Logo */}
       <div className="flex items-center justify-between px-6 py-6 border-b border-white/10">
         <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
           <Image
@@ -84,7 +98,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
           );
         })}
       </div>
-
+      </div>
     </div>
   );
 }

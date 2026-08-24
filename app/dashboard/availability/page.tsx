@@ -11,7 +11,7 @@ export default function DashboardAvailabilityPage() {
   const isLoggedIn = true; // Mock authentication state
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string; court: string } | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null);
   const [calendarDate, setCalendarDate] = useState<Date | undefined>(new Date());
 
   const handleBookNow = (time: string) => {
@@ -20,8 +20,7 @@ export default function DashboardAvailabilityPage() {
     } else {
       setSelectedSlot({
         date: calendarDate ? format(calendarDate, "EEEE, dd MMMM yyyy") : "No date selected",
-        time: time,
-        court: 'Court A - Professional Mat'
+        time: time
       });
       setIsModalOpen(true);
     }

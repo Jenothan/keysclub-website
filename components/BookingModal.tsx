@@ -3,6 +3,7 @@ import { Check, ArrowLeft } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { OTPInput } from "@/components/OTPInput";
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -10,50 +11,12 @@ interface BookingModalProps {
   selectedSlot: {
     date: string;
     time: string;
-    court: string;
   } | null;
 }
 
 export default function BookingModal({ isOpen, onClose, selectedSlot }: BookingModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  if (!isOpen) return null;
-
-  const handleOtpChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
-    
-    const val = value.slice(-1);
-    const newOtp = [...otp];
-    newOtp[index] = val;
-    setOtp(newOtp);
-
-    if (val && index < 5) {
-      otpRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, 6);
-    if (!pastedData) return;
-    
-    const newOtp = [...otp];
-    for (let i = 0; i < pastedData.length; i++) {
-      if (i < 6) newOtp[i] = pastedData[i];
-    }
-    setOtp(newOtp);
-    
-    const focusIndex = Math.min(pastedData.length, 5);
-    otpRefs.current[focusIndex]?.focus();
-  };
+  const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
 
   const steps = [
     { id: 1, name: 'Your Details' },
@@ -173,24 +136,7 @@ export default function BookingModal({ isOpen, onClose, selectedSlot }: BookingM
               </p>
 
               <div className="space-y-8">
-                <div className="flex justify-center gap-2 sm:gap-3">
-                  {otp.map((val, i) => (
-                    <input
-                      key={i}
-                      ref={(el) => { otpRefs.current[i] = el; }}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={val}
-                      onChange={(e) => handleOtpChange(i, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                      onPaste={handleOtpPaste}
-                      className={`w-10 h-12 sm:w-12 sm:h-14 rounded-lg text-center text-lg font-bold border transition-all focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 ${
-                        val ? 'border-blue-500 text-[#0f172a] bg-white' : 'border-slate-200 bg-slate-50/50 text-[#0f172a]'
-                      }`}
-                    />
-                  ))}
-                </div>
+                <OTPInput length={6} otp={otp} setOtp={setOtp} />
 
                 <Button 
                   onClick={handleNext}
@@ -225,10 +171,6 @@ export default function BookingModal({ isOpen, onClose, selectedSlot }: BookingM
                   <div className="flex justify-between items-center text-body-sm">
                     <span className="text-slate-500">Time</span>
                     <span className="font-semibold text-[#0f172a]">{selectedSlot?.time || '06:00 PM - 07:00 PM'}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-body-sm">
-                    <span className="text-slate-500">Court</span>
-                    <span className="font-semibold text-[#0f172a]">{selectedSlot?.court || 'Court A - Professional Mat'}</span>
                   </div>
                   <div className="flex justify-between items-center text-body-sm">
                     <span className="text-slate-500">Name</span>
@@ -283,13 +225,9 @@ export default function BookingModal({ isOpen, onClose, selectedSlot }: BookingM
                     <span className="text-slate-500">Date</span>
                     <span className="font-semibold text-[#0f172a]">{selectedSlot?.date || 'Tuesday, 27 October 2026'}</span>
                   </div>
-                  <div className="flex justify-between items-center text-body-sm">
+                  <div className="flex justify-between items-center text-body-sm pb-4 border-b border-slate-200">
                     <span className="text-slate-500">Time</span>
                     <span className="font-semibold text-[#0f172a]">{selectedSlot?.time || '06:00 PM - 07:00 PM'}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-body-sm pb-4 border-b border-slate-200">
-                    <span className="text-slate-500">Court</span>
-                    <span className="font-semibold text-[#0f172a]">{selectedSlot?.court || 'Court A'}</span>
                   </div>
                   <div className="flex justify-between items-center text-body-sm pt-1">
                     <span className="text-slate-500">Status</span>

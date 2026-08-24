@@ -11,14 +11,12 @@ export default function MyBookingsPage() {
   const upcomingBookings = [
     {
       id: '#KC-89102',
-      court: 'Court 01 (National Standard)',
       date: '24 Oct 2026',
       time: '05:00 PM - 06:00 PM',
       status: 'Confirmed'
     },
     {
       id: '#KC-88741',
-      court: 'Court 02 (Premium Mat)',
       date: '20 Oct 2026',
       time: '07:00 PM - 08:00 PM',
       status: 'Pending'
@@ -28,14 +26,12 @@ export default function MyBookingsPage() {
   const pastBookings = [
     {
       id: '#KC-87241',
-      court: 'Court 03 (Practice Mat)',
       date: '10 Oct 2026',
       time: '04:00 PM - 05:00 PM',
       status: 'Completed'
     },
     {
       id: '#KC-86102',
-      court: 'Court 01 (National Standard)',
       date: '05 Oct 2026',
       time: '06:00 PM - 08:00 PM',
       status: 'Cancelled'
@@ -68,7 +64,7 @@ export default function MyBookingsPage() {
             My Bookings
           </h1>
           <p className="text-slate-500 text-body">
-            View and manage your court reservations and history.
+            View and manage your reservations and history.
           </p>
         </div>
       </div>
@@ -105,7 +101,7 @@ export default function MyBookingsPage() {
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
               type="text" 
-              placeholder="Search booking ID or court..." 
+              placeholder="Search booking ID..." 
               className="w-full bg-slate-50 border border-slate-200 text-sm rounded-lg pl-9 pr-4 py-2.5 outline-none focus:border-blue-500 transition-colors"
             />
           </div>
@@ -140,7 +136,7 @@ export default function MyBookingsPage() {
                         {booking.status}
                       </span>
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900">{booking.court}</h3>
+                    <h3 className="text-lg font-bold text-slate-900">Badminton Session</h3>
                     
                     <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-500">
                       <div className="flex items-center gap-1.5">

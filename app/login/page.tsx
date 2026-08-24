@@ -1,11 +1,38 @@
-import React from 'react';
+"use client";
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [mobile, setMobile] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Remove spaces from the input mobile for reliable comparison
+    const cleanMobile = mobile.replace(/\s+/g, '');
+
+    // Check for admin credentials
+    if ((cleanMobile === '+94763326098' || cleanMobile === '0763326098') && password === 'jeno123') {
+      localStorage.setItem('adminRole', 'Super Admin');
+      router.push('/admin');
+    } else if ((cleanMobile === '+94770000000' || cleanMobile === '0770000000') && password === 'admin123') {
+      localStorage.setItem('adminRole', 'Admin');
+      router.push('/admin');
+    } else {
+      localStorage.removeItem('adminRole');
+      // Mock standard user login
+      router.push('/dashboard');
+    }
+  };
+
   return (
     <div className="flex flex-col-reverse md:flex-row h-screen bg-[#f8fafc] overflow-y-auto md:overflow-hidden">
 
@@ -25,7 +52,7 @@ export default function LoginPage() {
             <p className="text-slate-500 text-body">Login to manage your badminton bookings and details</p>
           </div>
 
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleLogin}>
             <div>
               <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
                 Mobile Number
@@ -34,6 +61,9 @@ export default function LoginPage() {
                 type="tel"
                 placeholder="+94 77 123 4567"
                 className="h-12 bg-white text-body-sm"
+                value={mobile}
+                onChange={(e) => setMobile(e.target.value)}
+                required
               />
             </div>
 
@@ -45,6 +75,9 @@ export default function LoginPage() {
                 type="password"
                 placeholder="••••••••"
                 className="h-12 bg-white text-body-sm"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
               />
             </div>
 

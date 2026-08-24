@@ -125,7 +125,7 @@ export default function Home() {
               </div>
               <h3 className="font-bold text-slate-900 mb-2 relative z-10 text-subtitle">Choose Your Time</h3>
               <p className="text-slate-500 text-body-sm relative z-10 leading-relaxed">
-                Select preferred court and time slot
+                Select your preferred time slot
               </p>
             </div>
 
