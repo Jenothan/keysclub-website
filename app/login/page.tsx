@@ -7,29 +7,41 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import api from '@/lib/axios';
+import { useAuthStore } from '@/store/authStore';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
   const router = useRouter();
   const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { setAuth } = useAuthStore();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
 
-    // Remove spaces from the input mobile for reliable comparison
-    const cleanMobile = mobile.replace(/\s+/g, '');
+    try {
+      const response = await api.post('/login', {
+        phone: mobile,
+        password: password
+      });
 
-    // Check for admin credentials
-    if ((cleanMobile === '+94763326098' || cleanMobile === '0763326098') && password === 'jeno123') {
-      localStorage.setItem('adminRole', 'Super Admin');
-      router.push('/admin');
-    } else if ((cleanMobile === '+94770000000' || cleanMobile === '0770000000') && password === 'admin123') {
-      localStorage.setItem('adminRole', 'Admin');
-      router.push('/admin');
-    } else {
-      localStorage.removeItem('adminRole');
-      // Mock standard user login
-      router.push('/dashboard');
+      const { access_token, user } = response.data;
+      
+      setAuth(user, access_token);
+      toast.success('Login successful!');
+
+      if (user.role === 'Super Admin' || user.role === 'Admin') {
+        router.push('/admin');
+      } else {
+        router.push('/dashboard');
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Invalid credentials');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -90,9 +102,10 @@ export default function LoginPage() {
             <div className="pt-2">
               <Button
                 type="submit"
+                disabled={isLoading}
                 className="w-full h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-body"
               >
-                Login
+                {isLoading ? 'Logging in...' : 'Login'}
               </Button>
             </div>
           </form>

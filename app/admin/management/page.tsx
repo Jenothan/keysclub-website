@@ -1,27 +1,45 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useAdminRole } from '@/components/AdminRoleContext';
+import React, { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/authStore';
 import { ShieldAlert, Plus, Trash2, ShieldCheck, ArrowLeft, KeyRound, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { OTPInput } from '@/components/OTPInput';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import api from '@/lib/axios';
+import { toast } from 'sonner';
 
 type FormState = 'list' | 'details';
 
 export default function AdminManagementPage() {
-  const { role } = useAdminRole();
-  const [admins, setAdmins] = useState([
-    { id: 1, name: 'Reginod Alestra', email: 'reginod@example.com', role: 'Super Admin' },
-    { id: 2, name: 'Admin Two', email: 'admin2@example.com', role: 'Admin' },
-  ]);
+  const { user } = useAuthStore();
+  const role = user?.role;
+  const [admins, setAdmins] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [formState, setFormState] = useState<FormState>('list');
   const [formData, setFormData] = useState({ name: '', mobile: '', email: '', password: '' });
   const [otp, setOtp] = useState<string[]>(Array(4).fill(''));
   const [error, setError] = useState('');
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fetchAdmins = async () => {
+    if (role !== 'Super Admin') return;
+    try {
+      const res = await api.get('/super-admin/managers');
+      setAdmins(res.data);
+    } catch (err) {
+      toast.error('Failed to load administrators');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAdmins();
+  }, [role]);
 
   if (role !== 'Super Admin') {
     return (
@@ -39,37 +57,67 @@ export default function AdminManagementPage() {
 
   const isLimitReached = admins.length >= 5;
 
-  const handleRemoveAdmin = (id: number) => {
+  const handleRemoveAdmin = async (id: number) => {
     if (admins.length <= 1) return;
-    setAdmins(admins.filter(a => a.id !== id));
+    if (!confirm('Are you sure you want to remove this administrator?')) return;
+    try {
+      await api.delete(`/super-admin/managers/${id}`);
+      setAdmins(admins.filter(a => a.id !== id));
+      toast.success('Administrator removed successfully');
+    } catch (err) {
+      toast.error('Failed to remove administrator');
+    }
   };
 
-  const handleDetailsSubmit = (e: React.FormEvent) => {
+  const handleDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsOtpModalOpen(true);
-    setError('');
-  };
-
-  const handleOtpSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const otpValue = otp.join('');
-    if (otpValue === '1234') {
-      const newAdmin = {
-        id: Date.now(),
+    setIsSubmitting(true);
+    try {
+      await api.post('/super-admin/managers/request-otp', {
         name: formData.name,
         email: formData.email,
-        role: 'Admin'
-      };
-      setAdmins([...admins, newAdmin]);
+        phone: formData.mobile,
+        password: formData.password
+      });
+      setIsOtpModalOpen(true);
+      setError('');
+    } catch (err: any) {
+      if (err.response?.status === 422) {
+        toast.error(err.response.data.message || 'Maximum limit of 5 administrators reached.');
+      } else {
+        toast.error('Failed to request OTP');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const otpValue = otp.join('');
+    setIsSubmitting(true);
+    try {
+      await api.post('/super-admin/managers/verify-add', {
+        phone: formData.mobile,
+        otp_code: otpValue
+      });
+      toast.success('Administrator added successfully');
       setFormState('list');
       setIsOtpModalOpen(false);
       setFormData({ name: '', mobile: '', email: '', password: '' });
       setOtp(Array(4).fill(''));
       setError('');
-    } else {
-      setError('Invalid OTP code. Please use 1234 for testing.');
+      fetchAdmins();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Invalid OTP code.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return <div className="p-10 flex justify-center"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>;
+  }
 
   return (
     <div className="p-6 md:p-10 max-w-6xl mx-auto pb-20 min-h-screen">

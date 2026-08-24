@@ -6,11 +6,12 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Ticket, Users, CalendarDays, MessageSquare, Settings, X, Shield, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAdminRole } from '@/components/AdminRoleContext';
+import { useAuthStore } from '@/store/authStore';
 
 export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
-  const { role } = useAdminRole();
+  const { user } = useAuthStore();
+  const role = user?.role;
 
   const navItems = [
     {

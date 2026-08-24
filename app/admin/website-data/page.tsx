@@ -1,12 +1,47 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useAdminRole } from '@/components/AdminRoleContext';
+import React, { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/authStore';
 import { ShieldAlert, Globe, Save } from 'lucide-react';
+import api from '@/lib/axios';
+import { toast } from 'sonner';
 
 export default function WebsiteDataPage() {
-  const { role } = useAdminRole();
+  const { user } = useAuthStore();
+  const role = user?.role;
+  
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [formData, setFormData] = useState({
+    primary_phone: '',
+    support_email: '',
+    club_address: '',
+    facebook_url: '',
+    instagram_url: ''
+  });
+
+  useEffect(() => {
+    if (role !== 'Super Admin') return;
+    const fetchData = async () => {
+      try {
+        const response = await api.get('/website-data');
+        if (response.data) {
+          setFormData({
+            primary_phone: response.data.primary_phone || '',
+            support_email: response.data.support_email || '',
+            club_address: response.data.club_address || '',
+            facebook_url: response.data.facebook_url || '',
+            instagram_url: response.data.instagram_url || ''
+          });
+        }
+      } catch (error) {
+        toast.error('Failed to fetch website data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, [role]);
 
   if (role !== 'Super Admin') {
     return (
@@ -22,11 +57,29 @@ export default function WebsiteDataPage() {
     );
   }
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    setTimeout(() => setIsSaving(false), 1000);
+    try {
+      await api.post('/super-admin/website-data', formData);
+      toast.success('Website data updated successfully');
+    } catch (error) {
+      toast.error('Failed to update website data');
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  if (isLoading) {
+    return <div className="p-10 flex justify-center"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>;
+  }
 
   return (
     <div className="p-6 md:p-10 max-w-4xl mx-auto pb-20 min-h-screen">
@@ -52,7 +105,9 @@ export default function WebsiteDataPage() {
                 <label className="block text-sm font-bold text-slate-700 mb-2">Primary Phone Number</label>
                 <input 
                   type="text" 
-                  defaultValue="+94 77 123 4567"
+                  name="primary_phone"
+                  value={formData.primary_phone}
+                  onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-slate-700" 
                 />
               </div>
@@ -60,14 +115,18 @@ export default function WebsiteDataPage() {
                 <label className="block text-sm font-bold text-slate-700 mb-2">Support Email</label>
                 <input 
                   type="email" 
-                  defaultValue="support@keysclub.com"
+                  name="support_email"
+                  value={formData.support_email}
+                  onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-slate-700" 
                 />
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-bold text-slate-700 mb-2">Club Address</label>
                 <textarea 
-                  defaultValue="123 Sports Avenue, Karanavai East"
+                  name="club_address"
+                  value={formData.club_address}
+                  onChange={handleChange}
                   rows={2}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-slate-700 resize-none" 
                 />
@@ -82,7 +141,9 @@ export default function WebsiteDataPage() {
                 <label className="block text-sm font-bold text-slate-700 mb-2">Facebook URL</label>
                 <input 
                   type="url" 
-                  defaultValue="https://facebook.com/keysclub"
+                  name="facebook_url"
+                  value={formData.facebook_url}
+                  onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-slate-700" 
                 />
               </div>
@@ -90,7 +151,9 @@ export default function WebsiteDataPage() {
                 <label className="block text-sm font-bold text-slate-700 mb-2">Instagram URL</label>
                 <input 
                   type="url" 
-                  defaultValue="https://instagram.com/keysclub"
+                  name="instagram_url"
+                  value={formData.instagram_url}
+                  onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-slate-700" 
                 />
               </div>

@@ -5,7 +5,9 @@ import AdminSidebar from "@/components/AdminSidebar";
 import { LogOut, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-import { AdminRoleProvider, useAdminRole } from "@/components/AdminRoleContext";
+import { useAuthStore } from "@/store/authStore";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useRouter } from "next/navigation";
 
 function AdminLayoutContent({
   children,
@@ -13,7 +15,15 @@ function AdminLayoutContent({
   children: React.ReactNode;
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { role, setRole } = useAdminRole();
+  const { user, logout } = useAuthStore();
+  const router = useRouter();
+
+  const role = user?.role;
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc]">
@@ -29,8 +39,9 @@ function AdminLayoutContent({
             Super admin can't open in mobile or tablets. Please use a laptop or desktop screen to access the admin dashboard.
           </p>
           <button 
-            onClick={() => setRole('Admin')}
-            className="px-6 py-2 bg-slate-900 text-white font-bold rounded-xl shadow-sm"
+            onClick={() => {}}
+            className="px-6 py-2 bg-slate-900 text-white font-bold rounded-xl shadow-sm cursor-not-allowed opacity-50"
+            disabled
           >
             Switch to Admin Role
           </button>
@@ -91,7 +102,10 @@ function AdminLayoutContent({
             <div className="hidden sm:block w-px h-8 bg-slate-200 mx-2"></div>
             
             {/* Logout */}
-            <button className="hidden sm:flex items-center gap-2 text-slate-500 hover:text-red-600 transition-colors text-sm font-bold">
+            <button 
+              onClick={handleLogout}
+              className="hidden sm:flex items-center gap-2 text-slate-500 hover:text-red-600 transition-colors text-sm font-bold"
+            >
               <LogOut className="w-5 h-5" />
               <span>Logout</span>
             </button>
@@ -114,8 +128,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AdminRoleProvider>
+    <ProtectedRoute allowedRoles={['Super Admin', 'Admin']}>
       <AdminLayoutContent>{children}</AdminLayoutContent>
-    </AdminRoleProvider>
+    </ProtectedRoute>
   );
 }

@@ -1,9 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, ArrowLeft } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { OTPInput } from "@/components/OTPInput";
+import { useAuthStore } from '@/store/authStore';
+import api from '@/lib/axios';
+import { toast } from 'sonner';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -11,21 +13,72 @@ interface BookingModalProps {
   selectedSlot: {
     date: string;
     time: string;
+    court_id?: number;
+    start_time?: string;
+    end_time?: string;
+    rawDate?: string;
   } | null;
 }
 
 export default function BookingModal({ isOpen, onClose, selectedSlot }: BookingModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
+  const { user } = useAuthStore();
+  const [notes, setNotes] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bookingId, setBookingId] = useState('');
 
   const steps = [
-    { id: 1, name: 'Your Details' },
-    { id: 2, name: 'Mobile Verification' },
-    { id: 3, name: 'Review & Notes' },
-    { id: 4, name: 'Done' }
+    { id: 1, name: 'Review & Notes' },
+    { id: 2, name: 'Done' }
   ];
 
-  const handleNext = () => setCurrentStep(prev => Math.min(prev + 1, 4));
+  // Reset state when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentStep(1);
+      setNotes('');
+      setBookingId('');
+    }
+  }, [isOpen]);
+
+  const handleSubmit = async () => {
+    if (!selectedSlot?.court_id || !selectedSlot?.start_time || !selectedSlot?.end_time) {
+      toast.error('Invalid slot selected');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // API expects: { court_id, booking_date, start_time, end_time }
+      // We will extract booking_date from start_time or use calendarDate if passed
+      // Usually start_time is just "HH:mm" in some APIs, let's assume it's properly formatted.
+      // Or we can construct it if we have the date. Let's send what we have.
+      // We need booking_date in YYYY-MM-DD.
+      // Let's assume the API handles it if we send date, start_time, end_time.
+      // But the guide says: { court_id, booking_date, start_time, end_time }
+      // So we must pass it. Wait, the date string we have in selectedSlot is "EEEE, dd MMMM yyyy".
+      // We need the raw Date. We didn't pass it from AvailabilityPage.
+      // Let's assume start_time from API comes as "YYYY-MM-DD HH:mm:ss" or just "HH:mm".
+      // We will parse the date from selectedSlot or pass it explicitly.
+      // We will need to update AvailabilityPage to pass raw `booking_date` in `selectedSlot`. Let's assume we do.
+      
+      const payload = {
+        court_id: selectedSlot.court_id,
+        booking_date: (selectedSlot as any).rawDate, // We will update AvailabilityPage to pass this
+        start_time: selectedSlot.start_time,
+        end_time: selectedSlot.end_time,
+        notes: notes
+      };
+
+      const res = await api.post('/bookings', payload);
+      setBookingId(res.data?.id || `KEYS-${Date.now().toString().slice(-4)}`);
+      setCurrentStep(2);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to submit booking');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -33,16 +86,6 @@ export default function BookingModal({ isOpen, onClose, selectedSlot }: BookingM
         <DialogTitle className="sr-only">Booking Process</DialogTitle>
         <div className="relative w-full bg-white flex flex-col items-center rounded-2xl shadow-xl border border-slate-100 max-h-[90vh]">
         
-        {/* Back Button */}
-        {currentStep > 1 && currentStep < 4 && (
-          <button 
-            onClick={() => setCurrentStep(prev => Math.max(prev - 1, 1))}
-            className="absolute top-4 left-3 sm:top-5 sm:left-4 p-2 rounded-full hover:bg-slate-200 text-slate-600 transition-colors z-20 bg-slate-50"
-          >
-            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
-        )}
-
         {/* Step Indicator */}
         <div className="flex items-center justify-between w-full pl-12 pr-6 sm:pl-16 sm:pr-10 py-5 bg-slate-50/50 border-b border-slate-100 shrink-0">
           {steps.map((step, index) => (
@@ -78,83 +121,8 @@ export default function BookingModal({ isOpen, onClose, selectedSlot }: BookingM
         {/* Modal Card Content */}
         <div className="w-full p-6 sm:p-8 md:p-10 max-w-[600px] mx-auto overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           
-          {/* Step 1: Your Details */}
+          {/* Step 1: Review & Notes */}
           {currentStep === 1 && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-              <h2 className="text-[22px] font-extrabold text-[#0f172a] mb-2 tracking-tight">Your Details</h2>
-              <p className="text-slate-500 text-body-sm mb-8">
-                Please provide your contact information to begin the booking request process.
-              </p>
-
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-caption font-bold text-[#0f172a] mb-2">
-                    Full Name
-                  </label>
-                  <Input
-                    type="text"
-                    defaultValue="Kamil Perera"
-                    className="h-12 bg-slate-50/50"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-caption font-bold text-[#0f172a] mb-2">
-                    Mobile Number
-                  </label>
-                  <div className="flex gap-3">
-                    <div className="px-4 py-3 rounded-lg border border-slate-200 bg-slate-50/50 flex items-center justify-center shrink-0 w-20">
-                      <span className="text-[#0f172a] text-body-sm font-semibold">+94</span>
-                    </div>
-                    <Input
-                      type="tel"
-                      defaultValue="771234567"
-                      className="h-12 bg-slate-50/50"
-                    />
-                  </div>
-                  <p className="text-[10px] text-slate-400 mt-2">Verification OTP will be sent to this mobile number.</p>
-                </div>
-
-                <div className="pt-4">
-                  <Button 
-                    onClick={handleNext}
-                    className="w-full h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-body"
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Mobile Verification */}
-          {currentStep === 2 && (
-            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <h2 className="text-[22px] font-extrabold text-[#0f172a] mb-2 tracking-tight">Verify Your Mobile Number</h2>
-              <p className="text-slate-500 text-body-sm mb-8">
-                Enter the 6-digit verification code sent to your mobile number +94 77 123 4567.
-              </p>
-
-              <div className="space-y-8">
-                <OTPInput length={6} otp={otp} setOtp={setOtp} />
-
-                <Button 
-                  onClick={handleNext}
-                  className="w-full h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-body"
-                >
-                  Verify & Continue
-                </Button>
-
-                <div className="text-center">
-                  <span className="text-caption text-slate-500">Didn't receive code? </span>
-                  <button className="text-caption font-bold text-blue-600 hover:underline">Resend OTP</button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Review & Notes */}
-          {currentStep === 3 && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               <h2 className="text-[22px] font-extrabold text-[#0f172a] mb-2 tracking-tight">Booking Details & Review</h2>
               <p className="text-slate-500 text-body-sm mb-8">
@@ -166,19 +134,19 @@ export default function BookingModal({ isOpen, onClose, selectedSlot }: BookingM
                 <div className="space-y-3">
                   <div className="flex justify-between items-center text-body-sm">
                     <span className="text-slate-500">Date</span>
-                    <span className="font-semibold text-[#0f172a]">{selectedSlot?.date || 'Tuesday, 27 October 2026'}</span>
+                    <span className="font-semibold text-[#0f172a]">{selectedSlot?.date || '...'}</span>
                   </div>
                   <div className="flex justify-between items-center text-body-sm">
                     <span className="text-slate-500">Time</span>
-                    <span className="font-semibold text-[#0f172a]">{selectedSlot?.time || '06:00 PM - 07:00 PM'}</span>
+                    <span className="font-semibold text-[#0f172a]">{selectedSlot?.time || '...'}</span>
                   </div>
                   <div className="flex justify-between items-center text-body-sm">
                     <span className="text-slate-500">Name</span>
-                    <span className="font-semibold text-[#0f172a]">Kamil Perera</span>
+                    <span className="font-semibold text-[#0f172a]">{user?.name}</span>
                   </div>
                   <div className="flex justify-between items-center text-body-sm">
                     <span className="text-slate-500">Mobile Number</span>
-                    <span className="font-semibold text-[#0f172a]">+94 77 123 4567</span>
+                    <span className="font-semibold text-[#0f172a]">{user?.phone}</span>
                   </div>
                 </div>
               </div>
@@ -189,22 +157,35 @@ export default function BookingModal({ isOpen, onClose, selectedSlot }: BookingM
                 </label>
                 <textarea 
                   rows={3}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
                   placeholder="Need an extra racket if available. Thank you."
                   className="block w-full p-4 rounded-lg border border-slate-200 bg-slate-50/50 text-[#0f172a] text-body-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder:text-slate-400"
                 ></textarea>
               </div>
 
-              <Button 
-                onClick={handleNext}
-                className="w-full h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-body"
-              >
-                Submit Booking Request
-              </Button>
+              <div className="flex gap-3">
+                <Button 
+                  onClick={onClose}
+                  disabled={isSubmitting}
+                  variant="outline"
+                  className="w-full h-12 text-slate-700 font-bold text-body"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="w-full h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-body"
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit Booking'}
+                </Button>
+              </div>
             </div>
           )}
 
-          {/* Step 4: Done */}
-          {currentStep === 4 && (
+          {/* Step 2: Done */}
+          {currentStep === 2 && (
             <div className="animate-in zoom-in-95 duration-500 flex flex-col items-center">
               <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-6">
                 <Check className="w-8 h-8" />
@@ -219,15 +200,15 @@ export default function BookingModal({ isOpen, onClose, selectedSlot }: BookingM
                 <div className="space-y-4">
                   <div className="flex justify-between items-center text-body-sm">
                     <span className="text-slate-500">Booking ID</span>
-                    <span className="font-semibold text-[#0f172a]">KEYS-2026-9874</span>
+                    <span className="font-semibold text-[#0f172a]">{bookingId}</span>
                   </div>
                   <div className="flex justify-between items-center text-body-sm">
                     <span className="text-slate-500">Date</span>
-                    <span className="font-semibold text-[#0f172a]">{selectedSlot?.date || 'Tuesday, 27 October 2026'}</span>
+                    <span className="font-semibold text-[#0f172a]">{selectedSlot?.date}</span>
                   </div>
                   <div className="flex justify-between items-center text-body-sm pb-4 border-b border-slate-200">
                     <span className="text-slate-500">Time</span>
-                    <span className="font-semibold text-[#0f172a]">{selectedSlot?.time || '06:00 PM - 07:00 PM'}</span>
+                    <span className="font-semibold text-[#0f172a]">{selectedSlot?.time}</span>
                   </div>
                   <div className="flex justify-between items-center text-body-sm pt-1">
                     <span className="text-slate-500">Status</span>
@@ -237,13 +218,10 @@ export default function BookingModal({ isOpen, onClose, selectedSlot }: BookingM
               </div>
 
               <Button 
-                onClick={() => {
-                  onClose();
-                  setTimeout(() => setCurrentStep(1), 300);
-                }}
+                onClick={onClose}
                 className="w-full h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-body mb-4"
               >
-                View My Booking
+                Close & View My Bookings
               </Button>
 
               <p className="text-[11px] text-slate-400 text-center">Confirmation will be sent through SMS and/or email.</p>
