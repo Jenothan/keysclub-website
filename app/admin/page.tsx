@@ -116,7 +116,7 @@ export default function AdminDashboardPage() {
         </div>
         
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="w-full text-sm text-left whitespace-nowrap">
             <thead className="text-xs font-bold text-slate-500 bg-slate-50/50">
               <tr>
                 <th className="px-6 py-4">User Name</th>

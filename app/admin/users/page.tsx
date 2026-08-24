@@ -61,7 +61,7 @@ export default function AdminUsersPage() {
       {/* Table */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col">
         <div className="overflow-x-auto p-4 md:p-6 pb-0">
-          <table className="w-full text-sm text-left">
+          <table className="w-full text-sm text-left whitespace-nowrap">
             <thead className="text-xs font-extrabold text-slate-600 bg-slate-50/80">
               <tr>
                 <th className="px-6 py-4 rounded-l-lg">User ID</th>

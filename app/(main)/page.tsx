@@ -68,7 +68,7 @@ export default function Home() {
                   type="text"
                   readOnly
                   value="Tomorrow, 27 October 2026"
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-md bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-md bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 />
               </div>
             </div>
@@ -85,7 +85,7 @@ export default function Home() {
                   type="text"
                   readOnly
                   value="06:00 PM - 07:00 PM"
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-md bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-md bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 />
               </div>
             </div>
@@ -111,8 +111,8 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {/* Step 1 */}
             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-yellow-400 hover:shadow-lg transition-all">
-              <div className="absolute top-4 right-4 text-4xl font-bold text-gray-100 group-hover:text-blue-50 transition">01</div>
-              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white mb-6 relative z-10 shadow-md">
+              <div className="absolute top-4 right-4 text-4xl font-bold text-white group-hover:text-yellow-200 transition">01</div>
+              <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-slate-900 mb-6 relative z-10 shadow-md">
                 <Calendar className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-slate-900 mb-2 relative z-10 text-subtitle">Check Availability</h3>
@@ -123,8 +123,8 @@ export default function Home() {
 
             {/* Step 2 */}
             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-yellow-400 hover:shadow-lg transition-all">
-              <div className="absolute top-4 right-4 text-4xl font-bold text-gray-100 group-hover:text-blue-50 transition">02</div>
-              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white mb-6 relative z-10 shadow-md">
+              <div className="absolute top-4 right-4 text-4xl font-bold text-white group-hover:text-yellow-200 transition">02</div>
+              <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-slate-900 mb-6 relative z-10 shadow-md">
                 <Clock className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-slate-900 mb-2 relative z-10 text-subtitle">Choose Your Time</h3>
@@ -135,8 +135,8 @@ export default function Home() {
 
             {/* Step 3 */}
             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-yellow-400 hover:shadow-lg transition-all">
-              <div className="absolute top-4 right-4 text-4xl font-bold text-gray-100 group-hover:text-blue-50 transition">03</div>
-              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white mb-6 relative z-10 shadow-md">
+              <div className="absolute top-4 right-4 text-4xl font-bold text-white group-hover:text-yellow-200 transition">03</div>
+              <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-slate-900 mb-6 relative z-10 shadow-md">
                 <ShieldCheck className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-slate-900 mb-2 relative z-10 text-subtitle">Verify Your Mobile</h3>
@@ -147,8 +147,8 @@ export default function Home() {
 
             {/* Step 4 */}
             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-yellow-400 hover:shadow-lg transition-all">
-              <div className="absolute top-4 right-4 text-4xl font-bold text-gray-100 group-hover:text-blue-50 transition">04</div>
-              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white mb-6 relative z-10 shadow-md">
+              <div className="absolute top-4 right-4 text-4xl font-bold text-white group-hover:text-yellow-200 transition">04</div>
+              <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-slate-900 mb-6 relative z-10 shadow-md">
                 <XCircle className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-slate-900 mb-2 relative z-10 text-subtitle">Send Booking Request</h3>
@@ -159,8 +159,8 @@ export default function Home() {
 
             {/* Step 5 */}
             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-yellow-400 hover:shadow-lg transition-all">
-              <div className="absolute top-4 right-4 text-4xl font-bold text-gray-100 group-hover:text-blue-50 transition">05</div>
-              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white mb-6 relative z-10 shadow-md">
+              <div className="absolute top-4 right-4 text-4xl font-bold text-white group-hover:text-yellow-200 transition">05</div>
+              <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-slate-900 mb-6 relative z-10 shadow-md">
                 <MessageSquare className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-slate-900 mb-2 relative z-10 text-subtitle">Get Confirmation</h3>
@@ -186,12 +186,12 @@ export default function Home() {
             <div className="border border-gray-100 rounded-xl p-8 shadow-sm hover:shadow-lg hover:border-yellow-400 transition-all bg-white flex flex-col h-full">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="font-bold text-slate-900 text-subtitle">Regular Court Booking</h3>
-                <span className="bg-blue-50 text-blue-600 text-caption font-semibold px-2.5 py-1 rounded-full">Hourly</span>
+                <span className="bg-yellow-50 text-yellow-500 text-caption font-semibold px-2.5 py-1 rounded-full border border-amber-400">Hourly</span>
               </div>
               <p className="text-slate-500 text-body-sm mb-12 grow">
                 Hourly standard bookings for recreation and regular training. Best for 2-4 players.
               </p>
-              <a href="#" className="text-blue-600 font-semibold text-body-sm flex items-center hover:text-blue-700">
+              <a href="#" className="text-yellow-500 font-semibold text-body-sm flex items-center hover:text-yellow-700">
                 Check Availability <span className="ml-1">→</span>
               </a>
             </div>
@@ -200,12 +200,12 @@ export default function Home() {
             <div className="border border-gray-100 rounded-xl p-8 shadow-sm hover:shadow-lg hover:border-yellow-400 transition-all bg-white flex flex-col h-full">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="font-bold text-slate-900 text-subtitle">Tournament Booking</h3>
-                <span className="bg-blue-50 text-blue-600 text-caption font-semibold px-2.5 py-1 rounded-full">Event</span>
+                <span className="bg-yellow-50 text-yellow-500 text-caption font-semibold px-2.5 py-1 rounded-full border border-amber-400">Event</span>
               </div>
               <p className="text-slate-500 text-body-sm mb-12 grow">
                 Hosting a local community tournament? Get custom arrangements, umpire chairs, and event boards.
               </p>
-              <a href="#" className="text-blue-600 font-semibold text-body-sm flex items-center hover:text-blue-700">
+              <a href="#" className="text-yellow-500 font-semibold text-body-sm flex items-center hover:text-yellow-700">
                 Make an Inquiry <span className="ml-1">→</span>
               </a>
             </div>
@@ -214,12 +214,12 @@ export default function Home() {
             <div className="border border-gray-100 rounded-xl p-8 shadow-sm hover:shadow-lg hover:border-yellow-400 transition-all bg-white flex flex-col h-full">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="font-bold text-slate-900 text-subtitle">Full-Day Court</h3>
-                <span className="bg-blue-50 text-blue-600 text-caption font-semibold px-2.5 py-1 rounded-full">Corporate</span>
+                <span className="bg-yellow-50 text-yellow-500 text-caption font-semibold px-2.5 py-1 rounded-full border border-amber-400">Corporate</span>
               </div>
               <p className="text-slate-500 text-body-sm mb-12 grow">
                 Reserve full-day exclusive access of courts for sports meets, club training camps, or school events.
               </p>
-              <a href="#" className="text-blue-600 font-semibold text-body-sm flex items-center hover:text-blue-700">
+              <a href="#" className="text-yellow-500 font-semibold text-body-sm flex items-center hover:text-yellow-700">
                 Request Full-Day Booking <span className="ml-1">→</span>
               </a>
             </div>
@@ -237,7 +237,7 @@ export default function Home() {
               </div>
             </div>
             <div className="w-full md:w-7/12">
-              <span className="text-caption font-bold text-blue-600 uppercase tracking-wider">ABOUT THE CLUB</span>
+              <span className="text-caption font-bold text-yellow-500 uppercase tracking-wider">ABOUT THE CLUB</span>
               <h2 className="text-title font-extrabold text-slate-900 mt-4 mb-6">
                 Karanavai East Youth Sports Club
               </h2>

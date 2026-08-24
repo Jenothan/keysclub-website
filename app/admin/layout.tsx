@@ -42,25 +42,7 @@ function AdminLayoutContent({
   return (
     <div className="flex min-h-screen bg-[#f8fafc]">
       
-      {/* Super Admin Screen Size Restriction */}
-      {role === 'Super Admin' && (
-        <div className="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center lg:hidden px-6 text-center">
-          <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4">
-            <LogOut className="w-8 h-8" />
-          </div>
-          <h1 className="text-2xl font-extrabold text-[#0f172a] mb-2 tracking-tight">Access Restricted</h1>
-          <p className="text-slate-500 font-medium max-w-sm mb-6">
-            Super admin can't open in mobile or tablets. Please use a laptop or desktop screen to access the admin dashboard.
-          </p>
-          <button 
-            onClick={() => {}}
-            className="px-6 py-2 bg-slate-900 text-white font-bold rounded-xl shadow-sm cursor-not-allowed opacity-50"
-            disabled
-          >
-            Switch to Admin Role
-          </button>
-        </div>
-      )}
+
 
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (

@@ -130,7 +130,7 @@ export default function DashboardAvailabilityPage() {
               {slots.map((slot, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-[#f8fafc] hover:border-yellow-400 hover:shadow-md transition-all group"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-slate-100 bg-[#f8fafc] hover:border-yellow-400 hover:shadow-md transition-all group gap-4"
                 >
                   <div className="flex items-center gap-3">
                     <div className="bg-white p-2 rounded-lg shadow-sm text-slate-400 group-hover:text-blue-600 transition-colors">
@@ -139,7 +139,7 @@ export default function DashboardAvailabilityPage() {
                     <span className="font-bold text-slate-800 text-body-sm tracking-tight">{slot.time}</span>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 self-end sm:self-auto">
                     {slot.status === 'Booked' && (
                       <span className="text-red-500 font-bold text-caption bg-red-50 px-3 py-1.5 rounded-lg">Booked</span>
                     )}

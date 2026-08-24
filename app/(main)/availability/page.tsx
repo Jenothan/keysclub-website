@@ -180,8 +180,8 @@ export default function AvailabilityPage() {
                         key={index}
                         onClick={() => slot.status === 'Available' && handleToggleSlot(slot)}
                         className={`flex items-center justify-between p-4 rounded-xl border transition-all group ${
-                          slot.status === 'Available' ? 'cursor-pointer hover:border-blue-300 hover:shadow-sm bg-[#f8fafc]' : 'bg-slate-50 border-slate-100 opacity-70'
-                        } ${isSelected ? 'border-blue-500 bg-blue-50/30 shadow-[0_0_0_1px_rgba(59,130,246,1)]' : 'border-slate-100'}`}
+                          slot.status === 'Available' ? 'cursor-pointer hover:border-[#fbbf24] hover:shadow-sm bg-[#f8fafc]' : 'bg-slate-50 border-slate-100 opacity-70'
+                        } ${isSelected ? 'border-[#fbbf24] bg-[#fbbf24] text-slate-900 shadow-[0_0_0_1px_#fbbf24]' : 'border-slate-100'}`}
                       >
                         <div className="flex items-center gap-3">
                           {slot.status === 'Available' && (
@@ -190,17 +190,17 @@ export default function AvailabilityPage() {
                                 type="checkbox" 
                                 checked={isSelected}
                                 readOnly
-                                className="peer appearance-none w-5 h-5 border-2 border-slate-300 rounded focus:ring-blue-500 checked:bg-blue-600 checked:border-blue-600 transition-colors cursor-pointer"
+                                className="peer appearance-none w-5 h-5 border-2 border-slate-300 rounded focus:ring-[#fbbf24] checked:bg-slate-900 checked:border-slate-900 transition-colors cursor-pointer"
                               />
                               <svg className={`absolute w-3 h-3 text-white pointer-events-none transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                               </svg>
                             </div>
                           )}
-                          <div className={`p-2 rounded-lg shadow-sm transition-colors ${isSelected ? 'bg-blue-600 text-white' : 'bg-white text-slate-400 group-hover:text-blue-600'}`}>
+                          <div className={`p-2 rounded-lg shadow-sm transition-colors ${isSelected ? 'bg-slate-900 text-[#fbbf24]' : 'bg-white text-slate-400 group-hover:text-slate-900'}`}>
                             <Clock className="w-4 h-4" />
                           </div>
-                          <span className="font-bold text-slate-800 text-body-sm tracking-tight">{slot.time}</span>
+                          <span className={`font-bold text-body-sm tracking-tight ${isSelected ? 'text-slate-900' : 'text-slate-800'}`}>{slot.time}</span>
                         </div>
 
                         <div className="flex items-center gap-3">
@@ -215,7 +215,7 @@ export default function AvailabilityPage() {
                           )}
 
                           {slot.status === 'Available' && (
-                            <span className={`font-bold text-caption mr-2 ${isSelected ? 'text-blue-600' : 'text-emerald-500'}`}>
+                            <span className={`font-bold text-caption mr-2 ${isSelected ? 'text-slate-900' : 'text-emerald-500'}`}>
                               {isSelected ? 'Selected' : 'Available'}
                             </span>
                           )}

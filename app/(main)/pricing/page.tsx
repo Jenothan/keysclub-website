@@ -37,13 +37,27 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
-      {/* Header */}
-      <div className="bg-[#0f172a] text-white py-20 px-4 text-center">
-        <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">Our Pricing Plans</h1>
-        <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed">
-          Affordable rates for top-tier facilities. Choose the best option for your sporting journey.
-        </p>
-      </div>
+      {/* Hero Section */}
+      <section className="relative py-32 lg:py-48 overflow-hidden">
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: "url('/pricing.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        />
+        <div className="absolute inset-0 bg-[#0f172a]/70 z-0" />
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 tracking-tight">
+            Our Pricing Plans
+          </h1>
+          <p className="max-w-2xl text-lg md:text-xl text-slate-300 mb-8 leading-relaxed">
+            Affordable rates for top-tier facilities. Choose the best option for your sporting journey.
+          </p>
+        </div>
+      </section>
 
       <div className="max-w-7xl mx-auto px-4 mt-[-60px]">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

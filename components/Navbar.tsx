@@ -56,7 +56,7 @@ export default function Navbar() {
               <Link 
                 key={link.name}
                 href={link.href} 
-                className={`${pathname === link.href ? "text-blue-600 font-semibold" : "text-gray-600 font-medium"} hover:text-blue-700 transition`}
+                className={`${pathname === link.href ? "text-[#fbbf24] font-bold" : "text-gray-600 font-medium"} hover:text-[#f5b81a] transition`}
               >
                 {link.name}
               </Link>
@@ -124,7 +124,7 @@ export default function Navbar() {
                 key={link.name}
                 href={link.href} 
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`${pathname === link.href ? "text-blue-600 font-bold bg-blue-50" : "text-slate-700 font-medium"} block px-4 py-3 rounded-lg hover:bg-slate-50 transition`}
+                className={`${pathname === link.href ? "text-yellow-600 font-bold bg-yellow-50" : "text-slate-700 font-medium"} block px-4 py-3 rounded-lg hover:bg-slate-50 transition`}
               >
                 {link.name}
               </Link>
