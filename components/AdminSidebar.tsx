@@ -70,7 +70,7 @@ export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
   }
 
   return (
-    <div className="relative w-64 text-white flex flex-col h-screen sticky top-0 shadow-[2px_0_10px_rgba(0,0,0,0.02)] border-r border-blue-800 overflow-hidden">
+    <div className="w-64 text-white flex flex-col h-screen sticky top-0 shadow-[2px_0_10px_rgba(0,0,0,0.02)] border-r border-blue-800 overflow-hidden">
       {/* Background Image & Overlay */}
       <div className="absolute inset-0 z-0">
         <Image

@@ -44,10 +44,11 @@ export default function PricingPage() {
           style={{
             backgroundImage: "url('/pricing.jpg')",
             backgroundSize: "cover",
-            backgroundPosition: "center",
+            backgroundPosition: "top center",
+            transform: "scale(1.15) translateY(-2%)",
           }}
         />
-        <div className="absolute inset-0 bg-[#0f172a]/70 z-0" />
+        <div className="absolute inset-0 bg-[#0f172a]/50 z-0" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 tracking-tight">
@@ -59,7 +60,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 mt-[-60px]">
+      <div className="max-w-7xl mx-auto px-4 -mt-15">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           
           {/* Badminton Court Pricing */}

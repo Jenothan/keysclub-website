@@ -92,7 +92,7 @@ export default function MyBookingsPage() {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto px-2 sm:px-0">
-          <div className="relative flex-1 sm:flex-none sm:min-w-[250px]">
+          <div className="relative flex-1 sm:flex-none sm:min-w-62.5">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
               type="text" 

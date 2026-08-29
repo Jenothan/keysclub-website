@@ -50,7 +50,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col-reverse md:flex-row h-[100dvh] bg-white md:bg-[#f8fafc] overflow-hidden">
+    <div className="flex flex-col-reverse md:flex-row h-dvh bg-white md:bg-[#f8fafc] overflow-hidden">
 
       {/* Left Pane (Form) */}
       <div className="w-full h-full md:w-[55%] lg:w-[50%] flex flex-col p-0 md:p-8 lg:p-12 relative overflow-hidden">

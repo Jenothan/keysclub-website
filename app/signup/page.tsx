@@ -7,15 +7,74 @@ import ArrowLeft from '@mui/icons-material/ArrowBack';
 import ShieldCheck from '@mui/icons-material/GppGood';
 import Eye from '@mui/icons-material/Visibility';
 import EyeOff from '@mui/icons-material/VisibilityOff';
+import KeyRound from '@mui/icons-material/VpnKey';
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { OTPInput } from '@/components/OTPInput';
+import api from '@/lib/axios';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/authStore';
 
 export default function SignUpPage() {
+  const router = useRouter();
+  const { login } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+  const [step, setStep] = useState<'details' | 'otp'>('details');
+  const [formData, setFormData] = useState({ name: '', mobile: '', email: '', password: '', confirmPassword: '' });
+  const [otp, setOtp] = useState<string[]>(Array(4).fill(''));
+  const [otpHint, setOtpHint] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleRequestOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const res = await api.post('/register/request-otp', {
+        name: formData.name,
+        phone: formData.mobile,
+        password: formData.password,
+      });
+      setOtpHint(res.data.otp_hint);
+      setStep('otp');
+      toast.success('OTP sent successfully');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to request OTP');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const otpCode = otp.join('');
+    if (otpCode.length !== 4) return;
+    
+    setIsSubmitting(true);
+    try {
+      const res = await api.post('/register/verify', {
+        name: formData.name,
+        phone: formData.mobile,
+        password: formData.password,
+        otp_code: otpCode,
+      });
+      login(res.data.user, res.data.access_token);
+      toast.success('Account created successfully');
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Invalid OTP');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col md:flex-row h-[100dvh] bg-white md:bg-[#f8fafc] overflow-hidden">
+    <div className="flex flex-col md:flex-row h-dvh bg-white md:bg-[#f8fafc] overflow-hidden">
       {/* Left Pane (Image Background) */}
       <div className="hidden md:flex relative w-full md:w-[45%] lg:w-[50%] bg-[#0f172a] flex-col justify-center px-8 md:px-12 lg:px-20 py-12 md:py-0 overflow-hidden shrink-0">
         {/* Background Image */}
@@ -87,7 +146,7 @@ export default function SignUpPage() {
       {/* Right Pane (Form) */}
       <div className="w-full h-full md:w-[55%] lg:w-[50%] flex flex-col p-0 md:p-8 lg:p-12 relative overflow-hidden">
         
-        {/* Mobile Back Button (only visible on mobile, replacing the desktop one which is in the left pane) */}
+        {/* Mobile Back Button */}
         <div className="md:hidden pt-6 px-6 pb-2 shrink-0">
           <Link href="/" className="inline-flex items-center gap-2 text-slate-800 hover:text-slate-900 transition group">
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
@@ -97,108 +156,167 @@ export default function SignUpPage() {
 
         <div className="w-full flex-1 flex flex-col justify-center md:justify-start md:h-auto md:max-w-140 bg-white md:rounded-2xl md:shadow-[0_0_20px_rgba(30,58,138,0.4)] px-6 py-4 md:p-8 lg:p-10 z-10 md:m-auto relative overflow-y-auto md:overflow-visible">
 
-          <div className="mb-4 md:mb-6 shrink-0">
-            <h2 className="text-2xl md:text-title font-extrabold text-[#0f172a] mb-1.5 tracking-tight">Create Your Account</h2>
-            <p className="text-slate-500 text-sm md:text-body leading-snug">Join KEYS Club and start booking badminton courts</p>
-          </div>
-
-          <form className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
-                  Full Name
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Suresh Perera"
-                  className="h-11 bg-white text-body-sm"
-                />
+          {step === 'details' ? (
+            <>
+              <div className="mb-4 md:mb-6 shrink-0">
+                <h2 className="text-2xl md:text-title font-extrabold text-[#0f172a] mb-1.5 tracking-tight">Create Your Account</h2>
+                <p className="text-slate-500 text-sm md:text-body leading-snug">Join KEYS Club and start booking badminton courts</p>
               </div>
 
-              <div>
-                <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
-                  Mobile Number
-                </label>
-                <Input
-                  type="tel"
-                  placeholder="+94 77 123 4567"
-                  className="h-11 bg-white text-body-sm"
-                />
-              </div>
-            </div>
+              <form onSubmit={handleRequestOtp} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
+                      Full Name
+                    </label>
+                    <Input
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      placeholder="Suresh Perera"
+                      className="h-11 bg-white text-body-sm"
+                    />
+                  </div>
 
-            <div>
-              <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
-                Email Address
-              </label>
-              <Input
-                type="email"
-                placeholder="suresh@gmail.com"
-                className="h-11 bg-white text-body-sm"
-              />
-            </div>
+                  <div>
+                    <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
+                      Mobile Number
+                    </label>
+                    <Input
+                      type="tel"
+                      required
+                      value={formData.mobile}
+                      onChange={(e) => setFormData({...formData, mobile: e.target.value})}
+                      placeholder="+94 77 123 4567"
+                      className="h-11 bg-white text-body-sm"
+                    />
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    className="block w-full px-4 py-2.5 pr-12 rounded-lg border border-slate-200 bg-white text-slate-900 text-body-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder:text-slate-400"
+                <div>
+                  <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
+                    Email Address
+                  </label>
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    placeholder="suresh@gmail.com"
+                    className="h-11 bg-white text-body-sm"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
+                      Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        required
+                        value={formData.password}
+                        onChange={(e) => setFormData({...formData, password: e.target.value})}
+                        placeholder="••••••••"
+                        className="block w-full px-4 py-2.5 pr-12 rounded-lg border border-slate-200 bg-white text-slate-900 text-body-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder:text-slate-400"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
+                      Confirm Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        required
+                        value={formData.confirmPassword}
+                        onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                        placeholder="••••••••"
+                        className="block w-full px-4 py-2.5 pr-12 rounded-lg border border-slate-200 bg-white text-slate-900 text-body-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder:text-slate-400"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-1">
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full h-11 md:h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-sm md:text-body"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {isSubmitting ? 'Sending OTP...' : 'Create Account'}
+                  </Button>
+                </div>
+              </form>
+
+              <div className="mt-4 md:mt-8 text-center shrink-0">
+                <p className="text-slate-500 text-xs md:text-body-sm">
+                  Already have an account? <Link href="/login" className="text-blue-600 font-bold hover:underline">Login</Link>
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center text-center py-8">
+              <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6">
+                <KeyRound className="w-8 h-8" />
+              </div>
+              <h2 className="text-2xl font-extrabold text-[#0f172a] mb-2 tracking-tight">Verify Mobile Number</h2>
+              <p className="text-slate-500 mb-8 max-w-sm">
+                An OTP has been sent to <span className="font-bold text-slate-700">{formData.mobile}</span>. Please enter it below to verify your account.
+              </p>
+
+              {/* DEVELOPMENT ONLY OTP DISPLAY */}
+              {otpHint && (
+                <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg mb-6 w-full max-w-xs font-mono text-center">
+                  <p className="text-sm font-bold uppercase tracking-wider mb-1 text-yellow-600">Dev OTP Hint</p>
+                  <p className="text-2xl font-black tracking-widest">{otpHint}</p>
+                </div>
+              )}
+
+              <form onSubmit={handleVerifyOtp} className="w-full flex flex-col items-center space-y-6">
+                <div>
+                  <OTPInput length={4} otp={otp} setOtp={setOtp} />
+                </div>
+                
+                <div className="flex gap-3 w-full max-w-xs pt-4">
+                  <button 
+                    type="button"
+                    onClick={() => setStep('details')}
+                    className="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-all"
+                  >
+                    Back
+                  </button>
+                  <button 
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-1 py-3 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold rounded-xl transition-all shadow-sm"
+                  >
+                    Verify & Create
                   </button>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    className="block w-full px-4 py-2.5 pr-12 rounded-lg border border-slate-200 bg-white text-slate-900 text-body-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder:text-slate-400"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
-                  >
-                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
+              </form>
             </div>
-
-            <div className="pt-1">
-              <Button
-                type="submit"
-                className="w-full h-11 md:h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-sm md:text-body"
-              >
-                Create Account
-              </Button>
-            </div>
-          </form>
-
-          <div className="mt-4 md:mt-8 text-center shrink-0">
-            <p className="text-slate-500 text-xs md:text-body-sm">
-              Already have an account? <Link href="/login" className="text-blue-600 font-bold hover:underline">Login</Link>
-            </p>
-          </div>
+          )}
 
         </div>
       </div>
-
     </div>
   );
 }

@@ -1,32 +1,45 @@
-"use client";
-
+'use client';
 import React, { useState, useEffect } from 'react';
-import CalendarIcon from '@mui/icons-material/CalendarMonth';
+import ChevronLeft from '@mui/icons-material/ChevronLeft';
+import ChevronRight from '@mui/icons-material/ChevronRight';
 import Clock from '@mui/icons-material/AccessTime';
-import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
+import { useRouter } from 'next/navigation';
+import BookingModal from '@/components/BookingModal';
+import { Calendar } from "@/components/ui/calendar"
+import { format } from "date-fns"
+import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
-import BookingModal from '@/components/BookingModal';
 
 export default function AdminAvailabilityPage() {
-  const [calendarDate, setCalendarDate] = useState<Date | undefined>(new Date());
-  const [slots, setSlots] = useState<{ time: string; status: string; start_time: string; end_time: string; user?: string | null }[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<any>(null);
+  const router = useRouter();
+  const { user } = useAuthStore();
+  const isLoggedIn = !!user;
 
-  const handleBookNow = (slot: any) => {
-    setSelectedSlot({
-      date: calendarDate ? format(calendarDate, "EEEE, dd MMMM yyyy") : "No date selected",
-      time: slot.time,
-      court_id: 1,
-      start_time: slot.start_time,
-      end_time: slot.end_time,
-      rawDate: calendarDate ? format(calendarDate, 'yyyy-MM-dd') : ''
-    });
-    setIsModalOpen(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedSlots, setSelectedSlots] = useState<any[]>([]);
+  const [calendarDate, setCalendarDate] = useState<Date | undefined>(new Date());
+  const [slots, setSlots] = useState<{ time: string; status: string; start_time: string; end_time: string; court_id: number, user?: string | null }[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // States for Blocked Dates
+  const [isBlockingModalOpen, setIsBlockingModalOpen] = useState(false);
+  const [blockedDatesList, setBlockedDatesList] = useState<any[]>([]);
+  const [datesToBlock, setDatesToBlock] = useState<Date[] | undefined>([]);
+  const [blockReason, setBlockReason] = useState('');
+  
+  const fetchBlockedDates = async () => {
+    try {
+      const res = await api.get('/admin/blocked-dates');
+      setBlockedDatesList(res.data);
+    } catch (e) {
+      console.error(e);
+    }
   };
+
+  useEffect(() => {
+    fetchBlockedDates();
+  }, []);
 
   useEffect(() => {
     const fetchAvailability = async () => {
@@ -34,7 +47,7 @@ export default function AdminAvailabilityPage() {
       setIsLoading(true);
       try {
         const dateStr = format(calendarDate, 'yyyy-MM-dd');
-        const res = await api.get(`/availability?date=${dateStr}&court_id=1`).catch(() => ({ data: [] }));
+        const res = await api.get(`/availability?date=${dateStr}&court_id=1`);
         
         const formatTime = (timeStr: string) => {
           if (!timeStr) return '';
@@ -51,6 +64,7 @@ export default function AdminAvailabilityPage() {
         for (let hour = 6; hour < 22; hour++) {
           const startStr = `${hour.toString().padStart(2, '0')}:00:00`;
           const endStr = `${(hour + 1).toString().padStart(2, '0')}:00:00`;
+          
           const backendSlot = backendSlots.find((bs: any) => bs.start_time === startStr);
           
           hardcodedSlots.push({
@@ -58,10 +72,13 @@ export default function AdminAvailabilityPage() {
             status: backendSlot ? backendSlot.status : 'Available',
             start_time: startStr,
             end_time: endStr,
+            court_id: backendSlot?.court_id || 1,
             user: backendSlot?.user
           });
         }
+        
         setSlots(hardcodedSlots);
+        setSelectedSlots([]);
       } catch (error) {
         toast.error('Failed to load availability');
         setSlots([]);
@@ -72,107 +89,312 @@ export default function AdminAvailabilityPage() {
     fetchAvailability();
   }, [calendarDate]);
 
+  const handleToggleSlot = (slot: any) => {
+    const isSelected = selectedSlots.some(s => s.start_time === slot.start_time);
+    if (isSelected) {
+      setSelectedSlots(selectedSlots.filter(s => s.start_time !== slot.start_time));
+    } else {
+      setSelectedSlots([...selectedSlots, {
+        date: calendarDate ? format(calendarDate, "EEEE, dd MMMM yyyy") : "No date selected", 
+        time: slot.time,
+        court: 'Court A - Professional Mat',
+        court_id: slot.court_id || 1,
+        start_time: slot.start_time,
+        end_time: slot.end_time,
+        rawDate: calendarDate ? format(calendarDate, 'yyyy-MM-dd') : ''
+      }]);
+    }
+  };
+
+  const handleBookSelected = () => {
+    if (!isLoggedIn) {
+      router.push('/login');
+    } else if (selectedSlots.length > 0) {
+      setIsModalOpen(true);
+    } else {
+      toast.error('Please select at least one available slot.');
+    }
+  };
+  
+  const handleBlockDate = async () => {
+    if (!datesToBlock || datesToBlock.length === 0) return;
+    try {
+        await api.post('/admin/blocked-dates', {
+            dates: datesToBlock.map(d => format(d, 'yyyy-MM-dd')),
+            reason: blockReason
+        });
+        toast.success('Dates blocked successfully');
+        setIsBlockingModalOpen(false);
+        setBlockReason('');
+        setDatesToBlock([]);
+        fetchBlockedDates();
+        // Force refresh slots if the blocked date is the one currently viewed
+        if (datesToBlock.some(d => format(d, 'yyyy-MM-dd') === format(calendarDate!, 'yyyy-MM-dd'))) {
+            setCalendarDate(new Date(calendarDate!));
+        }
+    } catch (e: any) {
+        toast.error(e.response?.data?.message || 'Failed to block dates');
+    }
+  };
+
+  const handleUnblockDate = async (date: string) => {
+      try {
+          await api.delete(`/admin/blocked-dates/${date}`);
+          toast.success('Date unblocked successfully');
+          fetchBlockedDates();
+          if (format(calendarDate!, 'yyyy-MM-dd') === date) {
+              setCalendarDate(new Date(calendarDate!));
+          }
+      } catch (e: any) {
+          toast.error(e.response?.data?.message || 'Failed to unblock date');
+      }
+  };
+
   return (
     <div className="p-6 md:p-10 w-full space-y-8 pb-20 min-h-screen">
-      
+      <div className="max-w-7xl mx-auto">
 
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+          <div>
+            <h1 className="text-2xl font-black text-[#0f172a] tracking-tight mb-2">
+              Admin Availability
+            </h1>
+            <p className="text-slate-500 text-sm">
+              Manage court availability and block dates for tournaments.
+            </p>
+          </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* Calendar Sidebar */}
-        <div className="lg:col-span-4 xl:col-span-3">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sticky top-6 flex justify-center items-start">
-            <Calendar
-              mode="single"
-              selected={calendarDate}
-              onSelect={setCalendarDate}
-              className="rounded-md border-0"
-            />
+          <div className="flex gap-4">
+            <button 
+                onClick={() => setIsBlockingModalOpen(true)}
+                className="bg-red-50 text-red-600 font-bold text-sm px-4 py-2 rounded-lg border border-red-100 hover:bg-red-100 transition-colors"
+            >
+                Block Dates
+            </button>
+            <div className="flex items-center gap-3 bg-slate-100 rounded-lg px-4 py-2 border border-slate-200 hidden md:flex">
+              <span className="text-slate-500 text-xs font-semibold">Operating Hours:</span>
+              <span className="text-slate-900 text-xs font-bold">Mon-Sun | 6:00 AM - 10:00 PM</span>
+            </div>
           </div>
         </div>
+        {/* Blocked Dates List */}
+        {blockedDatesList.length > 0 && (
+          <div className="mb-6 bg-white p-4 rounded-xl border border-red-100 flex items-center gap-4 flex-wrap">
+            <span className="text-xs font-bold text-slate-500">Currently Blocked Dates:</span>
+            {blockedDatesList.map((bd) => (
+              <div key={bd.id} className="flex items-center gap-2 bg-red-50 text-red-700 px-3 py-1.5 rounded-lg text-xs font-bold">
+                {format(new Date(bd.date), 'dd MMM yyyy')}
+                <button onClick={() => handleUnblockDate(bd.date)} className="hover:text-red-900 ml-1">
+                  &times;
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
-        {/* Slots Content */}
-        <div className="lg:col-span-8 xl:col-span-9">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-4 border-b border-slate-100">
-              <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
-                {calendarDate ? format(calendarDate, "EEEE, MMMM dd, yyyy") : "Selected Date"}
-              </h2>
-              
-              <div className="flex items-center gap-4 text-xs font-bold text-slate-500">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Available
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-slate-400"></span> Blocked
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-blue-500"></span> Booked
-                </div>
+        {/* Main Content Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+          {/* Left Sidebar - Calendar */}
+          <div className="lg:col-span-4 xl:col-span-3">
+            <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6">
+
+              <div className="flex justify-center">
+                <Calendar
+                  mode="single"
+                  selected={calendarDate}
+                  onSelect={setCalendarDate}
+                  disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                  className="rounded-md border-0"
+                />
               </div>
             </div>
+          </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              {slots.map((slot, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-slate-100 bg-[#f8fafc] hover:border-blue-200 transition-all gap-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="bg-white p-2 rounded-lg shadow-sm text-slate-400">
-                      <Clock className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <span className="font-bold text-slate-800 text-sm tracking-tight block">{slot.time}</span>
-                      {slot.user && (
-                        <span className="text-[11px] font-bold text-blue-600 mt-1 block">Booked by: {slot.user}</span>
-                      )}
-                    </div>
+          {/* Right Main Content - Slots */}
+          <div className="lg:col-span-8 xl:col-span-9">
+            <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 md:p-8">
+
+              {/* Header and Legend */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <h2 className="text-subtitle font-extrabold text-slate-900 tracking-tight">
+                  Available Slots for {calendarDate ? format(calendarDate, "EEEE, MMM dd") : "Selected Date"}
+                </h2>
+
+                <div className="flex items-center gap-4 text-caption font-bold text-slate-500">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Available
                   </div>
-
-                  <div className="flex items-center gap-3 self-end sm:self-auto">
-                    {slot.status === 'Booked' && (
-                      <span className="text-blue-600 font-extrabold text-[10px] bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">Booked</span>
-                    )}
-
-                    {slot.status === 'Pending' && (
-                      <span className="text-amber-600 font-extrabold text-[10px] bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100">Pending</span>
-                    )}
-
-                    {slot.status === 'Blocked' && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-slate-500 font-extrabold text-[10px] bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">Blocked</span>
-                        <button className="bg-white border border-emerald-200 text-emerald-600 hover:bg-emerald-50 text-[10px] font-extrabold px-3 py-1.5 rounded-lg transition-colors">
-                          Unblock
-                        </button>
-                      </div>
-                    )}
-
-                    {slot.status === 'Available' && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-emerald-600 font-extrabold text-[10px] bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">Available</span>
-                        <button onClick={() => handleBookNow(slot)} className="bg-[#fbbf24] text-slate-900 hover:bg-[#f5b81a] text-[10px] font-extrabold px-3 py-1.5 rounded-lg transition-colors">
-                          Book
-                        </button>
-                        <button className="bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 text-[10px] font-extrabold px-3 py-1.5 rounded-lg transition-colors">
-                          Block
-                        </button>
-                      </div>
-                    )}
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-orange-500"></span> Pending
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-red-500"></span> Booked
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-slate-400"></span> Unavailable
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
 
+              {/* Slots Grid */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                {isLoading ? (
+                  <div className="col-span-full py-10 flex justify-center">
+                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                ) : slots.length === 0 ? (
+                  <div className="col-span-full py-10 text-center text-slate-500 font-bold">
+                    No slots available for this date.
+                  </div>
+                ) : slots.every(s => s.status === 'Blocked') ? (
+                  <div className="col-span-full py-16 flex flex-col items-center justify-center bg-slate-50 border border-slate-100 rounded-2xl">
+                    <div className="w-16 h-16 bg-slate-200 text-slate-400 rounded-full flex items-center justify-center mb-4">
+                      <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-700 mb-2">Date Unavailable</h3>
+                    <p className="text-slate-500 text-center max-w-md">This date has been blocked. Please unblock it to manage slots.</p>
+                  </div>
+                ) : (
+                  slots.map((slot, index) => {
+                    const isSelected = selectedSlots.some(s => s.start_time === slot.start_time);
+                    return (
+                      <div
+                        key={index}
+                        onClick={() => slot.status === 'Available' && handleToggleSlot(slot)}
+                        className={`flex items-center justify-between p-4 rounded-xl border transition-all group ${
+                          slot.status === 'Available' ? 'cursor-pointer hover:border-[#fbbf24] hover:shadow-sm bg-[#f8fafc]' : 'bg-slate-50 border-slate-100 opacity-70'
+                        } ${isSelected ? 'border-[#fbbf24] bg-[#fbbf24] text-slate-900 shadow-[0_0_0_1px_#fbbf24]' : 'border-slate-100'}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {slot.status === 'Available' && (
+                            <div className="relative flex items-center justify-center w-5 h-5">
+                              <input 
+                                type="checkbox" 
+                                checked={isSelected}
+                                readOnly
+                                className="peer appearance-none w-5 h-5 border-2 border-slate-300 rounded focus:ring-[#fbbf24] checked:bg-slate-900 checked:border-slate-900 transition-colors cursor-pointer"
+                              />
+                              <svg className={`absolute w-3 h-3 text-white pointer-events-none transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          )}
+                          <div className={`p-2 rounded-lg shadow-sm transition-colors ${isSelected ? 'bg-slate-900 text-[#fbbf24]' : 'bg-white text-slate-400 group-hover:text-slate-900'}`}>
+                            <Clock className="w-4 h-4" />
+                          </div>
+                          <span className={`font-bold text-body-sm tracking-tight ${isSelected ? 'text-slate-900' : 'text-slate-800'}`}>{slot.time}</span>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          {slot.status === 'Booked' && (
+                            <span className="text-red-500 font-bold text-caption">Booked</span>
+                          )}
+
+                          {slot.status === 'Pending' && (
+                            <span className="bg-orange-100 text-orange-600 font-bold text-caption px-3 py-1.5 rounded-full uppercase tracking-wider">
+                              Pending Admin
+                            </span>
+                          )}
+
+                          {slot.status === 'Available' && (
+                            <span className={`font-bold text-caption mr-2 ${isSelected ? 'text-slate-900' : 'text-emerald-500'}`}>
+                              {isSelected ? 'Selected' : 'Available'}
+                            </span>
+                          )}
+
+                          {slot.status === 'Blocked' && (
+                            <span className="bg-slate-200 text-slate-600 font-bold text-caption px-3 py-1.5 rounded-full uppercase tracking-wider">
+                              Unavailable
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Action Area */}
+              {slots.length > 0 && (
+                <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-sm font-bold text-slate-500">
+                    {selectedSlots.length} slot{selectedSlots.length !== 1 && 's'} selected
+                  </div>
+                  <button
+                    onClick={handleBookSelected}
+                    disabled={selectedSlots.length === 0}
+                    className={`font-bold text-body-sm px-8 py-3 rounded-lg transition shadow-sm w-full sm:w-auto ${
+                      selectedSlots.length > 0 
+                        ? 'bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900' 
+                        : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                    }`}
+                  >
+                    Book Selected Slots
+                  </button>
+                </div>
+              )}
+
+            </div>
           </div>
+
         </div>
       </div>
 
       <BookingModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        selectedSlots={selectedSlot ? [selectedSlot] : []}
+        selectedSlots={selectedSlots}
       />
+
+      {isBlockingModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Block Dates</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Select Date(s)</label>
+                <div className="flex justify-center bg-slate-50 border border-slate-200 rounded-lg p-2">
+                  <Calendar
+                    mode="multiple"
+                    selected={datesToBlock}
+                    onSelect={setDatesToBlock}
+                    disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                    className="rounded-md"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Reason (Optional)</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Tournament"
+                  value={blockReason}
+                  onChange={(e) => setBlockReason(e.target.value)}
+                  className="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-blue-500"
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button 
+                  onClick={() => setIsBlockingModalOpen(false)}
+                  className="flex-1 px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-lg hover:bg-slate-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleBlockDate}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Confirm Block
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -29,7 +29,7 @@ export default function AvailabilityPage() {
       try {
         const dateStr = format(calendarDate, 'yyyy-MM-dd');
         // Defaulting court_id to 1 as per example, could be dynamic later
-        const res = await api.get(`/availability?date=${dateStr}&court_id=1`).catch(() => ({ data: [] }));
+        const res = await api.get(`/availability?date=${dateStr}&court_id=1`);
         
         // Helper to format "HH:mm:ss" to "hh:mm a"
         const formatTime = (timeStr: string) => {
@@ -159,6 +159,9 @@ export default function AvailabilityPage() {
                   <div className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-red-500"></span> Booked
                   </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-slate-400"></span> Unavailable
+                  </div>
                 </div>
               </div>
 
@@ -171,6 +174,16 @@ export default function AvailabilityPage() {
                 ) : slots.length === 0 ? (
                   <div className="col-span-full py-10 text-center text-slate-500 font-bold">
                     No slots available for this date.
+                  </div>
+                ) : slots.every(s => s.status === 'Blocked') ? (
+                  <div className="col-span-full py-16 flex flex-col items-center justify-center bg-slate-50 border border-slate-100 rounded-2xl">
+                    <div className="w-16 h-16 bg-slate-200 text-slate-400 rounded-full flex items-center justify-center mb-4">
+                      <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-700 mb-2">Date Unavailable</h3>
+                    <p className="text-slate-500 text-center max-w-md">This date has been blocked for maintenance or a scheduled tournament. Please select another date.</p>
                   </div>
                 ) : (
                   slots.map((slot, index) => {
@@ -217,6 +230,12 @@ export default function AvailabilityPage() {
                           {slot.status === 'Available' && (
                             <span className={`font-bold text-caption mr-2 ${isSelected ? 'text-slate-900' : 'text-emerald-500'}`}>
                               {isSelected ? 'Selected' : 'Available'}
+                            </span>
+                          )}
+
+                          {slot.status === 'Blocked' && (
+                            <span className="bg-slate-200 text-slate-600 font-bold text-caption px-3 py-1.5 rounded-full uppercase tracking-wider">
+                              Unavailable
                             </span>
                           )}
                         </div>

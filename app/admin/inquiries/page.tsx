@@ -122,7 +122,7 @@ export default function AdminInquiriesPage() {
                         {inq.subject || 'General'}
                       </span>
                     </td>
-                    <td className="px-6 py-5 text-slate-500 font-medium max-w-[200px] truncate">
+                    <td className="px-6 py-5 text-slate-500 font-medium max-w-50 truncate">
                       {inq.message}
                     </td>
                     <td className="px-6 py-5 text-slate-500 font-medium">{inq.created_at ? format(new Date(inq.created_at), 'dd MMM yyyy') : '-'}</td>

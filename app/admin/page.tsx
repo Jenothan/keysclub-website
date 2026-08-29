@@ -149,13 +149,13 @@ export default function AdminDashboardPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-4">
                       {req.status === 'Pending' && (
-                        <span className="text-yellow-600 bg-yellow-50 font-bold text-xs px-2.5 py-1 rounded-md w-[80px] text-center">Pending</span>
+                        <span className="text-yellow-600 bg-yellow-50 font-bold text-xs px-2.5 py-1 rounded-md w-20 text-center">Pending</span>
                       )}
                       {req.status === 'Confirmed' && (
-                        <span className="text-emerald-600 bg-emerald-50 font-bold text-xs px-2.5 py-1 rounded-md w-[80px] text-center">Confirmed</span>
+                        <span className="text-emerald-600 bg-emerald-50 font-bold text-xs px-2.5 py-1 rounded-md w-20 text-center">Confirmed</span>
                       )}
                       {req.status === 'Rejected' && (
-                        <span className="text-red-600 bg-red-50 font-bold text-xs px-2.5 py-1 rounded-md w-[80px] text-center">Rejected</span>
+                        <span className="text-red-600 bg-red-50 font-bold text-xs px-2.5 py-1 rounded-md w-20 text-center">Rejected</span>
                       )}
                     </div>
                   </td>

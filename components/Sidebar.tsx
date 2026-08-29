@@ -38,7 +38,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   ];
 
   return (
-    <div className="relative w-64 text-white flex flex-col h-screen sticky top-0 shadow-xl overflow-hidden">
+    <div className="w-64 text-white flex flex-col h-screen sticky top-0 shadow-xl overflow-hidden">
       {/* Background Image & Overlay */}
       <div className="absolute inset-0 z-0">
         <Image

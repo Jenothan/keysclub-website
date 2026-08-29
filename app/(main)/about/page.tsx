@@ -288,7 +288,7 @@ export default function AboutPage() {
               <h2 className="text-title font-extrabold text-[#0f172a] mt-4 mb-6">
                 More Than Just a Court
               </h2>
-              <p className="text-body text-slate-500 leading-relaxed text-lg">
+              <p className="text-body text-slate-500 leading-relaxed">
                 Our club is more than a place to play badminton. It is a space where young people and community members can connect, stay active, improve their sporting abilities and enjoy healthy recreation together.
               </p>
             </div>

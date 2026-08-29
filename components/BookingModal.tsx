@@ -82,7 +82,7 @@ export default function BookingModal({ isOpen, onClose, selectedSlots }: Booking
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[700px] p-0 border-0 bg-transparent shadow-none [&>button]:hidden">
+      <DialogContent className="sm:max-w-175 p-0 border-0 bg-transparent shadow-none [&>button]:hidden">
         <DialogTitle className="sr-only">Booking Process</DialogTitle>
         <div className="relative w-full bg-white flex flex-col items-center rounded-2xl shadow-xl border border-slate-100 max-h-[90vh]">
         
@@ -119,7 +119,7 @@ export default function BookingModal({ isOpen, onClose, selectedSlots }: Booking
         </div>
 
         {/* Modal Card Content */}
-        <div className="w-full p-6 sm:p-8 md:p-10 max-w-[600px] mx-auto overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="w-full p-6 sm:p-8 md:p-10 max-w-150 mx-auto overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none">
           
           {/* Step 1: Review & Notes */}
           {currentStep === 1 && (

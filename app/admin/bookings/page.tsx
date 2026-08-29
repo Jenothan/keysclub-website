@@ -8,10 +8,14 @@ import { Input } from '@/components/ui/input';
 import api from '@/lib/axios';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import RescheduleModal from '@/components/RescheduleModal';
 
 export default function AdminBookingsPage() {
   const [allBookings, setAllBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
+  const [rescheduleBooking, setRescheduleBooking] = useState<any | null>(null);
 
   const fetchBookings = async () => {
     try {
@@ -27,23 +31,30 @@ export default function AdminBookingsPage() {
 
   useEffect(() => {
     fetchBookings();
+    
+    const handleClickOutside = () => setOpenDropdownId(null);
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  const handleAction = async (id: number, action: 'confirm' | 'reject') => {
+  const handleAction = async (id: number, action: 'confirm' | 'reject' | 'cancel') => {
     try {
       await api.post(`/admin/bookings/${id}/${action}`);
       toast.success(`Booking ${action}ed successfully`);
-      fetchBookings(); // refresh the list
+      fetchBookings();
     } catch (error: any) {
       toast.error(error.response?.data?.message || `Failed to ${action} booking`);
     }
   };
 
+  const handleDropdownClick = (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    setOpenDropdownId(openDropdownId === id ? null : id);
+  };
+
   return (
     <div className="p-6 md:p-10 w-full space-y-8 pb-20 min-h-screen">
       
-
-
       {/* Filters */}
       <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center">
         
@@ -133,8 +144,11 @@ export default function AdminBookingsPage() {
                     {req.status === 'Rejected' && (
                       <span className="text-red-500 bg-red-50 font-extrabold text-[11px] px-3 py-1.5 rounded-md">Rejected</span>
                     )}
+                    {req.status === 'Cancelled' && (
+                      <span className="text-slate-500 bg-slate-100 font-extrabold text-[11px] px-3 py-1.5 rounded-md">Cancelled</span>
+                    )}
                   </td>
-                  <td className="px-4 py-5 w-24">
+                  <td className="px-4 py-5 w-24 relative">
                     {req.status === 'Pending' ? (
                       <div className="flex flex-col gap-1.5">
                         <button onClick={() => handleAction(req.id, 'confirm')} className="bg-[#10b981] hover:bg-[#059669] text-white text-[10px] font-extrabold px-3 py-1.5 rounded transition-colors text-center w-20 tracking-wide">
@@ -145,10 +159,29 @@ export default function AdminBookingsPage() {
                         </button>
                       </div>
                     ) : (
-                      <div className="flex justify-center">
-                        <button className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
+                      <div className="flex justify-center relative">
+                        <button 
+                          onClick={(e) => handleDropdownClick(e, req.id)}
+                          className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
+                        >
                           <MoreVertical className="w-5 h-5" />
                         </button>
+                        {openDropdownId === req.id && (req.status === 'Confirmed') && (
+                          <div className="absolute right-0 top-10 mt-1 w-32 bg-white rounded-lg shadow-xl border border-slate-100 z-50 overflow-hidden">
+                            <button 
+                              onClick={() => { setRescheduleBooking(req); setOpenDropdownId(null); }}
+                              className="w-full text-left px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                            >
+                              Reschedule
+                            </button>
+                            <button 
+                              onClick={() => { handleAction(req.id, 'cancel'); setOpenDropdownId(null); }}
+                              className="w-full text-left px-4 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </td>
@@ -164,25 +197,21 @@ export default function AdminBookingsPage() {
             <LayoutGrid className="w-4 h-4 text-blue-500" />
             Confirmed slots automatically become unavailable to other users
           </div>
-          
-          <div className="flex items-center gap-1.5">
-            <button className="px-3 py-1.5 border border-slate-200 text-slate-500 text-xs font-bold rounded-md hover:bg-slate-50 transition-colors">
-              Previous
-            </button>
-            <button className="w-7 h-7 flex items-center justify-center bg-blue-600 text-white text-xs font-bold rounded-md shadow-sm">
-              1
-            </button>
-            <button className="w-7 h-7 flex items-center justify-center border border-slate-200 text-slate-500 text-xs font-bold rounded-md hover:bg-slate-50 transition-colors">
-              2
-            </button>
-            <button className="px-3 py-1.5 border border-slate-200 text-slate-500 text-xs font-bold rounded-md hover:bg-slate-50 transition-colors">
-              Next
-            </button>
-          </div>
         </div>
-
       </div>
-
+      
+      {/* RescheduleModal placeholder - we will create this component */}
+      {rescheduleBooking && (
+        <RescheduleModal 
+          isOpen={!!rescheduleBooking} 
+          onClose={() => setRescheduleBooking(null)} 
+          booking={rescheduleBooking} 
+          onSuccess={() => {
+            setRescheduleBooking(null);
+            fetchBookings();
+          }}
+        />
+      )}
     </div>
   );
 }
