@@ -7,6 +7,7 @@ import MapPin from '@mui/icons-material/LocationOn';
 import MessageCircle from '@mui/icons-material/Chat';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import api from '@/lib/axios';
 import { toast } from 'sonner';
 
@@ -27,6 +28,7 @@ const Instagram = (props: React.SVGProps<SVGSVGElement>) => (
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [websiteData, setWebsiteData] = useState<any>(null);
+  const [subject, setSubject] = useState("Tournament");
 
   React.useEffect(() => {
     api.get('/website-data').then(res => {
@@ -59,8 +61,8 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 py-16">
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-0 space-y-12">
-        
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+
         {/* Page Header */}
         <div className="text-center space-y-4">
           <h1 className="text-3xl md:text-4xl font-extrabold text-[#0f172a] tracking-tight">
@@ -73,13 +75,13 @@ export default function ContactPage() {
 
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+
           {/* Left Column - Contact Info */}
           <div className="lg:col-span-4 space-y-4">
-            
+
             {/* Call Us Card */}
             <div className="bg-white rounded-2xl p-6 border border-slate-100 flex items-start gap-4 shadow-sm">
-              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center shrink-0">
                 <Phone className="w-5 h-5" />
               </div>
               <div>
@@ -91,7 +93,7 @@ export default function ContactPage() {
 
             {/* Email Card */}
             <div className="bg-white rounded-2xl p-6 border border-slate-100 flex items-start gap-4 shadow-sm">
-              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center shrink-0">
                 <Mail className="w-5 h-5" />
               </div>
               <div>
@@ -103,7 +105,7 @@ export default function ContactPage() {
 
             {/* Location Card */}
             <div className="bg-white rounded-2xl p-6 border border-slate-100 flex items-start gap-4 shadow-sm">
-              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center shrink-0">
                 <MapPin className="w-5 h-5" />
               </div>
               <div>
@@ -117,7 +119,7 @@ export default function ContactPage() {
             <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm mt-4">
               <h4 className="font-bold text-[#0f172a] mb-4 text-sm">Connect With Us</h4>
               <div className="flex items-center gap-3">
-                <button className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+                <button className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600 hover:text-yellow-400 hover:bg-yellow-400/10 hover:border-yellow-400 transition-colors">
                   <Facebook className="w-4 h-4" />
                 </button>
                 <button className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600 hover:text-pink-600 hover:bg-pink-50 transition-colors">
@@ -132,47 +134,55 @@ export default function ContactPage() {
           </div>
 
           {/* Right Column - Form */}
-          <div className="lg:col-span-8 bg-white rounded-2xl p-8 border border-slate-100 shadow-sm">
+          <div id='enquiry_form' className="lg:col-span-8 bg-white rounded-2xl p-8 border border-slate-100 shadow-sm">
             <h2 className="text-xl font-extrabold text-[#0f172a] mb-8 tracking-tight">Send an Inquiry</h2>
 
             <form className="space-y-6" onSubmit={onSubmit}>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-[#0f172a]">Full Name</label>
-                  <Input name="name" required placeholder="E.g., Ashan Perera" className="h-11 bg-slate-50/50" />
+                  <Input name="name" required placeholder="Ashan Perera" className="h-11 bg-slate-50/50 focus:border-yellow-400 focus:ring-yellow-400" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-[#0f172a]">Mobile Number</label>
-                  <Input name="mobile" required placeholder="E.g., 771234567" className="h-11 bg-slate-50/50" />
+                  <Input name="mobile" required placeholder="771234567" className="h-11 bg-slate-50/50 focus:border-yellow-400 focus:ring-yellow-400" />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-[#0f172a]">Email Address</label>
-                <Input name="email" required placeholder="E.g., ashan@example.com" type="email" className="h-11 bg-slate-50/50" />
+                <Input name="email" required placeholder="ashan@example.com" type="email" className="h-11 bg-slate-50/50 focus:border-yellow-400 focus:ring-yellow-400" />
               </div>
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-[#0f172a]">Subject</label>
-                <select name="subject" className="flex h-11 w-full rounded-md border border-input bg-slate-50/50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none">
-                  <option>Tournament</option>
-                  <option>Full Day Court Booking</option>
-                  <option>Others</option>
-                </select>
+                <input type="hidden" name="type" value={subject} />
+                <Select value={subject} onValueChange={setSubject}>
+                  <SelectTrigger className="h-11 bg-slate-50/50">
+                    <SelectValue placeholder="Select Subject" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Tournament">Tournament</SelectItem>
+                    <SelectItem value="Full Day Court Booking">Full Day Court Booking</SelectItem>
+                    <SelectItem value="Club Membership">Club Membership</SelectItem>
+                    <SelectItem value="General Inquiry">General Inquiry</SelectItem>
+                    <SelectItem value="Others">Others</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-[#0f172a]">Message/Additional Requirements</label>
-                <textarea 
+                <textarea
                   name="message"
                   required
-                  className="flex w-full rounded-md border border-input bg-slate-50/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-30" 
+                  className="flex w-full rounded-md border border-input bg-slate-50/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 disabled:cursor-not-allowed disabled:opacity-50 min-h-30"
                   placeholder="Outline any custom equipment, boards, umpire needs or schedule preferences..."
                 />
               </div>
 
-              <Button disabled={isSubmitting} className="w-full h-12 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold text-sm transition-colors rounded-lg">
+              <Button disabled={isSubmitting} className="w-full h-12 bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-bold text-sm transition-colors rounded-lg">
                 {isSubmitting ? "Submitting..." : "Submit Inquiry"}
               </Button>
             </form>

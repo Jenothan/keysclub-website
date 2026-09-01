@@ -4,7 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -26,7 +26,7 @@ export default function RootLayout({
       lang="en"
       className={cn("h-full", "antialiased", outfit.variable, "font-sans", geist.variable)}
     >
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans">
+      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans select-none">
         {children}
         <Toaster />
       </body>

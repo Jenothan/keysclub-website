@@ -45,18 +45,18 @@ export default function Navbar() {
               className="object-contain"
             />
             <div className="flex flex-col">
-              <span className="font-bold text-subtitle leading-none tracking-tight text-slate-900">KEYS CLUB</span>
-              <span className="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">Karanavai East</span>
+              <span className="font-bold text-subtitle leading-none tracking-tight text-slate-900">KARANAVAI EAST</span>
+              <span className="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">YOUTH SPORTS CLUB</span>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex space-x-8">
             {navLinks.map((link) => (
-              <Link 
+              <Link
                 key={link.name}
-                href={link.href} 
-                className={`${pathname === link.href ? "text-[#fbbf24] font-bold" : "text-gray-600 font-medium"} hover:text-[#f5b81a] transition`}
+                href={link.href}
+                className={`${pathname === link.href ? "text-yellow-400 font-bold" : "text-gray-600 font-medium"} hover:text-yellow-400 transition`}
               >
                 {link.name}
               </Link>
@@ -67,7 +67,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-4">
             {isLoggedIn ? (
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
+                <Link href={(user?.role === 'Admin' || user?.role === 'Super Admin') ? '/admin' : '/dashboard/profile'} className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
                   <div className="text-right flex flex-col justify-center">
                     <span className="font-extrabold text-[#0f172a] text-body leading-tight mb-0.5">{user?.name}</span>
                     <span className="text-slate-500 text-body-sm font-medium leading-none">{user?.phone}</span>
@@ -79,10 +79,10 @@ export default function Navbar() {
                     height={44}
                     className="rounded-full object-cover border border-slate-200 shadow-sm"
                   />
-                </div>
-                
+                </Link>
+
                 <div className="w-px h-8 bg-slate-200 mx-1"></div>
-                
+
                 {/* Logout */}
                 <button onClick={handleLogout} className="flex items-center gap-2 text-slate-500 hover:text-red-600 transition-colors text-sm font-bold">
                   <LogOut className="w-5 h-5" />
@@ -95,7 +95,7 @@ export default function Navbar() {
                   Sign Up
                 </Link>
                 <Link href="/login">
-                  <Button className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-semibold px-6 py-2 h-10 rounded-md transition">
+                  <Button className="bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-semibold px-6 py-2 h-10 rounded-md transition">
                     Login
                   </Button>
                 </Link>
@@ -120,11 +120,11 @@ export default function Navbar() {
         <div className="md:hidden absolute top-20 left-0 w-full bg-white border-b border-slate-100 shadow-lg py-4 px-4 flex flex-col gap-4 z-50">
           <div className="flex flex-col space-y-3 pb-4 border-b border-slate-100">
             {navLinks.map((link) => (
-              <Link 
+              <Link
                 key={link.name}
-                href={link.href} 
+                href={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`${pathname === link.href ? "text-yellow-600 font-bold bg-yellow-50" : "text-slate-700 font-medium"} block px-4 py-3 rounded-lg hover:bg-slate-50 transition`}
+                className={`${pathname === link.href ? "text-yellow-400 font-bold bg-yellow-400/10" : "text-slate-700 font-medium"} block px-4 py-3 rounded-lg hover:bg-slate-50 transition`}
               >
                 {link.name}
               </Link>
@@ -155,7 +155,7 @@ export default function Navbar() {
             ) : (
               <div className="flex flex-col gap-3 px-4">
                 <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold h-12 rounded-lg transition">
+                  <Button className="w-full bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-bold h-12 rounded-lg transition">
                     Login
                   </Button>
                 </Link>

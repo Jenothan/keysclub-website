@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import Calendar from '@mui/icons-material/CalendarMonth';
 import Clock from '@mui/icons-material/AccessTime';
 import ShieldCheck from '@mui/icons-material/GppGood';
@@ -24,7 +25,7 @@ export default function Home() {
         {/* Dark Blue Overlay */}
         <div className="absolute inset-0 bg-[#0f172a]/50 z-0" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-2 sm:px-4 lg:px-0 text-center flex flex-col items-center">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
           <div className="inline-block border border-yellow-400 rounded-full px-5 py-1.5 mb-8">
             <span className="text-yellow-400 text-sm font-semibold tracking-wide">
               Open Every Day | 6:00 AM - 10:00 PM
@@ -41,19 +42,23 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 h-12 rounded-md transition duration-200">
-              Check Availability
-            </Button>
-            <Button variant="outline" className="bg-transparent border border-white text-white hover:bg-white/10 hover:text-white font-bold px-8 h-12 rounded-md transition duration-200">
-              Book a Court
-            </Button>
+            <Link href="/availability">
+              <Button className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 h-12 rounded-md transition duration-200 cursor-pointer">
+                Check Availability
+              </Button>
+            </Link>
+            <Link href="/contact#enquiry_form" className="cursor-pointer">
+              <Button variant="outline" className="bg-transparent border border-white text-white hover:bg-white/10 hover:text-white font-bold px-8 h-12 rounded-md transition duration-200 cursor-pointer">
+                Full Day Booking
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Booking Widget (Separate Section) */}
       <section className="py-12 bg-white">
-        <div className="max-w-5xl mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] p-6 md:p-8 flex flex-col md:flex-row gap-6 items-end border border-gray-100">
 
             <div className="flex-1 w-full">
@@ -91,9 +96,11 @@ export default function Home() {
             </div>
 
             <div className="w-full md:w-auto">
-              <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 h-11.5 rounded-md transition duration-200">
-                Check Availability
-              </Button>
+              <Link href="/availability">
+                <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 h-11.5 rounded-md transition duration-200 cursor-pointer">
+                  Check Availability
+                </Button>
+              </Link>
             </div>
 
           </div>
@@ -102,7 +109,7 @@ export default function Home() {
 
       {/* How It Works Section */}
       <section className="py-16 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-title font-extrabold text-slate-900 mb-4">How It Works</h2>
             <p className="text-body text-slate-500">Reserve your court slot in 5 simple, automated steps</p>
@@ -173,7 +180,7 @@ export default function Home() {
       </section>
       {/* Tournament / Full Day Section */}
       <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-title font-extrabold text-slate-900 mb-4">
               Planning a Tournament or Need the Court for a Full Day?
@@ -186,42 +193,42 @@ export default function Home() {
             <div className="border border-gray-100 rounded-xl p-8 shadow-sm hover:shadow-lg hover:border-yellow-400 transition-all bg-white flex flex-col h-full">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="font-bold text-slate-900 text-subtitle">Regular Court Booking</h3>
-                <span className="bg-yellow-50 text-yellow-500 text-caption font-semibold px-2.5 py-1 rounded-full border border-amber-400">Hourly</span>
+                <span className="bg-yellow-400/10 text-slate-900 text-caption font-semibold px-2.5 py-1 rounded-full border border-yellow-400">Hourly</span>
               </div>
               <p className="text-slate-500 text-body-sm mb-12 grow">
                 Hourly standard bookings for recreation and regular training. Best for 2-4 players.
               </p>
-              <a href="#" className="text-yellow-500 font-semibold text-body-sm flex items-center hover:text-yellow-700">
+              <Link href="/availability" className="text-yellow-500 font-extrabold text-body-sm flex items-center hover:underline">
                 Check Availability <span className="ml-1">→</span>
-              </a>
+              </Link>
             </div>
 
             {/* Card 2 */}
             <div className="border border-gray-100 rounded-xl p-8 shadow-sm hover:shadow-lg hover:border-yellow-400 transition-all bg-white flex flex-col h-full">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="font-bold text-slate-900 text-subtitle">Tournament Booking</h3>
-                <span className="bg-yellow-50 text-yellow-500 text-caption font-semibold px-2.5 py-1 rounded-full border border-amber-400">Event</span>
+                <span className="bg-yellow-400/10 text-slate-900 text-caption font-semibold px-2.5 py-1 rounded-full border border-yellow-400">Event</span>
               </div>
               <p className="text-slate-500 text-body-sm mb-12 grow">
                 Hosting a local community tournament? Get custom arrangements, umpire chairs, and event boards.
               </p>
-              <a href="#" className="text-yellow-500 font-semibold text-body-sm flex items-center hover:text-yellow-700">
+              <Link href="/contact" className="text-yellow-500 font-extrabold text-body-sm flex items-center hover:underline">
                 Make an Inquiry <span className="ml-1">→</span>
-              </a>
+              </Link>
             </div>
 
             {/* Card 3 */}
             <div className="border border-gray-100 rounded-xl p-8 shadow-sm hover:shadow-lg hover:border-yellow-400 transition-all bg-white flex flex-col h-full">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="font-bold text-slate-900 text-subtitle">Full-Day Court</h3>
-                <span className="bg-yellow-50 text-yellow-500 text-caption font-semibold px-2.5 py-1 rounded-full border border-amber-400">Corporate</span>
+                <span className="bg-yellow-400/10 text-slate-900 text-caption font-semibold px-2.5 py-1 rounded-full border border-yellow-400">Corporate</span>
               </div>
               <p className="text-slate-500 text-body-sm mb-12 grow">
                 Reserve full-day exclusive access of courts for sports meets, club training camps, or school events.
               </p>
-              <a href="#" className="text-yellow-500 font-semibold text-body-sm flex items-center hover:text-yellow-700">
+              <Link href="/contact" className="text-yellow-500 font-extrabold text-body-sm flex items-center hover:underline">
                 Request Full-Day Booking <span className="ml-1">→</span>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -229,7 +236,7 @@ export default function Home() {
 
       {/* About The Club Section */}
       <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center gap-16">
             <div className="w-full md:w-5/12">
               <div className="bg-slate-50 rounded-3xl p-12 flex items-center justify-center w-full aspect-square border border-gray-100 shadow-[0_20px_50px_rgb(0,0,0,0.06)]">
@@ -244,9 +251,11 @@ export default function Home() {
               <p className="text-body text-slate-500 leading-relaxed mb-8">
                 KEYS Club is one of the premier badminton & indoor sports hubs in point Pedro, Sri Lanka. Established with a strong drive to foster young talent, promote fitness, and host top-tier regional matches. Our court facilities utilize high-grade mats and equipment matching national standards.
               </p>
-              <button className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 py-3 rounded-md transition duration-200">
-                Join the Game / Book a Court
-              </button>
+              <Link href="/availability">
+                <button className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 py-3 rounded-md transition duration-200 cursor-pointer">
+                  Join the Game / Book a Court
+                </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -254,18 +263,22 @@ export default function Home() {
 
       {/* Have a Question Section */}
       <section className="py-16 bg-[#0f172a] text-center border-b border-slate-800">
-        <div className="max-w-3xl mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-title font-bold text-white mb-6">Have a Question?</h2>
           <p className="text-body text-slate-400 mb-10">
             For specific tournaments, monthly passes, custom slots or events booking, our admin panel is here to support you.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 py-3 rounded-md transition duration-200">
-              Contact Us
-            </button>
-            <button className="bg-transparent border border-white text-white hover:bg-white/10 font-bold px-8 py-3 rounded-md transition duration-200">
-              Make an Inquiry
-            </button>
+            <Link href="/contact">
+              <button className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 py-3 rounded-md transition duration-200 cursor-pointer">
+                Contact Us
+              </button>
+            </Link>
+            <Link href="/contact">
+              <button className="bg-transparent border border-white text-white hover:bg-white/10 font-bold px-8 py-3 rounded-md transition duration-200 cursor-pointer">
+                Make an Inquiry
+              </button>
+            </Link>
           </div>
         </div>
       </section>

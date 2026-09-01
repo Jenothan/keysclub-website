@@ -4,7 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Calendar from '@mui/icons-material/CalendarMonth';
 import LayoutGrid from '@mui/icons-material/GridView';
 import MoreVertical from '@mui/icons-material/MoreVert';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import api from '@/lib/axios';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -13,9 +15,10 @@ import RescheduleModal from '@/components/RescheduleModal';
 export default function AdminBookingsPage() {
   const [allBookings, setAllBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
   const [rescheduleBooking, setRescheduleBooking] = useState<any | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All Statuses');
 
   const fetchBookings = async () => {
     try {
@@ -31,10 +34,6 @@ export default function AdminBookingsPage() {
 
   useEffect(() => {
     fetchBookings();
-    
-    const handleClickOutside = () => setOpenDropdownId(null);
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
   const handleAction = async (id: number, action: 'confirm' | 'reject' | 'cancel') => {
@@ -52,37 +51,71 @@ export default function AdminBookingsPage() {
     setOpenDropdownId(openDropdownId === id ? null : id);
   };
 
+  const filteredBookings = allBookings.filter((b) => {
+    const matchesSearch = !searchTerm.trim() || 
+      b.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      b.id?.toString().includes(searchTerm) ||
+      b.user?.phone?.includes(searchTerm);
+    const matchesStatus = statusFilter === 'All Statuses' || b.status?.toLowerCase() === statusFilter.toLowerCase();
+    return matchesSearch && matchesStatus;
+  });
+
   return (
-    <div className="p-6 md:p-10 w-full space-y-8 pb-20 min-h-screen">
+    <div className="p-4 sm:p-6 md:p-10 w-full space-y-8 pb-20 min-h-screen">
       
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-[#0f172a] tracking-tight mb-1">
+            Booking Requests Management
+          </h1>
+          <p className="text-slate-500 text-sm">
+            Review, confirm, reschedule or reject customer court reservations.
+          </p>
+        </div>
+
+        {(searchTerm || statusFilter !== 'All Statuses') && (
+          <button
+            onClick={() => { setSearchTerm(''); setStatusFilter('All Statuses'); }}
+            className="flex items-center gap-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 px-4 py-2.5 rounded-xl transition-colors cursor-pointer self-start md:self-auto"
+          >
+            <RefreshIcon className="w-4 h-4" /> Reset Filters
+          </button>
+        )}
+      </div>
+
       {/* Filters */}
       <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center">
         
         <div className="relative flex-1 w-full">
           <LayoutGrid className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
           <Input 
-            placeholder="Search Name or ID..." 
-            className="pl-12 h-12 bg-white border-slate-200 focus:border-blue-500 w-full font-medium"
+            placeholder="Search Name, Phone, or Booking ID..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-12 h-12 bg-white border-slate-200 focus:border-yellow-400 w-full font-medium"
           />
         </div>
 
         <div className="relative flex-1 w-full">
-          <select className="h-12 w-full appearance-none bg-white border border-slate-200 rounded-md pl-4 pr-10 text-sm font-medium text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-            <option>All Statuses</option>
-            <option>Pending</option>
-            <option>Confirmed</option>
-            <option>Rejected</option>
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-12 border-slate-200">
+              <SelectValue placeholder="All Statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All Statuses">All Statuses</SelectItem>
+              <SelectItem value="Pending">Pending</SelectItem>
+              <SelectItem value="Confirmed">Confirmed</SelectItem>
+              <SelectItem value="Rejected">Rejected</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="relative flex-1 w-full">
           <Calendar className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
           <Input 
             placeholder="Filter by Date" 
-            className="pl-12 h-12 bg-white border-slate-200 focus:border-blue-500 w-full font-medium"
+            className="pl-12 h-12 bg-white border-slate-200 focus:border-yellow-400 w-full font-medium"
           />
         </div>
 
@@ -108,7 +141,8 @@ export default function AdminBookingsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {allBookings.map((req, i) => (
+              {filteredBookings.length > 0 ? (
+                filteredBookings.map((req, i) => (
                 <tr key={req.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-6 py-5">
                     {req.user ? (
@@ -123,7 +157,7 @@ export default function AdminBookingsPage() {
                       </>
                     )}
                     {req.booked_by && (
-                      <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded mt-1 inline-block">
+                      <span className="text-[10px] font-bold text-slate-900 bg-yellow-400/20 px-1.5 py-0.5 rounded mt-1 inline-block border border-yellow-400">
                         Booked by: {req.booked_by.name} ({req.booked_by.role})
                       </span>
                     )}
@@ -136,7 +170,7 @@ export default function AdminBookingsPage() {
                   <td className="px-6 py-5 text-slate-500 font-medium">{req.notes || '-'}</td>
                   <td className="px-2 py-5 text-right whitespace-nowrap">
                     {req.status === 'Pending' && (
-                      <span className="text-amber-500 bg-amber-50 font-extrabold text-[11px] px-3 py-1.5 rounded-md">Pending</span>
+                      <span className="text-slate-900 bg-yellow-400/20 font-extrabold text-[11px] px-3 py-1.5 rounded-md border border-yellow-400">Pending</span>
                     )}
                     {req.status === 'Confirmed' && (
                       <span className="text-[#10b981] bg-emerald-50 font-extrabold text-[11px] px-3 py-1.5 rounded-md">Confirmed</span>
@@ -170,7 +204,7 @@ export default function AdminBookingsPage() {
                           <div className="absolute right-0 top-10 mt-1 w-32 bg-white rounded-lg shadow-xl border border-slate-100 z-50 overflow-hidden">
                             <button 
                               onClick={() => { setRescheduleBooking(req); setOpenDropdownId(null); }}
-                              className="w-full text-left px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                              className="w-full text-left px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-yellow-400 hover:text-slate-900 transition-colors"
                             >
                               Reschedule
                             </button>
@@ -186,7 +220,17 @@ export default function AdminBookingsPage() {
                     )}
                   </td>
                 </tr>
-              ))}
+              ))
+            ) : (
+              <tr>
+                <td colSpan={7} className="px-6 py-12 text-center text-slate-500 font-medium">
+                  <div className="flex flex-col items-center justify-center">
+                    <Calendar className="w-8 h-8 text-slate-300 mb-3" />
+                    <p className="font-bold">No bookings found matching your criteria.</p>
+                  </div>
+                </td>
+              </tr>
+            )}
             </tbody>
           </table>
         </div>
@@ -194,7 +238,7 @@ export default function AdminBookingsPage() {
         {/* Footer */}
         <div className="mt-4 border-t border-slate-100 p-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-slate-500 text-xs font-bold">
-            <LayoutGrid className="w-4 h-4 text-blue-500" />
+            <LayoutGrid className="w-4 h-4 text-yellow-400" />
             Confirmed slots automatically become unavailable to other users
           </div>
         </div>

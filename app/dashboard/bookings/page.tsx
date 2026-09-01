@@ -51,7 +51,7 @@ export default function MyBookingsPage() {
       case 'Completed':
         return 'bg-emerald-50 text-emerald-600 border border-emerald-200';
       case 'Pending':
-        return 'bg-yellow-50 text-yellow-600 border border-yellow-200';
+        return 'bg-yellow-400/10 text-slate-900 border border-yellow-400 font-extrabold';
       case 'Cancelled':
         return 'bg-red-50 text-red-600 border border-red-200';
       default:
@@ -60,9 +60,8 @@ export default function MyBookingsPage() {
   };
 
   return (
-    <div className="p-6 md:p-10 w-full space-y-8 pb-20">
+    <div className="p-4 sm:p-6 md:p-10 w-full space-y-8 pb-20">
       
-
 
       {/* Tabs and Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-2 rounded-xl shadow-sm border border-slate-100">
@@ -97,7 +96,7 @@ export default function MyBookingsPage() {
             <input 
               type="text" 
               placeholder="Search booking ID..." 
-              className="w-full bg-slate-50 border border-slate-200 text-sm rounded-lg pl-9 pr-4 py-2.5 outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-slate-50 border border-slate-200 text-sm rounded-lg pl-9 pr-4 py-2.5 outline-none focus:border-yellow-400 transition-colors"
             />
           </div>
           <button className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 p-2.5 rounded-lg transition-colors">
@@ -117,12 +116,12 @@ export default function MyBookingsPage() {
               return (
               <div 
                 key={booking.id} 
-                className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col lg:flex-row lg:items-center gap-6 group hover:border-blue-100 hover:shadow-md transition-all duration-300"
+                className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col lg:flex-row lg:items-center gap-6 group hover:border-yellow-400 hover:shadow-md transition-all duration-300"
               >
                 {/* Date Box */}
                 <div className="flex items-center gap-4 lg:w-48">
-                  <div className="bg-slate-50 rounded-xl p-3 flex flex-col items-center justify-center w-16 h-16 border border-slate-100 group-hover:bg-blue-50 group-hover:border-blue-100 transition-colors">
-                    <span className="text-xl font-black text-slate-900 leading-none group-hover:text-blue-700">{format(bookingDate, 'dd')}</span>
+                  <div className="bg-slate-50 rounded-xl p-3 flex flex-col items-center justify-center w-16 h-16 border border-slate-100 group-hover:bg-yellow-400 group-hover:border-yellow-400 transition-colors">
+                    <span className="text-xl font-black text-slate-900 leading-none group-hover:text-slate-900">{format(bookingDate, 'dd')}</span>
                     <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase">{format(bookingDate, 'MMM')}</span>
                   </div>
 

@@ -22,53 +22,52 @@ export default function DashboardAvailabilityPage() {
   const [slots, setSlots] = useState<{ time: string; status: string; start_time: string; end_time: string; court_id: number }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchAvailability = async () => {
-      if (!calendarDate) return;
-      setIsLoading(true);
-      try {
-        const dateStr = format(calendarDate, 'yyyy-MM-dd');
-        // Defaulting court_id to 1 as per example, could be dynamic later
-        const res = await api.get(`/availability?date=${dateStr}&court_id=1`);
-        
-        // Helper to format "HH:mm:ss" to "hh:mm a"
-        const formatTime = (timeStr: string) => {
-          if (!timeStr) return '';
-          const [hours, minutes] = timeStr.split(':');
-          const d = new Date();
-          d.setHours(parseInt(hours, 10));
-          d.setMinutes(parseInt(minutes, 10));
-          return format(d, 'hh:mm a');
-        };
+  const fetchAvailability = async () => {
+    if (!calendarDate) return;
+    setIsLoading(true);
+    try {
+      const dateStr = format(calendarDate, 'yyyy-MM-dd');
+      const res = await api.get(`/availability?date=${dateStr}`);
+      
+      const formatTime = (timeStr: string) => {
+        if (!timeStr) return '';
+        const [hours, minutes] = timeStr.split(':');
+        const d = new Date();
+        d.setHours(parseInt(hours, 10));
+        d.setMinutes(parseInt(minutes, 10));
+        return format(d, 'hh:mm a');
+      };
 
-        const backendSlots = res.data || [];
-        const hardcodedSlots = [];
+      const backendSlots = res.data || [];
+      const activeCourtId = backendSlots[0]?.court_id || 1;
+      const hardcodedSlots = [];
 
-        for (let hour = 6; hour < 22; hour++) {
-          const startStr = `${hour.toString().padStart(2, '0')}:00:00`;
-          const endStr = `${(hour + 1).toString().padStart(2, '0')}:00:00`;
-          
-          // Check if this time slot is booked in backend data
-          const backendSlot = backendSlots.find((bs: any) => bs.start_time === startStr);
-          
-          hardcodedSlots.push({
-            time: `${formatTime(startStr)} - ${formatTime(endStr)}`,
-            status: backendSlot ? backendSlot.status : 'Available',
-            start_time: startStr,
-            end_time: endStr,
-            court_id: backendSlot?.court_id || 1
-          });
-        }
+      for (let hour = 6; hour < 22; hour++) {
+        const startStr = `${hour.toString().padStart(2, '0')}:00:00`;
+        const endStr = `${(hour + 1).toString().padStart(2, '0')}:00:00`;
         
-        setSlots(hardcodedSlots);
-        setSelectedSlots([]); // Clear selection when date changes
-      } catch (error) {
-        toast.error('Failed to load availability');
-        setSlots([]); // clear on error
-      } finally {
-        setIsLoading(false);
+        const backendSlot = backendSlots.find((bs: any) => bs.start_time === startStr);
+        
+        hardcodedSlots.push({
+          time: `${formatTime(startStr)} - ${formatTime(endStr)}`,
+          status: backendSlot ? backendSlot.status : 'Available',
+          start_time: startStr,
+          end_time: endStr,
+          court_id: backendSlot?.court_id || activeCourtId
+        });
       }
-    };
+      
+      setSlots(hardcodedSlots);
+      setSelectedSlots([]);
+    } catch (error) {
+      toast.error('Failed to load availability');
+      setSlots([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchAvailability();
   }, [calendarDate]);
 
@@ -169,7 +168,7 @@ export default function DashboardAvailabilityPage() {
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 {isLoading ? (
                   <div className="col-span-full py-10 flex justify-center">
-                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
                   </div>
                 ) : slots.length === 0 ? (
                   <div className="col-span-full py-10 text-center text-slate-500 font-bold">
@@ -273,7 +272,11 @@ export default function DashboardAvailabilityPage() {
 
       <BookingModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedSlots([]);
+          fetchAvailability();
+        }}
         selectedSlots={selectedSlots}
       />
     </div>

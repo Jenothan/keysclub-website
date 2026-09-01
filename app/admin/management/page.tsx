@@ -87,6 +87,7 @@ export default function AdminManagementPage() {
       });
       setIsOtpModalOpen(true);
       setError('');
+      toast.success('OTP sent to mobile number');
     } catch (err: any) {
       if (err.response?.status === 422) {
         toast.error(err.response.data.message || 'Maximum limit of 5 administrators reached.');
@@ -122,7 +123,7 @@ export default function AdminManagementPage() {
   };
 
   if (isLoading) {
-    return <div className="p-10 flex justify-center"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>;
+    return <div className="p-10 flex justify-center"><div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div></div>;
   }
 
   return (
@@ -175,7 +176,7 @@ export default function AdminManagementPage() {
                   <tr key={admin.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="p-4 pl-6">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm shadow-inner">
+                        <div className="w-10 h-10 rounded-full bg-yellow-100 text-yellow-800 flex items-center justify-center font-bold text-sm shadow-inner">
                           {admin.name.substring(0, 2).toUpperCase()}
                         </div>
                         <div>
@@ -187,7 +188,7 @@ export default function AdminManagementPage() {
                     <td className="p-4">
                       <span className={cn(
                         "px-2.5 py-1 text-xs font-bold rounded-lg",
-                        admin.role === 'Super Admin' ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
+                        admin.role === 'Super Admin' ? "bg-purple-100 text-purple-700" : "bg-yellow-100 text-yellow-800"
                       )}>
                         {admin.role}
                       </span>
@@ -296,11 +297,11 @@ export default function AdminManagementPage() {
         <DialogContent className="sm:max-w-md p-0 border-0 bg-transparent shadow-none [&>button]:hidden">
           <DialogTitle className="sr-only">OTP Verification</DialogTitle>
           <div className="bg-white rounded-2xl border border-slate-100 shadow-xl p-6 md:p-10 text-center relative w-full overflow-hidden">
-            <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-16 h-16 bg-yellow-50 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <KeyRound className="w-8 h-8" />
             </div>
             <h2 className="text-2xl font-extrabold text-[#0f172a] mb-2">Verify Mobile Number</h2>
-            <p className="text-slate-500 mb-8">
+            <p className="text-slate-500 mb-6">
               An OTP has been sent to <span className="font-bold text-slate-700">{formData.mobile || 'the provided number'}</span>. Please enter it below to confirm creation.
             </p>
 

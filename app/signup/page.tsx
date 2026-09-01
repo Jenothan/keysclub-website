@@ -18,13 +18,12 @@ import { useAuthStore } from '@/store/authStore';
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { login } = useAuthStore();
+  const { setAuth } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [step, setStep] = useState<'details' | 'otp'>('details');
   const [formData, setFormData] = useState({ name: '', mobile: '', email: '', password: '', confirmPassword: '' });
   const [otp, setOtp] = useState<string[]>(Array(4).fill(''));
-  const [otpHint, setOtpHint] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleRequestOtp = async (e: React.FormEvent) => {
@@ -35,14 +34,13 @@ export default function SignUpPage() {
     }
     setIsSubmitting(true);
     try {
-      const res = await api.post('/register/request-otp', {
+      await api.post('/register/request-otp', {
         name: formData.name,
         phone: formData.mobile,
         password: formData.password,
       });
-      setOtpHint(res.data.otp_hint);
       setStep('otp');
-      toast.success('OTP sent successfully');
+      toast.success('OTP sent to your mobile number');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to request OTP');
     } finally {
@@ -63,7 +61,7 @@ export default function SignUpPage() {
         password: formData.password,
         otp_code: otpCode,
       });
-      login(res.data.user, res.data.access_token);
+      setAuth(res.data.user, res.data.access_token);
       toast.success('Account created successfully');
       router.push('/dashboard');
     } catch (error: any) {
@@ -101,8 +99,8 @@ export default function SignUpPage() {
             </div>
 
             {/* Pill */}
-            <div className="inline-block border border-yellow-500/80 rounded-full px-4 py-1.5">
-              <span className="text-yellow-500 text-caption font-bold tracking-wider uppercase">
+            <div className="inline-block border border-yellow-400/80 rounded-full px-4 py-1.5">
+              <span className="text-yellow-400 text-caption font-bold tracking-wider uppercase">
                 KEYS Sports Initiative
               </span>
             </div>
@@ -120,7 +118,7 @@ export default function SignUpPage() {
               />
               <div className="flex flex-col">
                 <span className="font-extrabold text-subtitle leading-none tracking-tight text-white mb-1">KEYS CLUB</span>
-                <span className="text-caption text-yellow-500 font-bold uppercase tracking-widest">KARANAVAI EAST YOUTH SPORTS CLUB</span>
+                <span className="text-caption text-yellow-400 font-bold uppercase tracking-widest">KARANAVAI EAST YOUTH SPORTS CLUB</span>
               </div>
             </div>
 
@@ -136,7 +134,7 @@ export default function SignUpPage() {
           {/* Bottom Footer Area */}
           <div className="mt-auto pt-10 pb-6 md:pb-10 border-t border-slate-700/50">
             <div className="flex items-center gap-3 text-slate-300 text-body-sm">
-              <ShieldCheck className="w-5 h-5 text-yellow-500 shrink-0" />
+              <ShieldCheck className="w-5 h-5 text-yellow-400 shrink-0" />
               <span>National standard court mats & equipment setup</span>
             </div>
           </div>
@@ -144,29 +142,29 @@ export default function SignUpPage() {
       </div>
 
       {/* Right Pane (Form) */}
-      <div className="w-full h-full md:w-[55%] lg:w-[50%] flex flex-col p-0 md:p-8 lg:p-12 relative overflow-hidden">
+      <div className="w-full h-full md:w-[55%] lg:w-[50%] flex flex-col justify-center items-center p-4 md:p-10 lg:p-14 relative overflow-y-auto">
         
-        {/* Mobile Back Button */}
-        <div className="md:hidden pt-6 px-6 pb-2 shrink-0">
+        {/* Back Button */}
+        <div className="absolute top-6 left-6 md:top-10 md:left-12 z-10">
           <Link href="/" className="inline-flex items-center gap-2 text-slate-800 hover:text-slate-900 transition group">
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             <span className="font-bold text-body-sm">Back</span>
           </Link>
         </div>
 
-        <div className="w-full flex-1 flex flex-col justify-center md:justify-start md:h-auto md:max-w-140 bg-white md:rounded-2xl md:shadow-[0_0_20px_rgba(30,58,138,0.4)] px-6 py-4 md:p-8 lg:p-10 z-10 md:m-auto relative overflow-y-auto md:overflow-visible">
+        <div className="w-full max-w-lg bg-white rounded-2xl shadow-[0_4px_25px_rgba(0,0,0,0.06)] border border-slate-100 p-8 md:p-10 lg:p-12 z-10 my-auto">
 
           {step === 'details' ? (
             <>
-              <div className="mb-4 md:mb-6 shrink-0">
-                <h2 className="text-2xl md:text-title font-extrabold text-[#0f172a] mb-1.5 tracking-tight">Create Your Account</h2>
-                <p className="text-slate-500 text-sm md:text-body leading-snug">Join KEYS Club and start booking badminton courts</p>
+              <div className="mb-6 md:mb-8 text-left shrink-0">
+                <h2 className="text-2xl md:text-3xl font-extrabold text-[#0f172a] mb-2 tracking-tight">Create Your Account</h2>
+                <p className="text-slate-500 text-sm md:text-base leading-relaxed">Join KEYS Club and start booking badminton courts</p>
               </div>
 
-              <form onSubmit={handleRequestOtp} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <form onSubmit={handleRequestOtp} className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">
                       Full Name
                     </label>
                     <Input
@@ -175,12 +173,12 @@ export default function SignUpPage() {
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
                       placeholder="Suresh Perera"
-                      className="h-11 bg-white text-body-sm"
+                      className="h-12 bg-slate-50 focus:bg-white focus:border-yellow-400 focus:ring-yellow-400 text-sm font-medium"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">
                       Mobile Number
                     </label>
                     <Input
@@ -189,13 +187,13 @@ export default function SignUpPage() {
                       value={formData.mobile}
                       onChange={(e) => setFormData({...formData, mobile: e.target.value})}
                       placeholder="+94 77 123 4567"
-                      className="h-11 bg-white text-body-sm"
+                      className="h-12 bg-slate-50 focus:bg-white focus:border-yellow-400 focus:ring-yellow-400 text-sm font-medium"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">
                     Email Address
                   </label>
                   <Input
@@ -203,13 +201,13 @@ export default function SignUpPage() {
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
                     placeholder="suresh@gmail.com"
-                    className="h-11 bg-white text-body-sm"
+                    className="h-12 bg-slate-50 focus:bg-white focus:border-yellow-400 focus:ring-yellow-400 text-sm font-medium"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">
                       Password
                     </label>
                     <div className="relative">
@@ -219,7 +217,7 @@ export default function SignUpPage() {
                         value={formData.password}
                         onChange={(e) => setFormData({...formData, password: e.target.value})}
                         placeholder="••••••••"
-                        className="block w-full px-4 py-2.5 pr-12 rounded-lg border border-slate-200 bg-white text-slate-900 text-body-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder:text-slate-400"
+                        className="block w-full h-12 px-4 pr-12 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white text-slate-900 text-sm font-medium focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 transition placeholder:text-slate-400"
                       />
                       <button
                         type="button"
@@ -232,7 +230,7 @@ export default function SignUpPage() {
                   </div>
 
                   <div>
-                    <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">
                       Confirm Password
                     </label>
                     <div className="relative">
@@ -242,7 +240,7 @@ export default function SignUpPage() {
                         value={formData.confirmPassword}
                         onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
                         placeholder="••••••••"
-                        className="block w-full px-4 py-2.5 pr-12 rounded-lg border border-slate-200 bg-white text-slate-900 text-body-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder:text-slate-400"
+                        className="block w-full h-12 px-4 pr-12 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white text-slate-900 text-sm font-medium focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 transition placeholder:text-slate-400"
                       />
                       <button
                         type="button"
@@ -255,40 +253,32 @@ export default function SignUpPage() {
                   </div>
                 </div>
 
-                <div className="pt-1">
+                <div className="pt-3">
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full h-11 md:h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-sm md:text-body"
+                    className="w-full h-12 bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-bold text-base shadow-sm cursor-pointer"
                   >
                     {isSubmitting ? 'Sending OTP...' : 'Create Account'}
                   </Button>
                 </div>
               </form>
 
-              <div className="mt-4 md:mt-8 text-center shrink-0">
-                <p className="text-slate-500 text-xs md:text-body-sm">
-                  Already have an account? <Link href="/login" className="text-blue-600 font-bold hover:underline">Login</Link>
+              <div className="mt-8 text-center shrink-0">
+                <p className="text-slate-500 text-sm font-medium">
+                  Already have an account? <Link href="/login" className="text-yellow-400 font-extrabold hover:underline">Login</Link>
                 </p>
               </div>
             </>
           ) : (
             <div className="flex flex-col items-center text-center py-8">
-              <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6">
+              <div className="w-16 h-16 bg-yellow-50 text-yellow-600 rounded-full flex items-center justify-center mb-6">
                 <KeyRound className="w-8 h-8" />
               </div>
               <h2 className="text-2xl font-extrabold text-[#0f172a] mb-2 tracking-tight">Verify Mobile Number</h2>
               <p className="text-slate-500 mb-8 max-w-sm">
                 An OTP has been sent to <span className="font-bold text-slate-700">{formData.mobile}</span>. Please enter it below to verify your account.
               </p>
-
-              {/* DEVELOPMENT ONLY OTP DISPLAY */}
-              {otpHint && (
-                <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg mb-6 w-full max-w-xs font-mono text-center">
-                  <p className="text-sm font-bold uppercase tracking-wider mb-1 text-yellow-600">Dev OTP Hint</p>
-                  <p className="text-2xl font-black tracking-widest">{otpHint}</p>
-                </div>
-              )}
 
               <form onSubmit={handleVerifyOtp} className="w-full flex flex-col items-center space-y-6">
                 <div>

@@ -131,7 +131,7 @@ export default function RescheduleModal({ isOpen, onClose, booking, onSuccess }:
 
               {isLoading ? (
                 <div className="flex justify-center py-10">
-                  <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2">
@@ -140,8 +140,8 @@ export default function RescheduleModal({ isOpen, onClose, booking, onSuccess }:
                       key={index}
                       onClick={() => slot.status === 'Available' && setSelectedSlot(slot)}
                       className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
-                        slot.status === 'Available' ? 'cursor-pointer hover:border-blue-400 hover:bg-blue-50' : 'opacity-60 bg-slate-50'
-                      } ${selectedSlot?.start_time === slot.start_time ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-slate-100'}`}
+                        slot.status === 'Available' ? 'cursor-pointer hover:border-yellow-400 hover:bg-yellow-50' : 'opacity-60 bg-slate-50'
+                      } ${selectedSlot?.start_time === slot.start_time ? 'border-yellow-400 bg-yellow-50 ring-1 ring-yellow-400' : 'border-slate-100'}`}
                     >
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4 text-slate-400" />
@@ -175,8 +175,8 @@ export default function RescheduleModal({ isOpen, onClose, booking, onSuccess }:
           <button 
             onClick={handleReschedule}
             disabled={!selectedSlot || isSubmitting}
-            className={`px-6 py-2.5 text-sm font-bold text-white rounded-lg transition-colors ${
-              selectedSlot && !isSubmitting ? 'bg-blue-600 hover:bg-blue-700 shadow-sm' : 'bg-blue-300 cursor-not-allowed'
+            className={`px-6 py-2.5 text-sm font-bold rounded-lg transition-colors ${
+              selectedSlot && !isSubmitting ? 'bg-yellow-400 hover:bg-yellow-500 text-slate-900 shadow-sm' : 'bg-slate-200 text-slate-400 cursor-not-allowed'
             }`}
           >
             {isSubmitting ? 'Saving...' : 'Confirm Reschedule'}

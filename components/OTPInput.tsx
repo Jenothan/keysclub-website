@@ -72,8 +72,8 @@ export function OTPInput({ length = 6, otp, setOtp, onComplete }: OTPInputProps)
           onChange={(e) => handleOtpChange(i, e.target.value)}
           onKeyDown={(e) => handleOtpKeyDown(i, e)}
           onPaste={handleOtpPaste}
-          className={`w-10 h-12 sm:w-12 sm:h-14 rounded-lg text-center text-lg font-bold border transition-all focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 ${
-            otp[i] ? 'border-blue-500 text-[#0f172a] bg-white' : 'border-slate-200 bg-slate-50/50 text-[#0f172a]'
+          className={`w-10 h-12 sm:w-12 sm:h-14 rounded-lg text-center text-lg font-bold border transition-all focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 ${
+            otp[i] ? 'border-yellow-400 text-[#0f172a] bg-white' : 'border-slate-200 bg-slate-50/50 text-[#0f172a]'
           }`}
         />
       ))}

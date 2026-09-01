@@ -25,14 +25,14 @@ export default function AdminSettingsPage() {
             <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] p-8">
               
               <div className="flex flex-col items-center mb-8">
-                <div className="relative w-28 h-28 rounded-full bg-blue-100 flex items-center justify-center border-4 border-white shadow-md overflow-hidden mb-4 group cursor-pointer">
-                  <div className="text-blue-600 font-extrabold text-4xl">AD</div>
+                <div className="relative w-28 h-28 rounded-full bg-yellow-400 flex items-center justify-center border-4 border-white shadow-md overflow-hidden mb-4 group cursor-pointer">
+                  <div className="text-slate-900 font-extrabold text-4xl">AD</div>
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <Camera className="w-6 h-6 text-white" />
                   </div>
                 </div>
                 <h2 className="text-xl font-extrabold text-[#0f172a] mb-2 tracking-tight">Super Admin</h2>
-                <span className="bg-blue-50 text-blue-600 font-extrabold text-[11px] px-3 py-1 rounded-full border border-blue-100">
+                <span className="bg-yellow-400/20 text-slate-900 font-extrabold text-[11px] px-3 py-1 rounded-full border border-yellow-400">
                   System Administrator
                 </span>
               </div>

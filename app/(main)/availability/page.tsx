@@ -22,53 +22,52 @@ export default function AvailabilityPage() {
   const [slots, setSlots] = useState<{ time: string; status: string; start_time: string; end_time: string; court_id: number }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchAvailability = async () => {
-      if (!calendarDate) return;
-      setIsLoading(true);
-      try {
-        const dateStr = format(calendarDate, 'yyyy-MM-dd');
-        // Defaulting court_id to 1 as per example, could be dynamic later
-        const res = await api.get(`/availability?date=${dateStr}&court_id=1`);
-        
-        // Helper to format "HH:mm:ss" to "hh:mm a"
-        const formatTime = (timeStr: string) => {
-          if (!timeStr) return '';
-          const [hours, minutes] = timeStr.split(':');
-          const d = new Date();
-          d.setHours(parseInt(hours, 10));
-          d.setMinutes(parseInt(minutes, 10));
-          return format(d, 'hh:mm a');
-        };
+  const fetchAvailability = async () => {
+    if (!calendarDate) return;
+    setIsLoading(true);
+    try {
+      const dateStr = format(calendarDate, 'yyyy-MM-dd');
+      const res = await api.get(`/availability?date=${dateStr}`);
+      
+      const formatTime = (timeStr: string) => {
+        if (!timeStr) return '';
+        const [hours, minutes] = timeStr.split(':');
+        const d = new Date();
+        d.setHours(parseInt(hours, 10));
+        d.setMinutes(parseInt(minutes, 10));
+        return format(d, 'hh:mm a');
+      };
 
-        const backendSlots = res.data || [];
-        const hardcodedSlots = [];
+      const backendSlots = res.data || [];
+      const activeCourtId = backendSlots[0]?.court_id || 1;
+      const hardcodedSlots = [];
 
-        for (let hour = 6; hour < 22; hour++) {
-          const startStr = `${hour.toString().padStart(2, '0')}:00:00`;
-          const endStr = `${(hour + 1).toString().padStart(2, '0')}:00:00`;
-          
-          // Check if this time slot is booked in backend data
-          const backendSlot = backendSlots.find((bs: any) => bs.start_time === startStr);
-          
-          hardcodedSlots.push({
-            time: `${formatTime(startStr)} - ${formatTime(endStr)}`,
-            status: backendSlot ? backendSlot.status : 'Available',
-            start_time: startStr,
-            end_time: endStr,
-            court_id: backendSlot?.court_id || 1
-          });
-        }
+      for (let hour = 6; hour < 22; hour++) {
+        const startStr = `${hour.toString().padStart(2, '0')}:00:00`;
+        const endStr = `${(hour + 1).toString().padStart(2, '0')}:00:00`;
         
-        setSlots(hardcodedSlots);
-        setSelectedSlots([]); // Clear selection when date changes
-      } catch (error) {
-        toast.error('Failed to load availability');
-        setSlots([]); // clear on error
-      } finally {
-        setIsLoading(false);
+        const backendSlot = backendSlots.find((bs: any) => bs.start_time === startStr);
+        
+        hardcodedSlots.push({
+          time: `${formatTime(startStr)} - ${formatTime(endStr)}`,
+          status: backendSlot ? backendSlot.status : 'Available',
+          start_time: startStr,
+          end_time: endStr,
+          court_id: backendSlot?.court_id || activeCourtId
+        });
       }
-    };
+      
+      setSlots(hardcodedSlots);
+      setSelectedSlots([]);
+    } catch (error) {
+      toast.error('Failed to load availability');
+      setSlots([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchAvailability();
   }, [calendarDate]);
 
@@ -101,7 +100,7 @@ export default function AvailabilityPage() {
 
   return (
     <div className="bg-slate-50 min-h-screen pb-16 pt-8">
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-0">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
@@ -133,7 +132,7 @@ export default function AvailabilityPage() {
                   selected={calendarDate}
                   onSelect={setCalendarDate}
                   disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                  className="rounded-md border-0"
+                  className="rounded-md border-0 w-full flex justify-center"
                 />
               </div>
             </div>
@@ -149,7 +148,7 @@ export default function AvailabilityPage() {
                   Available Slots for {calendarDate ? format(calendarDate, "EEEE, MMM dd") : "Selected Date"}
                 </h2>
 
-                <div className="flex items-center gap-4 text-caption font-bold text-slate-500">
+                <div className="flex flex-wrap items-center gap-4 text-caption font-bold text-slate-500">
                   <div className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Available
                   </div>
@@ -166,10 +165,10 @@ export default function AvailabilityPage() {
               </div>
 
               {/* Slots Grid */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {isLoading ? (
                   <div className="col-span-full py-10 flex justify-center">
-                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
                   </div>
                 ) : slots.length === 0 ? (
                   <div className="col-span-full py-10 text-center text-slate-500 font-bold">
@@ -193,8 +192,8 @@ export default function AvailabilityPage() {
                         key={index}
                         onClick={() => slot.status === 'Available' && handleToggleSlot(slot)}
                         className={`flex items-center justify-between p-4 rounded-xl border transition-all group ${
-                          slot.status === 'Available' ? 'cursor-pointer hover:border-[#fbbf24] hover:shadow-sm bg-[#f8fafc]' : 'bg-slate-50 border-slate-100 opacity-70'
-                        } ${isSelected ? 'border-[#fbbf24] bg-[#fbbf24] text-slate-900 shadow-[0_0_0_1px_#fbbf24]' : 'border-slate-100'}`}
+                          slot.status === 'Available' ? 'cursor-pointer hover:border-yellow-400 hover:shadow-sm bg-[#f8fafc]' : 'bg-slate-50 border-slate-100 opacity-70'
+                        } ${isSelected ? 'border-yellow-400 bg-yellow-400 text-slate-900 shadow-[0_0_0_1px_#facc15]' : 'border-slate-100'}`}
                       >
                         <div className="flex items-center gap-3">
                           {slot.status === 'Available' && (
@@ -203,14 +202,14 @@ export default function AvailabilityPage() {
                                 type="checkbox" 
                                 checked={isSelected}
                                 readOnly
-                                className="peer appearance-none w-5 h-5 border-2 border-slate-300 rounded focus:ring-[#fbbf24] checked:bg-slate-900 checked:border-slate-900 transition-colors cursor-pointer"
+                                className="peer appearance-none w-5 h-5 border-2 border-slate-300 rounded focus:ring-yellow-400 checked:bg-slate-900 checked:border-slate-900 transition-colors cursor-pointer"
                               />
                               <svg className={`absolute w-3 h-3 text-white pointer-events-none transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                               </svg>
                             </div>
                           )}
-                          <div className={`p-2 rounded-lg shadow-sm transition-colors ${isSelected ? 'bg-slate-900 text-[#fbbf24]' : 'bg-white text-slate-400 group-hover:text-slate-900'}`}>
+                          <div className={`p-2 rounded-lg shadow-sm transition-colors ${isSelected ? 'bg-slate-900 text-yellow-400' : 'bg-white text-slate-400 group-hover:text-slate-900'}`}>
                             <Clock className="w-4 h-4" />
                           </div>
                           <span className={`font-bold text-body-sm tracking-tight ${isSelected ? 'text-slate-900' : 'text-slate-800'}`}>{slot.time}</span>
@@ -256,7 +255,7 @@ export default function AvailabilityPage() {
                     disabled={selectedSlots.length === 0}
                     className={`font-bold text-body-sm px-8 py-3 rounded-lg transition shadow-sm w-full sm:w-auto ${
                       selectedSlots.length > 0 
-                        ? 'bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900' 
+                        ? 'bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 cursor-pointer' 
                         : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                     }`}
                   >
@@ -273,7 +272,11 @@ export default function AvailabilityPage() {
 
       <BookingModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedSlots([]);
+          fetchAvailability();
+        }}
         selectedSlots={selectedSlots}
       />
     </div>

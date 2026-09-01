@@ -41,6 +41,35 @@ export default function BookingModal({ isOpen, onClose, selectedSlots }: Booking
     }
   }, [isOpen]);
 
+  // Helper to compute contiguous merged time badges
+  const getMergedSlotBadges = () => {
+    if (!selectedSlots || selectedSlots.length === 0) return [];
+    const sorted = [...selectedSlots].sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''));
+    const merged: { start_time: string; end_time: string }[] = [];
+    for (const slot of sorted) {
+      if (merged.length === 0) {
+        merged.push({ start_time: slot.start_time, end_time: slot.end_time });
+      } else {
+        const last = merged[merged.length - 1];
+        if (last.end_time === slot.start_time) {
+          last.end_time = slot.end_time;
+        } else {
+          merged.push({ start_time: slot.start_time, end_time: slot.end_time });
+        }
+      }
+    }
+
+    const formatTime = (timeStr: string) => {
+      if (!timeStr) return '';
+      const [h, m] = timeStr.split(':');
+      const d = new Date();
+      d.setHours(parseInt(h, 10), parseInt(m, 10));
+      return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    };
+
+    return merged.map(m => `${formatTime(m.start_time)} - ${formatTime(m.end_time)}`);
+  };
+
   const handleSubmit = async () => {
     if (!selectedSlots || selectedSlots.length === 0) {
       toast.error('No slots selected');
@@ -49,29 +78,24 @@ export default function BookingModal({ isOpen, onClose, selectedSlots }: Booking
 
     setIsSubmitting(true);
     try {
-      const payloads = selectedSlots.map(slot => {
-        const payload: any = {
-          court_id: slot.court_id,
-          date: slot.rawDate,
-          start_time: slot.start_time,
-          end_time: slot.end_time,
-          notes: notes
-        };
-        if (isAdmin && (customerName || customerPhone)) {
-          payload.customer_name = customerName;
-          payload.customer_phone = customerPhone;
-        }
-        return payload;
-      });
+      const payload: any = {
+        court_id: selectedSlots[0].court_id,
+        date: selectedSlots[0].rawDate,
+        slots: selectedSlots.map(s => ({
+          start_time: s.start_time,
+          end_time: s.end_time
+        })),
+        notes: notes
+      };
 
-      // In a real app, you might want a single API endpoint to accept an array of bookings.
-      // Here we simulate it by submitting each slot one by one or in parallel.
-      const responses = await Promise.all(
-        payloads.map(payload => api.post('/bookings', payload))
-      );
-      
-      // Use first booking ID or generate one for UI display
-      setBookingId(responses[0]?.data?.id || `KEYS-${Date.now().toString().slice(-4)}`);
+      if (isAdmin && (customerName || customerPhone)) {
+        payload.customer_name = customerName;
+        payload.customer_phone = customerPhone;
+      }
+
+      const response = await api.post('/bookings', payload);
+      const ref = response.data?.booking_reference || response.data?.booking?.booking_reference || `KEYS-${Date.now().toString().slice(-4)}`;
+      setBookingId(ref);
       setCurrentStep(2);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to submit bookings');
@@ -96,7 +120,7 @@ export default function BookingModal({ isOpen, onClose, selectedSlots }: Booking
                     currentStep > step.id 
                       ? 'bg-emerald-500 text-white'
                       : currentStep === step.id
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-yellow-400 text-slate-900'
                       : 'bg-slate-200 text-slate-500'
                   }`}
                 >
@@ -104,7 +128,7 @@ export default function BookingModal({ isOpen, onClose, selectedSlots }: Booking
                 </div>
                 <span 
                   className={`text-[11px] sm:text-sm font-semibold hidden sm:block whitespace-nowrap ${
-                    currentStep === step.id ? 'text-blue-600' : 'text-slate-500'
+                    currentStep === step.id ? 'text-yellow-400 font-extrabold' : 'text-slate-500'
                   }`}
                 >
                   {step.name}
@@ -139,9 +163,9 @@ export default function BookingModal({ isOpen, onClose, selectedSlots }: Booking
                   <div className="flex flex-col gap-1 text-body-sm">
                     <span className="text-slate-500">Selected Times</span>
                     <div className="flex flex-wrap gap-2 mt-1">
-                      {selectedSlots.map((slot, i) => (
-                        <span key={i} className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md font-semibold text-xs border border-blue-100">
-                          {slot.time}
+                      {getMergedSlotBadges().map((badgeText, i) => (
+                        <span key={i} className="bg-yellow-50 text-yellow-800 px-2.5 py-1 rounded-md font-semibold text-xs border border-yellow-200">
+                          {badgeText}
                         </span>
                       ))}
                     </div>
@@ -184,7 +208,7 @@ export default function BookingModal({ isOpen, onClose, selectedSlots }: Booking
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Need an extra racket if available. Thank you."
-                  className="block w-full p-4 rounded-lg border border-slate-200 bg-slate-50/50 text-[#0f172a] text-body-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder:text-slate-400"
+                  className="block w-full p-4 rounded-lg border border-slate-200 bg-slate-50/50 text-[#0f172a] text-body-sm focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 transition placeholder:text-slate-400"
                 ></textarea>
               </div>
 

@@ -20,6 +20,7 @@ export default function ProfilePage() {
   const [currentPhone, setCurrentPhone] = useState(user?.phone || '');
   const [newPhoneInput, setNewPhoneInput] = useState('');
   const [otpInput, setOtpInput] = useState('');
+  const [otpHint, setOtpHint] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [passwordForm, setPasswordForm] = useState({
@@ -42,10 +43,11 @@ export default function ProfilePage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await api.post('/user/phone/request-otp', {
+      const res = await api.post('/user/phone/request-otp', {
         purpose: 'new_phone_verify',
         new_phone: newPhoneInput
       });
+      setOtpHint(res.data.otp_hint);
       setPhoneState('NEW_OTP');
       toast.success('OTP sent successfully');
     } catch (error: any) {
@@ -146,7 +148,7 @@ export default function ProfilePage() {
           {/* Mobile Number Update Flow */}
           <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 rounded-lg flex items-center justify-center">
                 <Phone className="w-5 h-5" />
               </div>
               <div>
@@ -185,7 +187,7 @@ export default function ProfilePage() {
                       placeholder="+94 7X XXX XXXX" 
                       value={newPhoneInput}
                       onChange={(e) => setNewPhoneInput(e.target.value)}
-                      className="w-full max-w-sm bg-white border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-blue-500 font-bold" 
+                      className="w-full max-w-sm bg-white border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-yellow-400 font-bold" 
                     />
                   </div>
                   <div className="flex gap-3">
@@ -201,16 +203,25 @@ export default function ProfilePage() {
 
               {phoneState === 'NEW_OTP' && (
                 <form onSubmit={handleVerifyNewOtp} className="space-y-4">
-                  <div className="flex items-start gap-3 bg-blue-50 text-blue-700 p-4 rounded-lg">
-                    <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-3 bg-yellow-400/10 text-slate-800 p-4 rounded-lg border border-yellow-400">
+                    <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-yellow-400" />
                     <p className="text-sm font-medium">Please enter the OTP sent to your new number <strong>{newPhoneInput}</strong> to verify it.</p>
                   </div>
+
+                  {otpHint && (
+                    <div className="bg-yellow-400/10 border-2 border-yellow-400 text-slate-900 px-4 py-3 rounded-xl w-full max-w-xs font-mono text-center shadow-sm">
+                      <p className="text-xs font-extrabold uppercase tracking-wider text-slate-700 mb-0.5">Your OTP Code</p>
+                      <p className="text-3xl font-black tracking-[0.3em] text-slate-900">{otpHint}</p>
+                      <p className="text-[11px] text-slate-700 font-medium mt-0.5">SMS Gateway Pending • Code Shown Above</p>
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-sm font-bold text-slate-700 mb-2">Enter OTP</label>
-                    <input required value={otpInput} onChange={(e) => setOtpInput(e.target.value)} type="text" placeholder="XXXX" className="w-full max-w-xs bg-white border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-blue-500 text-lg tracking-widest font-mono" />
+                    <input required value={otpInput} onChange={(e) => setOtpInput(e.target.value)} type="text" placeholder="XXXX" className="w-full max-w-xs bg-white border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-yellow-400 text-lg tracking-widest font-mono text-center font-bold" maxLength={4} />
                   </div>
                   <div className="flex gap-3">
-                    <button type="submit" disabled={isSubmitting} className="bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold px-6 py-2.5 rounded-lg transition-colors text-sm shadow-sm">
+                    <button type="submit" disabled={isSubmitting} className="bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-bold px-6 py-2.5 rounded-lg transition-colors text-sm shadow-sm">
                       {isSubmitting ? 'Verifying...' : 'Verify & Save'}
                     </button>
                     <button type="button" onClick={cancelPhoneChange} className="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold px-6 py-2.5 rounded-lg transition-colors text-sm">
@@ -248,15 +259,15 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="sm:col-span-2">
                   <label className="block text-sm font-bold text-slate-700 mb-2">Current Password</label>
-                  <input type="password" required value={passwordForm.current_password} onChange={(e) => setPasswordForm({...passwordForm, current_password: e.target.value})} placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-blue-500 transition-colors" />
+                  <input type="password" required value={passwordForm.current_password} onChange={(e) => setPasswordForm({...passwordForm, current_password: e.target.value})} placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-yellow-400 transition-colors" />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">New Password</label>
-                  <input type="password" required minLength={8} value={passwordForm.password} onChange={(e) => setPasswordForm({...passwordForm, password: e.target.value})} placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-blue-500 transition-colors" />
+                  <input type="password" required minLength={8} value={passwordForm.password} onChange={(e) => setPasswordForm({...passwordForm, password: e.target.value})} placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-yellow-400 transition-colors" />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">Confirm New Password</label>
-                  <input type="password" required minLength={8} value={passwordForm.password_confirmation} onChange={(e) => setPasswordForm({...passwordForm, password_confirmation: e.target.value})} placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-blue-500 transition-colors" />
+                  <input type="password" required minLength={8} value={passwordForm.password_confirmation} onChange={(e) => setPasswordForm({...passwordForm, password_confirmation: e.target.value})} placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-yellow-400 transition-colors" />
                 </div>
               </div>
               <div className="flex justify-end">

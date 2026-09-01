@@ -8,8 +8,11 @@ import ArrowLeft from '@mui/icons-material/ArrowBack';
 import ShieldCheck from '@mui/icons-material/GppGood';
 import Eye from '@mui/icons-material/Visibility';
 import EyeOff from '@mui/icons-material/VisibilityOff';
+import KeyRound from '@mui/icons-material/VpnKey';
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { OTPInput } from '@/components/OTPInput';
 import api from '@/lib/axios';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
@@ -22,10 +25,18 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { setAuth } = useAuthStore();
 
+  // Forgot Password State
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
+  const [forgotStep, setForgotStep] = useState<'mobile' | 'otp'>('mobile');
+  const [forgotPhone, setForgotPhone] = useState('');
+  const [forgotOtp, setForgotOtp] = useState<string[]>(Array(4).fill(''));
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isForgotLoading, setIsForgotLoading] = useState(false);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       const response = await api.post('/login', {
         phone: mobile,
@@ -49,36 +60,85 @@ export default function LoginPage() {
     }
   };
 
+  const handleRequestForgotOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsForgotLoading(true);
+    try {
+      await api.post('/password/forgot/request-otp', {
+        phone: forgotPhone,
+      });
+      setForgotStep('otp');
+      toast.success('OTP sent to your mobile number');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to send OTP. Make sure phone number is registered.');
+    } finally {
+      setIsForgotLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const otpCode = forgotOtp.join('');
+    if (otpCode.length !== 4) {
+      toast.error('Please enter complete 4-digit OTP');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    setIsForgotLoading(true);
+    try {
+      await api.post('/password/forgot/reset', {
+        phone: forgotPhone,
+        otp_code: otpCode,
+        password: newPassword,
+      });
+      toast.success('Password reset successfully! Please login with your new password.');
+      setIsForgotModalOpen(false);
+      setMobile(forgotPhone);
+      setPassword('');
+      setForgotStep('mobile');
+      setForgotOtp(Array(4).fill(''));
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to reset password');
+    } finally {
+      setIsForgotLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col-reverse md:flex-row h-dvh bg-white md:bg-[#f8fafc] overflow-hidden">
 
       {/* Left Pane (Form) */}
-      <div className="w-full h-full md:w-[55%] lg:w-[50%] flex flex-col p-0 md:p-8 lg:p-12 relative overflow-hidden">
+      <div className="w-full h-full md:w-[55%] lg:w-[50%] flex flex-col justify-center items-center p-4 md:p-10 lg:p-14 relative overflow-y-auto">
 
         {/* Back Button */}
-        <div className="pt-6 px-6 pb-2 md:p-0 md:absolute md:top-10 md:left-12 z-10 shrink-0">
+        <div className="absolute top-6 left-6 md:top-10 md:left-12 z-10">
           <Link href="/" className="inline-flex items-center gap-2 text-slate-800 hover:text-slate-900 transition group">
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             <span className="font-bold text-body-sm">Back</span>
           </Link>
         </div>
 
-        <div className="w-full flex-1 flex flex-col justify-center md:justify-start md:h-auto md:max-w-120 bg-white md:rounded-2xl md:shadow-[0_0_20px_rgba(30,58,138,0.4)] px-6 py-4 md:p-10 z-10 md:m-auto relative overflow-y-auto md:overflow-visible">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-[0_4px_25px_rgba(0,0,0,0.06)] border border-slate-100 p-8 md:p-10 lg:p-12 z-10 my-auto">
 
-          <div className="mb-6 md:mb-8 shrink-0">
-            <h2 className="text-2xl md:text-title font-extrabold text-[#0f172a] mb-1.5 tracking-tight">Welcome Back</h2>
-            <p className="text-slate-500 text-sm md:text-body leading-snug">Login to manage your badminton bookings and details</p>
+          <div className="mb-8 text-left">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-[#0f172a] mb-2 tracking-tight">Welcome Back</h2>
+            <p className="text-slate-500 text-sm md:text-base leading-relaxed">Login to manage your badminton bookings and details</p>
           </div>
 
           <form className="space-y-6" onSubmit={handleLogin}>
             <div>
-              <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">
                 Mobile Number
               </label>
               <Input
                 type="tel"
                 placeholder="+94 77 123 4567"
-                className="h-12 bg-white text-body-sm"
+                className="h-12 text-sm md:text-base bg-slate-50 focus:bg-white focus:border-yellow-400 focus:ring-yellow-400 font-medium"
                 value={mobile}
                 onChange={(e) => setMobile(e.target.value)}
                 required
@@ -86,14 +146,14 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-caption font-bold text-slate-900 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">
                 Password
               </label>
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  className="h-12 bg-white text-body-sm pr-12"
+                  className="h-12 text-sm md:text-base bg-slate-50 focus:bg-white focus:border-yellow-400 focus:ring-yellow-400 font-medium pr-12"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -109,36 +169,155 @@ export default function LoginPage() {
             </div>
 
             <div className="flex justify-start">
-              <Link href="#" className="text-body-sm font-bold text-blue-600 hover:underline">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsForgotModalOpen(true);
+                  setForgotStep('mobile');
+                  setForgotPhone(mobile);
+                }}
+                className="text-sm font-extrabold text-yellow-400 hover:underline"
+              >
                 Forgot Password?
-              </Link>
+              </button>
             </div>
 
-            <div className="pt-1">
+            <div className="pt-2">
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-11 md:h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-sm md:text-body"
+                className="w-full h-12 bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-bold text-base shadow-sm cursor-pointer"
               >
                 {isLoading ? 'Logging in...' : 'Login'}
               </Button>
             </div>
           </form>
 
-          <div className="my-6 md:my-8 flex items-center shrink-0">
+          <div className="my-8 flex items-center">
             <div className="grow border-t border-slate-100"></div>
-            <span className="px-4 text-xs md:text-caption text-slate-400">or</span>
+            <span className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">or</span>
             <div className="grow border-t border-slate-100"></div>
           </div>
 
           <div className="text-center">
-            <p className="text-slate-500 text-body-sm">
-              Don't have an account? <Link href="/signup" className="text-blue-600 font-bold hover:underline">Sign Up</Link>
+            <p className="text-slate-500 text-sm font-medium">
+              Don't have an account? <Link href="/signup" className="text-yellow-400 font-extrabold hover:underline">Sign Up</Link>
             </p>
           </div>
 
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      <Dialog open={isForgotModalOpen} onOpenChange={setIsForgotModalOpen}>
+        <DialogContent className="sm:max-w-md p-0 border-0 bg-transparent shadow-none [&>button]:hidden">
+          <DialogTitle className="sr-only">Forgot Password</DialogTitle>
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-xl p-6 md:p-8 text-center relative w-full overflow-hidden">
+            <div className="w-14 h-14 bg-yellow-50 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <KeyRound className="w-7 h-7" />
+            </div>
+
+            <h2 className="text-2xl font-extrabold text-[#0f172a] mb-1.5">Reset Password</h2>
+
+            {forgotStep === 'mobile' ? (
+              <form onSubmit={handleRequestForgotOtp} className="space-y-4 text-left pt-2">
+                <p className="text-slate-500 text-sm text-center mb-4">
+                  Enter your registered mobile number to receive a verification OTP.
+                </p>
+                <div>
+                  <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">
+                    Mobile Number
+                  </label>
+                  <Input
+                    type="tel"
+                    required
+                    placeholder="+94 77 123 4567"
+                    value={forgotPhone}
+                    onChange={(e) => setForgotPhone(e.target.value)}
+                    className="h-11 bg-white"
+                  />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsForgotModalOpen(false)}
+                    className="flex-1 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-all text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isForgotLoading}
+                    className="flex-1 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold rounded-xl transition-all text-sm shadow-sm"
+                  >
+                    {isForgotLoading ? 'Sending...' : 'Send OTP'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleResetPassword} className="space-y-4 text-left pt-2">
+                <p className="text-slate-500 text-sm text-center mb-4">
+                  An OTP has been sent to <span className="font-bold text-slate-700">{forgotPhone}</span>.
+                </p>
+
+                <div className="flex flex-col items-center py-2">
+                  <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">
+                    Enter 4-Digit OTP
+                  </label>
+                  <OTPInput length={4} otp={forgotOtp} setOtp={setForgotOtp} />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-1.5">
+                    New Password
+                  </label>
+                  <Input
+                    type="password"
+                    required
+                    minLength={8}
+                    placeholder="••••••••"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="h-11 bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-1.5">
+                    Confirm New Password
+                  </label>
+                  <Input
+                    type="password"
+                    required
+                    minLength={8}
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="h-11 bg-white"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setForgotStep('mobile')}
+                    className="flex-1 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-all text-sm"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isForgotLoading}
+                    className="flex-1 py-2.5 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold rounded-xl transition-all text-sm shadow-sm"
+                  >
+                    {isForgotLoading ? 'Resetting...' : 'Reset Password'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Right Pane (Image Background) */}
       <div className="hidden md:flex relative w-full md:w-[45%] lg:w-[50%] bg-[#0f172a] flex-col justify-center px-8 md:px-12 lg:px-20 py-12 md:py-0 overflow-hidden shrink-0">
@@ -158,8 +337,8 @@ export default function LoginPage() {
           {/* Top Section */}
           <div className="flex flex-col md:flex-row justify-end items-start md:items-center mb-auto gap-4 pt-4 md:pt-10">
             {/* Pill */}
-            <div className="inline-block border border-yellow-500/80 rounded-full px-4 py-1.5">
-              <span className="text-yellow-500 text-caption font-bold tracking-wider uppercase">
+            <div className="inline-block border border-yellow-400/80 rounded-full px-4 py-1.5">
+              <span className="text-yellow-400 text-caption font-bold tracking-wider uppercase">
                 KEYS Sports Initiative
               </span>
             </div>
@@ -177,7 +356,7 @@ export default function LoginPage() {
               />
               <div className="flex flex-col">
                 <span className="font-extrabold text-2xl leading-none tracking-tight text-white mb-1">KEYS CLUB</span>
-                <span className="text-caption text-yellow-500 font-bold uppercase tracking-widest">KARANAVAI EAST YOUTH SPORTS CLUB</span>
+                <span className="text-caption text-yellow-400 font-bold uppercase tracking-widest">KARANAVAI EAST YOUTH SPORTS CLUB</span>
               </div>
             </div>
 
@@ -193,7 +372,7 @@ export default function LoginPage() {
           {/* Bottom Footer Area */}
           <div className="mt-auto pt-12 pb-6 md:pb-10 border-t border-slate-700/50">
             <div className="flex items-center gap-3 text-slate-300 text-body-sm">
-              <ShieldCheck className="w-5 h-5 text-yellow-500 shrink-0" />
+              <ShieldCheck className="w-5 h-5 text-yellow-400 shrink-0" />
               <span>National standard court mats & equipment setup</span>
             </div>
           </div>

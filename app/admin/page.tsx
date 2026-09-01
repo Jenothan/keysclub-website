@@ -26,7 +26,7 @@ export default function AdminDashboardPage() {
         console.error('Failed to fetch stats', error);
       }
     };
-    
+
     const fetchRecentBookings = async () => {
       try {
         const response = await api.get('/admin/bookings');
@@ -41,18 +41,18 @@ export default function AdminDashboardPage() {
   }, []);
 
   return (
-    <div className="p-6 md:p-10 w-full space-y-8 pb-20">
-      
+    <div className="p-4 sm:p-6 md:p-10 w-full space-y-8 pb-20">
+
 
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        
+
         {/* Today's Bookings */}
         <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-bold text-slate-500">Today's Bookings</span>
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center">
               <Clock className="w-5 h-5" />
             </div>
           </div>
@@ -66,7 +66,7 @@ export default function AdminDashboardPage() {
         <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-bold text-slate-500">Pending Requests</span>
-            <div className="w-10 h-10 rounded-xl bg-yellow-50 text-yellow-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center">
               <Calendar className="w-5 h-5" />
             </div>
           </div>
@@ -80,7 +80,7 @@ export default function AdminDashboardPage() {
         <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-bold text-slate-500">Confirmed Bookings</span>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center">
               <ShieldCheck className="w-5 h-5" />
             </div>
           </div>
@@ -94,7 +94,7 @@ export default function AdminDashboardPage() {
         <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-bold text-slate-500">New Inquiries</span>
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center">
               <MessageSquare className="w-5 h-5" />
             </div>
           </div>
@@ -110,11 +110,11 @@ export default function AdminDashboardPage() {
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <h3 className="text-lg font-extrabold text-[#0f172a]">Recent Booking Requests</h3>
-          <button className="text-blue-600 bg-blue-50 hover:bg-blue-100 font-bold text-xs h-9 px-4 rounded-md transition-colors">
+          <button className="bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-bold text-xs h-9 px-4 rounded-md transition-colors shadow-sm">
             View All Requests
           </button>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left whitespace-nowrap">
             <thead className="text-xs font-bold text-slate-500 bg-slate-50/50">
@@ -137,7 +137,7 @@ export default function AdminDashboardPage() {
                       <span className="font-bold text-[#0f172a] block">{req.customer_name || 'Walk-in'}</span>
                     )}
                     {req.booked_by && (
-                      <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wide block mt-0.5">
+                      <span className="text-[9px] font-bold text-slate-900 bg-yellow-400/20 px-1.5 py-0.5 rounded border border-yellow-400 uppercase tracking-wide block mt-0.5">
                         By {req.booked_by.role}
                       </span>
                     )}

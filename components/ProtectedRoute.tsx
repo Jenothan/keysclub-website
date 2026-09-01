@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore, Role } from '@/store/authStore';
+import { useAuthStore, Role, TWENTY_FOUR_HOURS_MS } from '@/store/authStore';
 
 export default function ProtectedRoute({
   children,
@@ -12,29 +12,64 @@ export default function ProtectedRoute({
   allowedRoles: Role[];
 }) {
   const router = useRouter();
-  const { user, isHydrated } = useAuthStore();
+  const { user, token, loggedInAt, isHydrated, logout } = useAuthStore();
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!isHydrated) return;
+    setMounted(true);
+    if (user || token) {
+      useAuthStore.setState({ isHydrated: true });
+    }
+  }, [user, token]);
 
-    if (!user) {
-      router.push('/login');
-    } else if (!allowedRoles.includes(user.role)) {
-      if (user.role === 'Super Admin' || user.role === 'Admin') {
-        router.push('/admin');
+  const allowedRolesKey = allowedRoles.join(',');
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    const activeToken = token || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
+
+    // 1. Check if user/token exists
+    if (!activeToken || !user) {
+      if (isHydrated) {
+        setIsAuthorized(false);
+        router.replace('/login');
+      }
+      return;
+    }
+
+    // 2. Check 24-hour expiration
+    if (loggedInAt && (Date.now() - loggedInAt > TWENTY_FOUR_HOURS_MS)) {
+      logout();
+      setIsAuthorized(false);
+      router.replace('/login');
+      return;
+    }
+
+    // 3. Case-insensitive role check
+    const userRoleLower = user.role ? String(user.role).toLowerCase() : 'user';
+    const hasAccess = allowedRoles.length === 0 || allowedRoles.some(
+      r => r && String(r).toLowerCase() === userRoleLower
+    );
+
+    if (!hasAccess) {
+      setIsAuthorized(false);
+      const isAdmin = userRoleLower === 'admin' || userRoleLower === 'super admin';
+      if (isAdmin) {
+        router.replace('/admin');
       } else {
-        router.push('/dashboard');
+        router.replace('/dashboard');
       }
     } else {
       setIsAuthorized(true);
     }
-  }, [user, isHydrated, router, allowedRoles]);
+  }, [user, token, loggedInAt, isHydrated, mounted, router, allowedRolesKey]);
 
-  if (!isHydrated || !isAuthorized) {
+  if (!mounted || !isAuthorized) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-[#f8fafc]">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
