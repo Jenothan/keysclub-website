@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 export default function WebsiteDataPage() {
   const { user } = useAuthStore();
   const role = user?.role;
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -32,6 +33,7 @@ export default function WebsiteDataPage() {
 
   useEffect(() => {
     if (role === 'Super Admin') {
+      setIsLoading(true);
       api.get('/website-data').then((res) => {
         if (res.data) {
           setFormData({
@@ -44,7 +46,10 @@ export default function WebsiteDataPage() {
             registration_fee: res.data.registration_fee || 'LKR 2,000',
           });
         }
-      }).catch(err => console.error("Failed to load website data", err));
+      }).catch(err => console.error("Failed to load website data", err))
+      .finally(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
     }
   }, [role]);
 
@@ -74,6 +79,14 @@ export default function WebsiteDataPage() {
         <p className="text-slate-500 max-w-md mx-auto text-lg">
           You do not have the required permissions to view this page. Only Super Admins can edit Website Data.
         </p>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="p-4 sm:p-6 md:p-10 w-full min-h-[60vh] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }

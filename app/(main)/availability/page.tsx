@@ -42,15 +42,32 @@ export default function AvailabilityPage() {
       const activeCourtId = backendSlots[0]?.court_id || 1;
       const hardcodedSlots = [];
 
+      const selectedDateStr = format(calendarDate, 'yyyy-MM-dd');
+      const todayDateStr = format(new Date(), 'yyyy-MM-dd');
+      const isSelectedToday = selectedDateStr === todayDateStr;
+      const isSelectedPastDate = selectedDateStr < todayDateStr;
+
       for (let hour = 6; hour < 22; hour++) {
         const startStr = `${hour.toString().padStart(2, '0')}:00:00`;
         const endStr = `${(hour + 1).toString().padStart(2, '0')}:00:00`;
         
         const backendSlot = backendSlots.find((bs: any) => bs.start_time === startStr);
+        let status = backendSlot ? backendSlot.status : 'Available';
+
+        if (isSelectedPastDate) {
+          status = 'Past';
+        } else if (isSelectedToday) {
+          const now = new Date();
+          const slotStartTime = new Date();
+          slotStartTime.setHours(hour, 0, 0, 0);
+          if (now >= slotStartTime && status === 'Available') {
+            status = 'Past';
+          }
+        }
         
         hardcodedSlots.push({
           time: `${formatTime(startStr)} - ${formatTime(endStr)}`,
-          status: backendSlot ? backendSlot.status : 'Available',
+          status,
           start_time: startStr,
           end_time: endStr,
           court_id: backendSlot?.court_id || activeCourtId
@@ -156,10 +173,10 @@ export default function AvailabilityPage() {
                     <span className="w-2 h-2 rounded-full bg-orange-500"></span> Pending
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-red-500"></span> Booked
+                    <span className="w-2 h-2 rounded-full bg-red-600"></span> Booked
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-slate-400"></span> Unavailable
+                    <span className="w-2 h-2 rounded-full bg-rose-600"></span> Blocked
                   </div>
                 </div>
               </div>
@@ -175,25 +192,54 @@ export default function AvailabilityPage() {
                     No slots available for this date.
                   </div>
                 ) : slots.every(s => s.status === 'Blocked') ? (
-                  <div className="col-span-full py-16 flex flex-col items-center justify-center bg-slate-50 border border-slate-100 rounded-2xl">
-                    <div className="w-16 h-16 bg-slate-200 text-slate-400 rounded-full flex items-center justify-center mb-4">
+                  <div className="col-span-full py-16 flex flex-col items-center justify-center bg-[#fff5f5] border border-rose-200 rounded-2xl">
+                    <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-4">
                       <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                       </svg>
                     </div>
-                    <h3 className="text-xl font-bold text-slate-700 mb-2">Date Unavailable</h3>
-                    <p className="text-slate-500 text-center max-w-md">This date has been blocked for maintenance or a scheduled tournament. Please select another date.</p>
+                    <h3 className="text-xl font-bold text-rose-950 mb-2">Date Blocked</h3>
+                    <p className="text-rose-700 text-center max-w-md">This date has been blocked for maintenance or a scheduled tournament. Please select another date.</p>
                   </div>
                 ) : (
                   slots.map((slot, index) => {
                     const isSelected = selectedSlots.some(s => s.start_time === slot.start_time);
+                    
+                    let cardStyle = 'border-slate-100 bg-slate-50 opacity-70';
+                    let clockStyle = 'bg-white text-slate-400';
+                    let textStyle = 'text-slate-800';
+
+                    if (isSelected) {
+                      cardStyle = 'border-yellow-400 bg-yellow-400 text-slate-900 shadow-[0_0_0_1px_#facc15]';
+                      clockStyle = 'bg-slate-900 text-yellow-400';
+                      textStyle = 'text-slate-900';
+                    } else if (slot.status === 'Available') {
+                      cardStyle = 'cursor-pointer hover:border-yellow-400 hover:shadow-sm bg-[#f8fafc] border-slate-200';
+                      clockStyle = 'bg-white text-slate-400 group-hover:text-slate-900';
+                      textStyle = 'text-slate-800';
+                    } else if (slot.status === 'Past') {
+                      cardStyle = 'bg-slate-100/80 border-slate-200 opacity-60 pointer-events-none cursor-not-allowed';
+                      clockStyle = 'bg-slate-200 text-slate-400';
+                      textStyle = 'text-slate-400 line-through';
+                    } else if (slot.status === 'Booked') {
+                      cardStyle = 'bg-red-50/90 border-red-200 shadow-xs';
+                      clockStyle = 'bg-red-100 text-red-600';
+                      textStyle = 'text-red-950';
+                    } else if (slot.status === 'Pending') {
+                      cardStyle = 'bg-amber-50/90 border-amber-200 shadow-xs';
+                      clockStyle = 'bg-amber-100 text-amber-600';
+                      textStyle = 'text-amber-950';
+                    } else if (slot.status === 'Blocked') {
+                      cardStyle = 'bg-rose-50/90 border-rose-200 shadow-xs';
+                      clockStyle = 'bg-rose-100 text-rose-600';
+                      textStyle = 'text-rose-950';
+                    }
+
                     return (
                       <div
                         key={index}
                         onClick={() => slot.status === 'Available' && handleToggleSlot(slot)}
-                        className={`flex items-center justify-between p-4 rounded-xl border transition-all group ${
-                          slot.status === 'Available' ? 'cursor-pointer hover:border-yellow-400 hover:shadow-sm bg-[#f8fafc]' : 'bg-slate-50 border-slate-100 opacity-70'
-                        } ${isSelected ? 'border-yellow-400 bg-yellow-400 text-slate-900 shadow-[0_0_0_1px_#facc15]' : 'border-slate-100'}`}
+                        className={`flex items-center justify-between p-4 rounded-xl border transition-all group ${cardStyle}`}
                       >
                         <div className="flex items-center gap-3">
                           {slot.status === 'Available' && (
@@ -209,32 +255,40 @@ export default function AvailabilityPage() {
                               </svg>
                             </div>
                           )}
-                          <div className={`p-2 rounded-lg shadow-sm transition-colors ${isSelected ? 'bg-slate-900 text-yellow-400' : 'bg-white text-slate-400 group-hover:text-slate-900'}`}>
+                          <div className={`p-2 rounded-lg shadow-sm transition-colors ${clockStyle}`}>
                             <Clock className="w-4 h-4" />
                           </div>
-                          <span className={`font-bold text-body-sm tracking-tight ${isSelected ? 'text-slate-900' : 'text-slate-800'}`}>{slot.time}</span>
+                          <span className={`font-bold text-body-sm tracking-tight ${textStyle}`}>{slot.time}</span>
                         </div>
 
                         <div className="flex items-center gap-3">
+                          {slot.status === 'Past' && (
+                            <span className="bg-slate-200 text-slate-500 font-extrabold text-caption px-3.5 py-1.5 rounded-full uppercase tracking-wider">
+                              Past Slot
+                            </span>
+                          )}
+
                           {slot.status === 'Booked' && (
-                            <span className="text-red-500 font-bold text-caption">Booked</span>
+                            <span className="bg-red-600 text-white font-black text-caption px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-xs">
+                              Booked
+                            </span>
                           )}
 
                           {slot.status === 'Pending' && (
-                            <span className="bg-orange-100 text-orange-600 font-bold text-caption px-3 py-1.5 rounded-full uppercase tracking-wider">
+                            <span className="bg-amber-500 text-white font-extrabold text-caption px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-xs">
                               Pending Admin
                             </span>
                           )}
 
                           {slot.status === 'Available' && (
-                            <span className={`font-bold text-caption mr-2 ${isSelected ? 'text-slate-900' : 'text-emerald-500'}`}>
+                            <span className={`font-extrabold text-caption px-3.5 py-1.5 rounded-full uppercase tracking-wider ${isSelected ? 'bg-slate-900 text-yellow-400' : 'bg-emerald-100 text-emerald-700'}`}>
                               {isSelected ? 'Selected' : 'Available'}
                             </span>
                           )}
 
                           {slot.status === 'Blocked' && (
-                            <span className="bg-slate-200 text-slate-600 font-bold text-caption px-3 py-1.5 rounded-full uppercase tracking-wider">
-                              Unavailable
+                            <span className="bg-rose-600 text-white font-black text-caption px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-xs">
+                              Blocked
                             </span>
                           )}
                         </div>

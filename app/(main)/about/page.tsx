@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Trophy from '@mui/icons-material/EmojiEvents';
@@ -13,13 +15,35 @@ import Clock from '@mui/icons-material/AccessTime';
 import ShieldCheck from '@mui/icons-material/GppGood';
 import Timeline from '@mui/icons-material/Timeline';
 import { Button } from "@/components/ui/button";
-
-export const metadata = {
-  title: "About Us - KEYS Club",
-  description: "Learn more about Karanavai East Youth Sports Club and our mission to promote badminton and active living.",
-};
+import api from '@/lib/axios';
 
 export default function AboutPage() {
+  const [websiteData, setWebsiteData] = useState({
+    court_pricing: 'Rs. 400',
+    full_day_pricing: 'Rs. 3,000',
+    membership_pricing: 'Rs. 1,000',
+    registration_fee: 'Rs. 2,000',
+  });
+
+  useEffect(() => {
+    const fetchWebsiteData = async () => {
+      try {
+        const response = await api.get('/website-data');
+        if (response.data) {
+          setWebsiteData({
+            court_pricing: response.data.court_pricing || 'Rs. 400',
+            full_day_pricing: response.data.full_day_pricing || 'Rs. 3,000',
+            membership_pricing: response.data.membership_pricing || 'Rs. 1,000',
+            registration_fee: response.data.registration_fee || 'Rs. 2,000',
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch website data for About page', error);
+      }
+    };
+    fetchWebsiteData();
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* 1. ABOUT US PAGE HERO */}
@@ -200,7 +224,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 6 & 7. COURT BOOKING & MEMBERSHIP (PRICING CLARITY) */}
+      {/* 6 & 7. COURT BOOKING & MEMBERSHIP (DYNAMIC PRICING) */}
       <section className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -212,56 +236,63 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 
             {/* Hourly Booking */}
-            <div className="bg-white rounded-2xl p-8 flex flex-col h-full border border-transparent hover:border-yellow-400 transition-all shadow-lg">
-              <div className="text-caption font-bold text-yellow-400 uppercase tracking-wider mb-2">Hourly Court Rate</div>
+            <div className="bg-white rounded-2xl p-8 flex flex-col h-full border border-slate-100 hover:border-yellow-400 transition-all shadow-lg hover:-translate-y-1">
+              <div className="text-caption font-bold text-yellow-500 uppercase tracking-wider mb-2">Hourly Court Rate</div>
               <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-3xl font-extrabold text-[#0f172a]">Rs. 400</span>
+                <span className="text-3xl lg:text-4xl font-extrabold text-[#0f172a]">{websiteData.court_pricing}</span>
                 <span className="text-slate-500 font-medium">/ Hour</span>
               </div>
               <p className="text-slate-600 text-sm leading-relaxed mb-8 grow">
                 Players can book the badminton court for an individual hourly session.
               </p>
               <Link href="/availability">
-                <Button className="w-full bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-bold rounded-lg h-12 transition">
+                <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold rounded-xl h-12 transition shadow-sm">
                   Check Availability
                 </Button>
               </Link>
             </div>
 
-            {/* Monthly Package */}
-            <div className="bg-white rounded-2xl p-8 flex flex-col h-full border border-transparent hover:border-yellow-400 transition-all shadow-lg">
-              <div className="text-caption font-bold text-yellow-400 uppercase tracking-wider mb-2">Monthly Court Package</div>
+            {/* Full Day Booking */}
+            <div className="bg-white rounded-2xl p-8 flex flex-col h-full border border-slate-100 hover:border-yellow-400 transition-all shadow-lg hover:-translate-y-1">
+              <div className="text-caption font-bold text-yellow-500 uppercase tracking-wider mb-2">Full Day Court Booking</div>
               <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-3xl font-extrabold text-[#0f172a]">Rs. 2,000</span>
+                <span className="text-3xl lg:text-4xl font-extrabold text-[#0f172a]">{websiteData.full_day_pricing}</span>
+                <span className="text-slate-500 font-medium">/ Day</span>
               </div>
               <p className="text-slate-600 text-sm leading-relaxed mb-8 grow">
-                Monthly badminton court payment/package according to the club's current pricing structure.
+                Book the full badminton court for tournaments, organized events, and all-day sports functions.
               </p>
+              <Link href="/contact">
+                <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl h-12 transition shadow-sm">
+                  Contact For Booking
+                </Button>
+              </Link>
             </div>
 
-            {/* Monthly Membership */}
-            <div className="bg-white rounded-2xl p-8 flex flex-col h-full border border-transparent hover:border-yellow-400 transition-all shadow-lg">
-              <div className="text-caption font-bold text-yellow-400 uppercase tracking-wider mb-2">Monthly Membership Fee</div>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-3xl font-extrabold text-[#0f172a]">Rs. 500</span>
+            {/* Badminton Court Membership */}
+            <div className="bg-[#0f172a] rounded-2xl p-8 flex flex-col h-full border border-slate-800 transition-all shadow-xl hover:-translate-y-1 relative">
+              <div className="absolute top-0 right-0 bg-yellow-400 text-[#0f172a] text-xs font-black px-3.5 py-1.5 rounded-bl-xl uppercase tracking-wider shadow-sm">
+                Most Popular
               </div>
-              <p className="text-slate-600 text-sm leading-relaxed mb-8 grow">
-                Members can pay the applicable monthly membership amount and participate according to the club's membership and court-use arrangements.
-              </p>
-            </div>
-
-            {/* Yearly Membership */}
-            <div className="bg-white rounded-2xl p-8 flex flex-col h-full border border-transparent hover:border-yellow-400 transition-all shadow-lg">
-              <div className="text-caption font-bold text-yellow-400 uppercase tracking-wider mb-2">Yearly Membership Fee</div>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-3xl font-extrabold text-[#0f172a]">Rs. 2,000</span>
+              <div className="text-caption font-bold text-yellow-400 uppercase tracking-wider mb-2">Badminton Court Membership</div>
+              <div className="flex items-baseline gap-1 mb-2">
+                <span className="text-3xl lg:text-4xl font-extrabold text-white">{websiteData.membership_pricing}</span>
+                <span className="text-slate-400 font-medium">/ Month</span>
               </div>
-              <p className="text-slate-600 text-sm leading-relaxed mb-8 grow">
-                Members can pay the applicable yearly membership amount and participate according to the club's membership and court-use arrangements.
+              <div className="mb-6 inline-flex items-center gap-1.5 text-xs text-yellow-400 font-extrabold bg-yellow-400/10 px-3 py-1.5 rounded-lg border border-yellow-400/20 self-start">
+                <span>+ {websiteData.registration_fee} / Year Membership Fee</span>
+              </div>
+              <p className="text-slate-300 text-sm leading-relaxed mb-8 grow">
+                Members pay the {websiteData.membership_pricing} monthly court fee plus applicable {websiteData.registration_fee} annual membership fee for full court access and player privileges.
               </p>
+              <Link href="/contact">
+                <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold rounded-xl h-12 transition shadow-md">
+                  Join Badminton Court Membership
+                </Button>
+              </Link>
             </div>
 
           </div>

@@ -80,15 +80,32 @@ export default function AdminAvailabilityPage() {
       const activeCourtId = backendSlots[0]?.court_id || 1;
       const hardcodedSlots = [];
 
+      const selectedDateStr = format(calendarDate, 'yyyy-MM-dd');
+      const todayDateStr = format(new Date(), 'yyyy-MM-dd');
+      const isSelectedToday = selectedDateStr === todayDateStr;
+      const isSelectedPastDate = selectedDateStr < todayDateStr;
+
       for (let hour = 6; hour < 22; hour++) {
         const startStr = `${hour.toString().padStart(2, '0')}:00:00`;
         const endStr = `${(hour + 1).toString().padStart(2, '0')}:00:00`;
         
         const backendSlot = backendSlots.find((bs: any) => bs.start_time === startStr);
+        let status = backendSlot ? backendSlot.status : 'Available';
+
+        if (isSelectedPastDate) {
+          status = 'Past';
+        } else if (isSelectedToday) {
+          const now = new Date();
+          const slotStartTime = new Date();
+          slotStartTime.setHours(hour, 0, 0, 0);
+          if (now >= slotStartTime && status === 'Available') {
+            status = 'Past';
+          }
+        }
         
         hardcodedSlots.push({
           time: `${formatTime(startStr)} - ${formatTime(endStr)}`,
-          status: backendSlot ? backendSlot.status : 'Available',
+          status,
           start_time: startStr,
           end_time: endStr,
           court_id: backendSlot?.court_id || activeCourtId,
@@ -375,13 +392,41 @@ export default function AdminAvailabilityPage() {
                     const isSelected = selectedSlots.some(s => s.start_time === slot.start_time);
                     const isBlocked = slot.status === 'Blocked';
 
+                    let cardStyle = 'border-slate-100 bg-slate-50 opacity-80';
+                    let clockStyle = 'bg-white text-slate-400';
+                    let textStyle = 'text-slate-800';
+
+                    if (isSelected) {
+                      cardStyle = 'border-[#fbbf24] bg-[#fbbf24] text-slate-900 shadow-[0_0_0_1px_#fbbf24]';
+                      clockStyle = 'bg-slate-900 text-[#fbbf24]';
+                      textStyle = 'text-slate-900';
+                    } else if (slot.status === 'Available') {
+                      cardStyle = 'cursor-pointer hover:border-[#fbbf24] hover:shadow-sm bg-[#f8fafc] border-slate-200';
+                      clockStyle = 'bg-white text-slate-400 group-hover:text-slate-900';
+                      textStyle = 'text-slate-800';
+                    } else if (slot.status === 'Past') {
+                      cardStyle = 'bg-slate-100/80 border-slate-200 opacity-60 pointer-events-none cursor-not-allowed';
+                      clockStyle = 'bg-slate-200 text-slate-400';
+                      textStyle = 'text-slate-400 line-through';
+                    } else if (slot.status === 'Booked') {
+                      cardStyle = 'bg-red-50/90 border-red-200 shadow-xs';
+                      clockStyle = 'bg-red-100 text-red-600';
+                      textStyle = 'text-red-950';
+                    } else if (slot.status === 'Pending') {
+                      cardStyle = 'bg-amber-50/90 border-amber-200 shadow-xs';
+                      clockStyle = 'bg-amber-100 text-amber-600';
+                      textStyle = 'text-amber-950';
+                    } else if (slot.status === 'Blocked') {
+                      cardStyle = 'bg-rose-50/90 border-rose-200 shadow-xs';
+                      clockStyle = 'bg-rose-100 text-rose-600';
+                      textStyle = 'text-rose-950';
+                    }
+
                     return (
                       <div
                         key={index}
                         onClick={() => slot.status === 'Available' && handleToggleSlot(slot)}
-                        className={`flex items-center justify-between p-4 rounded-xl border transition-all group ${
-                          slot.status === 'Available' ? 'cursor-pointer hover:border-[#fbbf24] hover:shadow-sm bg-[#f8fafc]' : 'bg-slate-50 border-slate-100 opacity-80'
-                        } ${isSelected ? 'border-[#fbbf24] bg-[#fbbf24] text-slate-900 shadow-[0_0_0_1px_#fbbf24]' : 'border-slate-100'}`}
+                        className={`flex items-center justify-between p-4 rounded-xl border transition-all group ${cardStyle}`}
                       >
                         <div className="flex items-center gap-3">
                           {slot.status === 'Available' && (
@@ -397,11 +442,11 @@ export default function AdminAvailabilityPage() {
                               </svg>
                             </div>
                           )}
-                          <div className={`p-2 rounded-lg shadow-sm transition-colors ${isSelected ? 'bg-slate-900 text-[#fbbf24]' : 'bg-white text-slate-400 group-hover:text-slate-900'}`}>
+                          <div className={`p-2 rounded-lg shadow-sm transition-colors ${clockStyle}`}>
                             <Clock className="w-4 h-4" />
                           </div>
                           <div>
-                            <span className={`font-bold text-body-sm tracking-tight ${isSelected ? 'text-slate-900' : 'text-slate-800'}`}>{slot.time}</span>
+                            <span className={`font-bold text-body-sm tracking-tight ${textStyle}`}>{slot.time}</span>
                             {slot.user && (
                               <span className="text-[11px] text-slate-500 font-medium block truncate max-w-[140px]">
                                 {slot.user}
@@ -438,13 +483,14 @@ export default function AdminAvailabilityPage() {
                           )}
 
                           <span className={cn(
-                            "text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider",
-                            slot.status === 'Available' && "bg-emerald-50 text-emerald-600",
-                            slot.status === 'Pending' && "bg-yellow-400/20 text-yellow-800 border border-yellow-400",
-                            slot.status === 'Booked' && "bg-slate-200 text-slate-700",
-                            slot.status === 'Blocked' && "bg-red-50 text-red-600 border border-red-200"
+                            "text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-xs",
+                            slot.status === 'Available' && (isSelected ? "bg-slate-900 text-yellow-400" : "bg-emerald-100 text-emerald-700"),
+                            slot.status === 'Past' && "bg-slate-200 text-slate-500 font-extrabold",
+                            slot.status === 'Pending' && "bg-amber-500 text-white",
+                            slot.status === 'Booked' && "bg-red-600 text-white font-black",
+                            slot.status === 'Blocked' && "bg-rose-600 text-white font-black"
                           )}>
-                            {slot.status}
+                            {slot.status === 'Past' ? 'Past Slot' : slot.status}
                           </span>
                         </div>
                       </div>

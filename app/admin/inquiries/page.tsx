@@ -11,12 +11,15 @@ import api from '@/lib/axios';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
+import InquiryDetailsModal from '@/components/InquiryDetailsModal';
+
 export default function AdminInquiriesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [subjectFilter, setSubjectFilter] = useState('All Subjects');
   const [statusFilter, setStatusFilter] = useState('All Statuses');
   const [inquiries, setInquiries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedInquiry, setSelectedInquiry] = useState<any | null>(null);
 
   const fetchInquiries = async () => {
     setLoading(true);
@@ -50,6 +53,7 @@ export default function AdminInquiriesPage() {
     try {
       await api.post(`/admin/inquiries/${id}/resolve`);
       toast.success('Inquiry marked as resolved');
+      setSelectedInquiry(null);
       fetchInquiries();
     } catch (error) {
       toast.error('Failed to resolve inquiry');
@@ -72,7 +76,7 @@ export default function AdminInquiriesPage() {
             Customer Inquiries Management
           </h1>
           <p className="text-slate-500 text-sm">
-            View, filter, and resolve inquiries submitted by website visitors.
+            View, filter, and resolve inquiries submitted by website visitors. Click any row for full details.
           </p>
         </div>
 
@@ -141,60 +145,57 @@ export default function AdminInquiriesPage() {
             <table className="w-full text-sm text-left whitespace-nowrap">
               <thead className="text-xs font-extrabold text-slate-600 bg-slate-50/80">
                 <tr>
-                  <th className="px-6 py-4 rounded-l-lg">Sender Details</th>
+                  <th className="px-6 py-4 rounded-l-lg">Sender</th>
                   <th className="px-6 py-4">Inquiry ID</th>
                   <th className="px-6 py-4">Subject</th>
-                  <th className="px-6 py-4">Message Preview</th>
                   <th className="px-6 py-4">Date</th>
                   <th className="px-6 py-4 text-center">Status</th>
-                  <th className="px-4 py-4 rounded-r-lg"></th>
+                  <th className="px-6 py-4 text-right rounded-r-lg">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {inquiries.length > 0 ? (
-                  inquiries.map((inq) => (
-                    <tr key={inq.id} className={`hover:bg-slate-50/50 transition-colors group ${inq.status === 'Pending' ? 'bg-yellow-400/10' : ''}`}>
-                      <td className="px-6 py-5">
-                        <p className="font-extrabold text-[#0f172a]">{inq.name}</p>
-                        <p className="text-slate-400 text-xs mt-0.5 font-medium">{inq.mobile}</p>
+                  inquiries.map((inq) => {
+                    const isResolved = inq.status === 'Resolved';
+                    return (
+                    <tr 
+                      key={inq.id} 
+                      onClick={() => setSelectedInquiry(inq)}
+                      className={`hover:bg-yellow-400/5 transition-colors group cursor-pointer ${!isResolved ? 'bg-yellow-400/5' : ''}`}
+                    >
+                      <td className="px-6 py-5 font-extrabold text-[#0f172a] group-hover:text-yellow-600 transition-colors">
+                        {inq.name}
                       </td>
-                      <td className="px-6 py-5 font-extrabold text-[#0f172a]">#INQ-{inq.id}</td>
-                      <td className="px-6 py-5">
-                        <span className="bg-slate-100 text-slate-600 font-bold text-[10px] px-2.5 py-1 rounded-md border border-slate-200">
-                          {inq.subject || 'General'}
+                      <td className="px-6 py-5 font-black text-[#0f172a]">INQ-{inq.id}</td>
+                      <td className="px-6 py-5 font-bold text-slate-700">{inq.subject || 'General Inquiry'}</td>
+                      <td className="px-6 py-5 text-slate-500 font-medium">
+                        {inq.created_at ? format(new Date(inq.created_at), 'dd MMM yyyy') : '-'}
+                      </td>
+                      <td className="px-6 py-5 text-center">
+                        <span className={`text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider ${
+                          isResolved 
+                            ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
+                            : 'bg-amber-100 text-amber-900 border border-amber-300'
+                        }`}>
+                          {isResolved ? 'Resolved' : 'Pending'}
                         </span>
                       </td>
-                      <td className="px-6 py-5 text-slate-500 font-medium max-w-50 truncate">
-                        {inq.message}
-                      </td>
-                      <td className="px-6 py-5 text-slate-500 font-medium">{inq.created_at ? format(new Date(inq.created_at), 'dd MMM yyyy') : '-'}</td>
-                      <td className="px-6 py-5 text-center">
-                        {inq.status === 'Pending' ? (
-                          <span className="text-yellow-800 bg-yellow-400/20 border border-yellow-400 font-extrabold text-[11px] px-3 py-1.5 rounded-md">Pending</span>
-                        ) : (
-                          <span className="text-[#10b981] bg-emerald-50 border border-emerald-100 font-extrabold text-[11px] px-3 py-1.5 rounded-md">Resolved</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-5 w-24">
-                        {inq.status === 'Pending' ? (
-                          <button onClick={() => handleResolve(inq.id)} className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 text-[10px] font-extrabold px-3 py-1.5 rounded transition-colors text-center w-full tracking-wide shadow-sm cursor-pointer">
+                      <td className="px-6 py-5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                        {!isResolved ? (
+                          <button
+                            onClick={() => handleResolve(inq.id)}
+                            className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-lg transition-colors cursor-pointer shadow-xs"
+                          >
                             Resolve
                           </button>
-                        ) : (
-                          <div className="flex justify-center">
-                            <span className="text-xs text-slate-400 font-bold">Done</span>
-                          </div>
-                        )}
+                        ) : null}
                       </td>
                     </tr>
-                  ))
+                  )})
                 ) : (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-slate-500 font-medium">
-                      <div className="flex flex-col items-center justify-center">
-                        <MessageSquare className="w-8 h-8 text-slate-300 mb-3" />
-                        <p className="font-bold">No inquiries found matching your criteria.</p>
-                      </div>
+                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500 font-bold">
+                      No customer inquiries found matching your criteria.
                     </td>
                   </tr>
                 )}
@@ -213,6 +214,14 @@ export default function AdminInquiriesPage() {
         )}
 
       </div>
+
+      {/* Inquiry Details Modal */}
+      <InquiryDetailsModal
+        isOpen={!!selectedInquiry}
+        onClose={() => setSelectedInquiry(null)}
+        inquiry={selectedInquiry}
+        onResolve={handleResolve}
+      />
 
     </div>
   );

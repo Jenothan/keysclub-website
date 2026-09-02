@@ -9,11 +9,15 @@ import api from '@/lib/axios';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
+import EyeIcon from '@mui/icons-material/Visibility';
+import UserDetailsModal from '@/components/UserDetailsModal';
+
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Statuses');
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -67,7 +71,7 @@ export default function AdminUsersPage() {
             Registered Users Management
           </h1>
           <p className="text-slate-500 text-sm">
-            View, search, and manage all registered members of KEYS Club.
+            View, search, and manage all registered members. Click any row for full details.
           </p>
         </div>
 
@@ -124,44 +128,58 @@ export default function AdminUsersPage() {
             <table className="w-full text-sm text-left whitespace-nowrap">
               <thead className="text-xs font-extrabold text-slate-600 bg-slate-50/80">
                 <tr>
-                  <th className="px-6 py-4 rounded-l-lg">User ID</th>
-                  <th className="px-6 py-4">Name & Email</th>
-                  <th className="px-6 py-4">Mobile Number</th>
+                  <th className="px-6 py-4 rounded-l-lg">User</th>
+                  <th className="px-6 py-4">User ID</th>
                   <th className="px-6 py-4">Join Date</th>
                   <th className="px-6 py-4 text-center">Status</th>
-                  <th className="px-6 py-4 text-center rounded-r-lg">Action</th>
+                  <th className="px-6 py-4 text-right rounded-r-lg">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {users.map((user) => {
                   const isActive = user.is_active !== false;
                   return (
-                    <tr key={user.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="px-6 py-5 font-extrabold text-[#0f172a]">USR-{user.id}</td>
-                      <td className="px-6 py-5">
-                        <p className="font-extrabold text-[#0f172a]">{user.name}</p>
-                        <p className="text-slate-400 text-xs mt-0.5 font-medium">{user.email || 'No email'}</p>
+                    <tr 
+                      key={user.id} 
+                      onClick={() => setSelectedUser(user)}
+                      className="hover:bg-yellow-400/5 transition-colors group cursor-pointer"
+                    >
+                      <td className="px-6 py-5 font-extrabold text-[#0f172a] group-hover:text-yellow-600 transition-colors">
+                        {user.name}
                       </td>
-                      <td className="px-6 py-5 text-slate-500 font-medium">{user.phone || '-'}</td>
-                      <td className="px-6 py-5 text-slate-500 font-medium">{user.created_at ? format(new Date(user.created_at), 'dd MMM yyyy') : '-'}</td>
+                      <td className="px-6 py-5 font-extrabold text-slate-600">USR-{user.id}</td>
+                      <td className="px-6 py-5 text-slate-500 font-medium">
+                        {user.created_at ? format(new Date(user.created_at), 'dd MMM yyyy') : '-'}
+                      </td>
                       <td className="px-6 py-5 text-center">
-                        <span className={`font-extrabold text-[11px] px-3 py-1.5 rounded-md ${
-                          isActive ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' : 'text-red-700 bg-red-50 border border-red-200'
+                        <span className={`text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider ${
+                          isActive 
+                            ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
+                            : 'bg-red-100 text-red-700 border border-red-200'
                         }`}>
                           {isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
-                      <td className="px-6 py-5 text-center">
-                        <button
-                          onClick={() => handleToggleStatus(user)}
-                          className={`px-3 py-1.5 text-xs font-extrabold rounded-lg transition-colors cursor-pointer border ${
-                            isActive 
-                              ? 'bg-red-50 text-red-600 hover:bg-red-100 border-red-200' 
-                              : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border-emerald-200'
-                          }`}
-                        >
-                          {isActive ? 'Deactivate' : 'Activate'}
-                        </button>
+                      <td className="px-6 py-5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => setSelectedUser(user)}
+                            className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-900 transition-colors cursor-pointer"
+                            title="View Full Details"
+                          >
+                            <EyeIcon className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleToggleStatus(user)}
+                            className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-colors cursor-pointer ${
+                              isActive
+                                ? 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200'
+                                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200'
+                            }`}
+                          >
+                            {isActive ? 'Deactivate' : 'Activate'}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

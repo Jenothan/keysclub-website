@@ -5,16 +5,20 @@ import Calendar from '@mui/icons-material/CalendarMonth';
 import Clock from '@mui/icons-material/AccessTime';
 import MapPin from '@mui/icons-material/LocationOn';
 import Search from '@mui/icons-material/Search';
-import Filter from '@mui/icons-material/FilterList';
+import EyeIcon from '@mui/icons-material/Visibility';
 import { cn } from '@/lib/utils';
 import api from '@/lib/axios';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { computeBookingStatus } from '@/lib/bookingUtils';
+import BookingDetailsModal from '@/components/BookingDetailsModal';
 
 export default function MyBookingsPage() {
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -39,29 +43,32 @@ export default function MyBookingsPage() {
     try {
       await api.post(`/bookings/${id}/cancel`);
       toast.success('Booking cancelled successfully');
+      setSelectedBooking(null);
       fetchBookings();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to cancel booking');
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'Confirmed':
-      case 'Completed':
-        return 'bg-emerald-50 text-emerald-600 border border-emerald-200';
-      case 'Pending':
-        return 'bg-yellow-400/10 text-slate-900 border border-yellow-400 font-extrabold';
-      case 'Cancelled':
-        return 'bg-red-50 text-red-600 border border-red-200';
-      default:
-        return 'bg-slate-100 text-slate-600 border border-slate-200';
-    }
-  };
+  const filteredBookings = bookings.filter(b => 
+    !searchTerm.trim() || 
+    b.id?.toString().includes(searchTerm) || 
+    b.start_time?.includes(searchTerm) ||
+    b.end_time?.includes(searchTerm)
+  );
 
   return (
     <div className="p-4 sm:p-6 md:p-10 w-full space-y-8 pb-20">
       
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-black text-[#0f172a] tracking-tight mb-1">
+          My Court Bookings
+        </h1>
+        <p className="text-slate-500 text-sm">
+          Track upcoming reservation requests, view status updates, and review past play sessions. Click any booking to view details.
+        </p>
+      </div>
 
       {/* Tabs and Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-2 rounded-xl shadow-sm border border-slate-100">
@@ -69,7 +76,7 @@ export default function MyBookingsPage() {
           <button 
             onClick={() => setActiveTab('upcoming')}
             className={cn(
-              "flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all",
+              "flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all cursor-pointer",
               activeTab === 'upcoming' 
                 ? "bg-[#0f172a] text-white shadow-md" 
                 : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
@@ -80,7 +87,7 @@ export default function MyBookingsPage() {
           <button 
             onClick={() => setActiveTab('past')}
             className={cn(
-              "flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all",
+              "flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all cursor-pointer",
               activeTab === 'past' 
                 ? "bg-[#0f172a] text-white shadow-md" 
                 : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
@@ -95,32 +102,35 @@ export default function MyBookingsPage() {
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
               type="text" 
-              placeholder="Search booking ID..." 
+              placeholder="Search booking ID or time..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 text-sm rounded-lg pl-9 pr-4 py-2.5 outline-none focus:border-yellow-400 transition-colors"
             />
           </div>
-          <button className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 p-2.5 rounded-lg transition-colors">
-            <Filter className="w-4 h-4" />
-          </button>
         </div>
       </div>
 
       {/* Bookings List */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden p-6">
         {loading ? (
-          <div className="p-12 text-center text-slate-500 font-medium">Loading...</div>
-        ) : bookings.length > 0 ? (
+          <div className="py-16 flex justify-center items-center">
+            <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : filteredBookings.length > 0 ? (
           <div className="space-y-4">
-            {bookings.map((booking) => {
+            {filteredBookings.map((booking) => {
               const bookingDate = booking.booking_date ? new Date(booking.booking_date) : new Date();
+              const statusInfo = computeBookingStatus(booking);
               return (
               <div 
                 key={booking.id} 
-                className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col lg:flex-row lg:items-center gap-6 group hover:border-yellow-400 hover:shadow-md transition-all duration-300"
+                onClick={() => setSelectedBooking(booking)}
+                className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col lg:flex-row lg:items-center gap-6 group hover:border-yellow-400 hover:shadow-md transition-all duration-300 cursor-pointer"
               >
                 {/* Date Box */}
                 <div className="flex items-center gap-4 lg:w-48">
-                  <div className="bg-slate-50 rounded-xl p-3 flex flex-col items-center justify-center w-16 h-16 border border-slate-100 group-hover:bg-yellow-400 group-hover:border-yellow-400 transition-colors">
+                  <div className="bg-slate-50 rounded-xl p-3 flex flex-col items-center justify-center w-16 h-16 border border-slate-100 group-hover:bg-yellow-400 group-hover:border-yellow-400 transition-colors shrink-0">
                     <span className="text-xl font-black text-slate-900 leading-none group-hover:text-slate-900">{format(bookingDate, 'dd')}</span>
                     <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase">{format(bookingDate, 'MMM')}</span>
                   </div>
@@ -131,11 +141,11 @@ export default function MyBookingsPage() {
                       <span className="text-xs font-extrabold text-slate-400 tracking-wider uppercase bg-slate-100 px-2 py-0.5 rounded-md">
                         #KC-{booking.id}
                       </span>
-                      <span className={cn("text-xs font-bold px-2.5 py-0.5 rounded-full", getStatusBadge(booking.status))}>
-                        {booking.status}
+                      <span className={cn("text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-xs", statusInfo.badgeClass)}>
+                        {statusInfo.label}
                       </span>
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900">Badminton Session</h3>
+                    <h3 className="text-lg font-bold text-slate-900 group-hover:text-yellow-600 transition-colors">Badminton Session</h3>
                     
                     <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-500">
                       <div className="flex items-center gap-1.5">
@@ -151,13 +161,16 @@ export default function MyBookingsPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-3 w-full lg:w-auto mt-4 lg:mt-0 lg:ml-auto">
-                  <button className="flex-1 lg:flex-none text-center bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-bold px-6 py-2.5 rounded-lg transition-colors text-sm">
-                    View Details
+                <div className="flex items-center gap-3 w-full lg:w-auto mt-4 lg:mt-0 lg:ml-auto" onClick={(e) => e.stopPropagation()}>
+                  <button 
+                    onClick={() => setSelectedBooking(booking)}
+                    className="flex-1 lg:flex-none text-center bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-lg transition-colors text-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <EyeIcon className="w-4 h-4" /> View Details
                   </button>
-                  {activeTab === 'upcoming' && booking.status !== 'Cancelled' && (
-                    <button onClick={() => handleCancel(booking.id)} className="flex-1 lg:flex-none text-center bg-red-50 hover:bg-red-100 text-red-600 font-bold px-6 py-2.5 rounded-lg transition-colors text-sm">
-                      Cancel
+                  {activeTab === 'upcoming' && booking.status !== 'Cancelled' && statusInfo.status !== 'Completed' && (
+                    <button onClick={() => handleCancel(booking.id)} className="flex-1 lg:flex-none text-center bg-red-50 hover:bg-red-100 text-red-600 font-bold px-5 py-2.5 rounded-lg transition-colors text-xs cursor-pointer">
+                      Cancel Request
                     </button>
                   )}
                 </div>
@@ -165,17 +178,26 @@ export default function MyBookingsPage() {
             )})}
           </div>
         ) : (
-          <div className="p-12 text-center flex flex-col items-center justify-center">
+          <div className="py-12 text-center flex flex-col items-center justify-center">
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
               <Calendar className="w-8 h-8 text-slate-400" />
             </div>
             <h3 className="text-lg font-bold text-slate-900 mb-2">No bookings found</h3>
             <p className="text-slate-500 max-w-sm mx-auto">
-              You don't have any {activeTab} bookings at the moment. Ready to play?
+              You don't have any {activeTab} bookings matching your search. Ready to play?
             </p>
           </div>
         )}
       </div>
+
+      {/* Booking Details Modal */}
+      <BookingDetailsModal
+        isOpen={!!selectedBooking}
+        onClose={() => setSelectedBooking(null)}
+        booking={selectedBooking}
+        isAdmin={false}
+        onCancel={handleCancel}
+      />
 
     </div>
   );

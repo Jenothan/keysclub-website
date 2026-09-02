@@ -105,6 +105,14 @@ export default function ProfilePage() {
     }
   };
 
+  if (!user) {
+    return (
+      <div className="p-6 md:p-10 w-full min-h-[60vh] flex justify-center items-center">
+        <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 md:p-10 w-full space-y-10 pb-20">
       

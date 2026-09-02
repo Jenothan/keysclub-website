@@ -25,14 +25,8 @@ api.interceptors.response.use(
             // Token expired or invalid -> Logout user & Redirect to login
             if (typeof window !== 'undefined') {
                 localStorage.removeItem('token');
-                localStorage.removeItem('auth-storage'); // Zustand persist key if we use it
+                localStorage.removeItem('auth-storage');
                 window.location.href = '/login';
-            }
-        }
-        if (error.response?.status === 403) {
-            // Forbidden (Role issues) -> Redirect to unauthorized page or dashboard
-            if (typeof window !== 'undefined') {
-                window.location.href = '/dashboard';
             }
         }
         return Promise.reject(error);

@@ -161,17 +161,22 @@ export default function AdminManagementPage() {
       {/* --- View: Admin List --- */}
       {formState === 'list' && (
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse whitespace-nowrap">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-xs uppercase tracking-wider text-slate-500 font-bold">
-                  <th className="p-4 pl-6">Admin Details</th>
-                  <th className="p-4">Role</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4 text-right pr-6">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
+          {isLoading ? (
+            <div className="py-16 flex justify-center items-center">
+              <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse whitespace-nowrap">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100 text-xs uppercase tracking-wider text-slate-500 font-bold">
+                    <th className="p-4 pl-6">Admin Details</th>
+                    <th className="p-4">Role</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4 text-right pr-6">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
                 {admins.map((admin) => (
                   <tr key={admin.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="p-4 pl-6">
@@ -215,6 +220,7 @@ export default function AdminManagementPage() {
               </tbody>
             </table>
           </div>
+          )}
         </div>
       )}
 

@@ -1,13 +1,21 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import Clock from '@mui/icons-material/AccessTime';
 import Calendar from '@mui/icons-material/CalendarMonth';
 import ShieldCheck from '@mui/icons-material/GppGood';
 import MessageSquare from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import EyeIcon from '@mui/icons-material/Visibility';
 import api from '@/lib/axios';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { computeBookingStatus } from '@/lib/bookingUtils';
+import BookingDetailsModal from '@/components/BookingDetailsModal';
 
 export default function AdminDashboardPage() {
+  const [loading, setLoading] = useState(true);
+  const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
   const [stats, setStats] = useState({
     todays_bookings: 0,
     pending_requests: 0,
@@ -17,33 +25,39 @@ export default function AdminDashboardPage() {
 
   const [recentRequests, setRecentRequests] = useState<any[]>([]);
 
+  const fetchStatsAndRecent = async () => {
+    setLoading(true);
+    try {
+      const [statsRes, bookingsRes] = await Promise.all([
+        api.get('/admin/stats'),
+        api.get('/admin/bookings')
+      ]);
+
+      setStats(statsRes.data);
+      setRecentRequests(bookingsRes.data.slice(0, 5));
+    } catch (error) {
+      console.error('Failed to fetch dashboard data', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await api.get('/admin/stats');
-        setStats(response.data);
-      } catch (error) {
-        console.error('Failed to fetch stats', error);
-      }
-    };
-
-    const fetchRecentBookings = async () => {
-      try {
-        const response = await api.get('/admin/bookings');
-        setRecentRequests(response.data.slice(0, 5)); // First 5
-      } catch (error) {
-        console.error('Failed to fetch bookings', error);
-      }
-    };
-
-    fetchStats();
-    fetchRecentBookings();
+    fetchStatsAndRecent();
   }, []);
 
   return (
     <div className="p-4 sm:p-6 md:p-10 w-full space-y-8 pb-20">
 
-
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-black text-[#0f172a] tracking-tight mb-1">
+          Admin Dashboard Overview
+        </h1>
+        <p className="text-slate-500 text-sm">
+          Real-time summary of today's court bookings, pending requests, and new inquiries.
+        </p>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -57,7 +71,11 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.todays_bookings.toString().padStart(2, '0')}</h3>
+            {loading ? (
+              <div className="h-9 w-16 bg-slate-200 animate-pulse rounded-lg"></div>
+            ) : (
+              <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.todays_bookings.toString().padStart(2, '0')}</h3>
+            )}
             <span className="text-lg font-bold text-[#0f172a]">Sessions</span>
           </div>
         </div>
@@ -71,7 +89,11 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.pending_requests.toString().padStart(2, '0')}</h3>
+            {loading ? (
+              <div className="h-9 w-16 bg-slate-200 animate-pulse rounded-lg"></div>
+            ) : (
+              <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.pending_requests.toString().padStart(2, '0')}</h3>
+            )}
             <span className="text-lg font-bold text-[#0f172a]">Slots</span>
           </div>
         </div>
@@ -85,7 +107,11 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.confirmed_bookings.toString().padStart(2, '0')}</h3>
+            {loading ? (
+              <div className="h-9 w-16 bg-slate-200 animate-pulse rounded-lg"></div>
+            ) : (
+              <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.confirmed_bookings.toString().padStart(2, '0')}</h3>
+            )}
             <span className="text-lg font-bold text-[#0f172a]">Slots</span>
           </div>
         </div>
@@ -99,7 +125,11 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.new_inquiries.toString().padStart(2, '0')}</h3>
+            {loading ? (
+              <div className="h-9 w-16 bg-slate-200 animate-pulse rounded-lg"></div>
+            ) : (
+              <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.new_inquiries.toString().padStart(2, '0')}</h3>
+            )}
             <span className="text-lg font-bold text-[#0f172a]">Messages</span>
           </div>
         </div>
@@ -109,62 +139,110 @@ export default function AdminDashboardPage() {
       {/* Recent Booking Requests Table */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-          <h3 className="text-lg font-extrabold text-[#0f172a]">Recent Booking Requests</h3>
-          <button className="bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-bold text-xs h-9 px-4 rounded-md transition-colors shadow-sm">
+          <div>
+            <h3 className="text-lg font-extrabold text-[#0f172a]">Recent Booking Requests</h3>
+            <p className="text-xs text-slate-400 font-medium">Click any row to view full details</p>
+          </div>
+          <Link href="/admin/bookings" className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold text-xs h-9 px-4 rounded-md transition-colors shadow-sm flex items-center justify-center">
             View All Requests
-          </button>
+          </Link>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left whitespace-nowrap">
-            <thead className="text-xs font-bold text-slate-500 bg-slate-50/50">
-              <tr>
-                <th className="px-6 py-4">User Name</th>
-                <th className="px-6 py-4">Mobile</th>
-                <th className="px-6 py-4">Booking Date</th>
-                <th className="px-6 py-4">Time Slot</th>
-                <th className="px-6 py-4">Booking ID</th>
-                <th className="px-6 py-4 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentRequests.map((req, i) => (
-                <tr key={req.id} className="hover:bg-slate-50/50 transition-colors group">
-                  <td className="px-6 py-4">
-                    {req.user ? (
-                      <span className="font-bold text-[#0f172a] block">{req.user.name}</span>
-                    ) : (
-                      <span className="font-bold text-[#0f172a] block">{req.customer_name || 'Walk-in'}</span>
-                    )}
-                    {req.booked_by && (
-                      <span className="text-[9px] font-bold text-slate-900 bg-yellow-400/20 px-1.5 py-0.5 rounded border border-yellow-400 uppercase tracking-wide block mt-0.5">
-                        By {req.booked_by.role}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-slate-500 font-medium">{req.user?.phone || req.customer_phone || '-'}</td>
-                  <td className="px-6 py-4 text-slate-500 font-medium">{req.booking_date}</td>
-                  <td className="px-6 py-4 text-slate-500 font-medium">{req.start_time} - {req.end_time}</td>
-                  <td className="px-6 py-4 font-extrabold text-[#0f172a]">#KC-{req.id}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-center gap-4">
-                      {req.status === 'Pending' && (
-                        <span className="text-yellow-600 bg-yellow-50 font-bold text-xs px-2.5 py-1 rounded-md w-20 text-center">Pending</span>
-                      )}
-                      {req.status === 'Confirmed' && (
-                        <span className="text-emerald-600 bg-emerald-50 font-bold text-xs px-2.5 py-1 rounded-md w-20 text-center">Confirmed</span>
-                      )}
-                      {req.status === 'Rejected' && (
-                        <span className="text-red-600 bg-red-50 font-bold text-xs px-2.5 py-1 rounded-md w-20 text-center">Rejected</span>
-                      )}
-                    </div>
-                  </td>
+          {loading ? (
+            <div className="py-16 flex justify-center items-center">
+              <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : (
+            <table className="w-full text-sm text-left whitespace-nowrap">
+              <thead className="text-xs font-bold text-slate-500 bg-slate-50/50">
+                <tr>
+                  <th className="px-6 py-4">User</th>
+                  <th className="px-6 py-4">Booking ID</th>
+                  <th className="px-6 py-4">Booking Date & Slot</th>
+                  <th className="px-6 py-4 text-center">Status</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {recentRequests.length > 0 ? (
+                  recentRequests.map((req) => {
+                    const statusInfo = computeBookingStatus(req);
+                    return (
+                    <tr 
+                      key={req.id} 
+                      onClick={() => setSelectedBooking(req)}
+                      className="hover:bg-yellow-400/5 transition-colors group cursor-pointer"
+                    >
+                      <td className="px-6 py-4 font-bold text-[#0f172a] group-hover:text-yellow-600 transition-colors">
+                        {req.user ? req.user.name : (req.customer_name || 'Walk-in')}
+                      </td>
+                      <td className="px-6 py-4 font-black text-[#0f172a]">#KC-{req.id}</td>
+                      <td className="px-6 py-4 text-slate-700 font-medium">
+                        {req.booking_date} ({req.start_time} - {req.end_time})
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className={cn("text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-xs", statusInfo.badgeClass)}>
+                          {statusInfo.label}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={() => setSelectedBooking(req)}
+                          className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-900 transition-colors cursor-pointer"
+                        >
+                          <EyeIcon className="w-5 h-5" />
+                        </button>
+                      </td>
+                    </tr>
+                  )})
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-10 text-center text-slate-500 font-medium">
+                      No recent booking requests found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
+
+      {/* Booking Details Modal */}
+      <BookingDetailsModal
+        isOpen={!!selectedBooking}
+        onClose={() => setSelectedBooking(null)}
+        booking={selectedBooking}
+        isAdmin={true}
+        onConfirm={async (id) => {
+          try {
+            await api.post(`/admin/bookings/${id}/confirm`);
+            toast.success('Booking confirmed successfully');
+            fetchStatsAndRecent();
+          } catch (e: any) {
+            toast.error(e.response?.data?.message || 'Failed to confirm');
+          }
+        }}
+        onReject={async (id) => {
+          try {
+            await api.post(`/admin/bookings/${id}/reject`);
+            toast.success('Booking rejected successfully');
+            fetchStatsAndRecent();
+          } catch (e: any) {
+            toast.error(e.response?.data?.message || 'Failed to reject');
+          }
+        }}
+        onCancel={async (id) => {
+          try {
+            await api.post(`/admin/bookings/${id}/cancel`);
+            toast.success('Booking cancelled successfully');
+            fetchStatsAndRecent();
+          } catch (e: any) {
+            toast.error(e.response?.data?.message || 'Failed to cancel');
+          }
+        }}
+      />
 
     </div>
   );

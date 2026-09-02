@@ -152,7 +152,7 @@ export default function ContactPage() {
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-[#0f172a]">Email Address</label>
-                <Input name="email" required placeholder="ashan@example.com" type="email" className="h-11 bg-slate-50/50 focus:border-yellow-400 focus:ring-yellow-400" />
+                <Input name="email" placeholder="ashan@example.com" type="email" className="h-11 bg-slate-50/50 focus:border-yellow-400 focus:ring-yellow-400" />
               </div>
 
               <div className="space-y-2">
@@ -165,7 +165,7 @@ export default function ContactPage() {
                   <SelectContent>
                     <SelectItem value="Tournament">Tournament</SelectItem>
                     <SelectItem value="Full Day Court Booking">Full Day Court Booking</SelectItem>
-                    <SelectItem value="Club Membership">Club Membership</SelectItem>
+                    <SelectItem value="Badminton Court Membership">Badminton Court Membership</SelectItem>
                     <SelectItem value="General Inquiry">General Inquiry</SelectItem>
                     <SelectItem value="Others">Others</SelectItem>
                   </SelectContent>
@@ -182,7 +182,7 @@ export default function ContactPage() {
                 />
               </div>
 
-              <Button disabled={isSubmitting} className="w-full h-12 bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-bold text-sm transition-colors rounded-lg">
+              <Button type="submit" disabled={isSubmitting} className="w-full h-12 bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-bold text-sm transition-colors rounded-lg">
                 {isSubmitting ? "Submitting..." : "Submit Inquiry"}
               </Button>
             </form>
