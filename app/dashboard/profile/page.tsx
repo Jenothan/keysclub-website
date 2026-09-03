@@ -10,6 +10,8 @@ import AlertCircle from '@mui/icons-material/ErrorOutlineOutlined';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/axios';
+import { formatPhoneWithCountryCode } from '@/lib/phoneUtils';
+import PhoneInput from '@/components/PhoneInput';
 import { toast } from 'sonner';
 
 type PhoneFlowState = 'INITIAL' | 'OLD_OTP' | 'NEW_PHONE' | 'NEW_OTP' | 'SUCCESS';
@@ -42,10 +44,11 @@ export default function ProfilePage() {
   const handleSendNewPhoneOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    const formattedPhone = formatPhoneWithCountryCode(newPhoneInput);
     try {
       const res = await api.post('/user/phone/request-otp', {
         purpose: 'new_phone_verify',
-        new_phone: newPhoneInput
+        new_phone: formattedPhone
       });
       setOtpHint(res.data.otp_hint);
       setPhoneState('NEW_OTP');
@@ -60,13 +63,14 @@ export default function ProfilePage() {
   const handleVerifyNewOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    const formattedPhone = formatPhoneWithCountryCode(newPhoneInput);
     try {
       await api.post('/user/phone/verify-otp', {
         purpose: 'new_phone_verify',
-        new_phone: newPhoneInput,
+        new_phone: formattedPhone,
         otp: otpInput
       });
-      setCurrentPhone(newPhoneInput);
+      setCurrentPhone(formattedPhone);
       setPhoneState('SUCCESS');
       toast.success('Phone number updated successfully');
       setTimeout(() => {
@@ -189,14 +193,14 @@ export default function ProfilePage() {
                 <form onSubmit={handleSendNewPhoneOtp} className="space-y-4">
                   <div>
                     <label className="block text-sm font-bold text-slate-700 mb-2">Enter New Mobile Number</label>
-                    <input 
-                      required 
-                      type="tel" 
-                      placeholder="+94 7X XXX XXXX" 
-                      value={newPhoneInput}
-                      onChange={(e) => setNewPhoneInput(e.target.value)}
-                      className="w-full max-w-sm bg-white border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-yellow-400 font-bold" 
-                    />
+                    <div className="max-w-sm">
+                      <PhoneInput 
+                        required 
+                        value={newPhoneInput}
+                        onChange={(val) => setNewPhoneInput(val)}
+                        placeholder="712345678"
+                      />
+                    </div>
                   </div>
                   <div className="flex gap-3">
                     <button type="submit" disabled={isSubmitting} className="bg-[#0f172a] hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-lg transition-colors text-sm">

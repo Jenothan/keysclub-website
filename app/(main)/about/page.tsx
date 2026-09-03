@@ -47,7 +47,7 @@ export default function AboutPage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* 1. ABOUT US PAGE HERO */}
-      <section className="relative py-32 lg:py-48 overflow-hidden">
+      <section className="relative py-16 sm:py-24 lg:py-36 overflow-hidden">
         <div
           className="absolute inset-0 z-0"
           style={{
@@ -62,24 +62,24 @@ export default function AboutPage() {
           <Image
             src="/logo.png"
             alt="KEYS Club Logo"
-            width={100}
-            height={100}
-            className="object-contain mb-8"
+            width={80}
+            height={80}
+            className="object-contain mb-6 w-16 h-16 sm:w-24 sm:h-24"
           />
-          <h1 className="text-display font-extrabold text-white mb-6">
+          <h1 className="text-display font-extrabold text-white mb-4 text-center">
             About Karanavai East Youth Sports Club
           </h1>
-          <p className="max-w-3xl text-subtitle text-slate-300 mb-8 leading-relaxed">
+          <p className="max-w-3xl text-subtitle text-slate-300 mb-6 leading-relaxed text-center">
             Building a stronger, healthier and more active community through badminton, youth sports and recreation.
           </p>
         </div>
       </section>
 
       {/* 2. WHO WE ARE */}
-      <section className="py-20 bg-slate-50">
+      <section className="py-12 sm:py-20 bg-slate-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-caption font-bold text-yellow-400 uppercase tracking-wider">Who We Are</span>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-[#0f172a] mt-4 mb-8">
+          <h2 className="text-xl sm:text-3xl lg:text-4xl font-extrabold text-[#0f172a] mt-3 mb-6">
             A Community-Focused Sports Hub
           </h2>
           <div className="space-y-6 text-slate-600 text-body leading-relaxed text-left md:text-center">

@@ -72,11 +72,11 @@ export default function WebsiteDataPage() {
   if (role !== 'Super Admin') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-6">
-          <ShieldAlert className="w-10 h-10" />
+        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
+          <ShieldAlert className="w-8 h-8" />
         </div>
-        <h1 className="text-3xl font-extrabold text-[#0f172a] mb-2 tracking-tight">Access Denied</h1>
-        <p className="text-slate-500 max-w-md mx-auto text-lg">
+        <h1 className="text-2xl font-black text-[#0f172a] mb-2 tracking-tight">Access Denied</h1>
+        <p className="text-slate-500 max-w-md mx-auto text-xs sm:text-sm">
           You do not have the required permissions to view this page. Only Super Admins can edit Website Data.
         </p>
       </div>
@@ -96,33 +96,43 @@ export default function WebsiteDataPage() {
 
       <div className="space-y-6">
 
-        {/* Website General Settings */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 md:p-8">
-          <h2 className="text-lg font-extrabold text-[#0f172a] mb-6">Public Contact Information</h2>
-          <p className="text-sm text-slate-500 mb-6 -mt-4">This information will be displayed publicly on the contact page and footer of the website.</p>
+        {/* Header */}
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black text-[#0f172a] tracking-tight mb-1">
+            Website Data & Pricing Configuration
+          </h1>
+          <p className="text-slate-500 text-xs sm:text-sm">
+            Update public contact info, court hourly rates, and membership fees.
+          </p>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-[#0f172a] flex items-center gap-2">
+        {/* Website General Settings */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-8">
+          <h2 className="text-base sm:text-lg font-extrabold text-[#0f172a] mb-2">Public Contact Information</h2>
+          <p className="text-xs text-slate-500 mb-6">This information will be displayed publicly on the contact page and footer of the website.</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
                 <Phone className="w-3.5 h-3.5 text-slate-400" /> Support Phone
               </label>
-              <Input name="primary_phone" value={formData.primary_phone} onChange={handleChange} className="h-11 bg-slate-50/50" />
+              <Input name="primary_phone" value={formData.primary_phone} onChange={handleChange} className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-[#0f172a] flex items-center gap-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
                 <Mail className="w-3.5 h-3.5 text-slate-400" /> Support Email
               </label>
-              <Input name="support_email" value={formData.support_email} onChange={handleChange} className="h-11 bg-slate-50/50" />
+              <Input name="support_email" value={formData.support_email} onChange={handleChange} className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
             </div>
-            <div className="space-y-2 md:col-span-2">
-              <label className="text-xs font-bold text-[#0f172a] flex items-center gap-2">
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
                 <MapPin className="w-3.5 h-3.5 text-slate-400" /> Club Location / Address
               </label>
-              <Input name="club_address" value={formData.club_address} onChange={handleChange} className="h-11 bg-slate-50/50" />
+              <Input name="club_address" value={formData.club_address} onChange={handleChange} className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
             </div>
           </div>
-          <div className="mt-8 flex justify-end">
-            <button onClick={handleSave} disabled={isSaving} className="bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-bold text-sm h-11 px-8 rounded-lg transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer">
+          <div className="mt-6 flex justify-end">
+            <button onClick={handleSave} disabled={isSaving} className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold text-xs sm:text-sm h-11 px-8 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer">
               <Save className="w-4 h-4" />
               {isSaving ? 'Saving...' : 'Save Changes'}
             </button>
@@ -130,41 +140,41 @@ export default function WebsiteDataPage() {
         </div>
 
         {/* Court Configuration */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 md:p-8">
-          <h2 className="text-lg font-extrabold text-[#0f172a] mb-6">Court & Booking Configuration</h2>
-          <p className="text-sm text-slate-500 mb-6 -mt-4">Update pricing and operating hours for court bookings shown dynamically across the site.</p>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-8">
+          <h2 className="text-base sm:text-lg font-extrabold text-[#0f172a] mb-2">Court & Booking Configuration</h2>
+          <p className="text-xs text-slate-500 mb-6">Update pricing and operating hours for court bookings shown dynamically across the site.</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-[#0f172a] flex items-center gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-[#0f172a] uppercase tracking-wider">
                 Court Hourly Rate (e.g. LKR 400)
               </label>
-              <Input name="court_pricing" value={formData.court_pricing} onChange={handleChange} placeholder="LKR 400" className="h-11 bg-slate-50/50 font-medium" />
+              <Input name="court_pricing" value={formData.court_pricing} onChange={handleChange} placeholder="LKR 400" className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-[#0f172a] flex items-center gap-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-[#0f172a] uppercase tracking-wider">
                 Club Membership Monthly Rate (e.g. LKR 1,000)
               </label>
-              <Input name="membership_pricing" value={formData.membership_pricing} onChange={handleChange} placeholder="LKR 1,000" className="h-11 bg-slate-50/50 font-medium" />
+              <Input name="membership_pricing" value={formData.membership_pricing} onChange={handleChange} placeholder="LKR 1,000" className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-[#0f172a] flex items-center gap-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-[#0f172a] uppercase tracking-wider">
                 One-Time Annual Registration Fee (e.g. LKR 2,000)
               </label>
-              <Input name="registration_fee" value={formData.registration_fee} onChange={handleChange} placeholder="LKR 2,000" className="h-11 bg-slate-50/50 font-medium" />
+              <Input name="registration_fee" value={formData.registration_fee} onChange={handleChange} placeholder="LKR 2,000" className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-[#0f172a] flex items-center gap-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-[#0f172a] uppercase tracking-wider">
                 Full Day Rate (e.g. LKR 3,000)
               </label>
-              <Input name="full_day_pricing" value={formData.full_day_pricing} onChange={handleChange} placeholder="LKR 3,000" className="h-11 bg-slate-50/50 font-medium" />
+              <Input name="full_day_pricing" value={formData.full_day_pricing} onChange={handleChange} placeholder="LKR 3,000" className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-[#0f172a] flex items-center gap-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
                 <Clock className="w-3.5 h-3.5 text-slate-400" /> Opening Time
               </label>
               <Select defaultValue="06:00 AM">
-                <SelectTrigger className="h-11 bg-slate-50/50">
+                <SelectTrigger className="h-11 bg-slate-50/50 text-xs sm:text-sm font-medium rounded-xl">
                   <SelectValue placeholder="06:00 AM" />
                 </SelectTrigger>
                 <SelectContent>
@@ -175,12 +185,12 @@ export default function WebsiteDataPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-[#0f172a] flex items-center gap-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
                 <Clock className="w-3.5 h-3.5 text-slate-400" /> Closing Time
               </label>
               <Select defaultValue="10:00 PM">
-                <SelectTrigger className="h-11 bg-slate-50/50">
+                <SelectTrigger className="h-11 bg-slate-50/50 text-xs sm:text-sm font-medium rounded-xl">
                   <SelectValue placeholder="10:00 PM" />
                 </SelectTrigger>
                 <SelectContent>
@@ -192,43 +202,8 @@ export default function WebsiteDataPage() {
               </Select>
             </div>
           </div>
-          <div className="mt-8 flex justify-end">
-            <button onClick={handleSave} disabled={isSaving} className="bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-bold text-sm h-11 px-8 rounded-lg transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer">
-              <Save className="w-4 h-4" />
-              {isSaving ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
-        </div>
-
-        {/* Notification Preferences */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 md:p-8">
-          <h2 className="text-lg font-extrabold text-[#0f172a] mb-6">System Preferences</h2>
-          <div className="space-y-4">
-            <label className="flex items-center justify-between p-4 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group">
-              <div>
-                <div className="font-bold text-[#0f172a] text-sm group-hover:text-yellow-600 transition-colors">Email Notifications</div>
-                <div className="text-xs text-slate-500 mt-0.5">Receive email alerts for new booking requests.</div>
-              </div>
-              <div className="relative inline-block w-11 h-6 select-none">
-                <input type="checkbox" className="peer absolute w-0 h-0 opacity-0" defaultChecked />
-                <span className="absolute inset-0 bg-slate-200 rounded-full cursor-pointer transition-colors peer-checked:bg-yellow-400 peer-focus:ring-4 peer-focus:ring-yellow-100"></span>
-                <span className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5 shadow-sm"></span>
-              </div>
-            </label>
-            <label className="flex items-center justify-between p-4 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group">
-              <div>
-                <div className="font-bold text-[#0f172a] text-sm group-hover:text-yellow-600 transition-colors">SMS Notifications</div>
-                <div className="text-xs text-slate-500 mt-0.5">Receive text alerts for new booking requests.</div>
-              </div>
-              <div className="relative inline-block w-11 h-6 select-none">
-                <input type="checkbox" className="peer absolute w-0 h-0 opacity-0" />
-                <span className="absolute inset-0 bg-slate-200 rounded-full cursor-pointer transition-colors peer-checked:bg-yellow-400 peer-focus:ring-4 peer-focus:ring-yellow-100"></span>
-                <span className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5 shadow-sm"></span>
-              </div>
-            </label>
-          </div>
-          <div className="mt-8 flex justify-end">
-            <button onClick={handleSave} disabled={isSaving} className="bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-sm h-11 px-8 rounded-lg transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50">
+          <div className="mt-6 flex justify-end">
+            <button onClick={handleSave} disabled={isSaving} className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold text-xs sm:text-sm h-11 px-8 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer">
               <Save className="w-4 h-4" />
               {isSaving ? 'Saving...' : 'Save Changes'}
             </button>

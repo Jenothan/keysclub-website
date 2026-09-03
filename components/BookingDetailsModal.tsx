@@ -128,7 +128,7 @@ export default function BookingDetailsModal({
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <span className="text-xs font-bold text-slate-500">Court Location</span>
                 <span className="font-bold text-slate-700 text-body-sm flex items-center gap-1">
-                  <LocationIcon className="w-4 h-4 text-slate-400" /> Point Pedro (National Standard)
+                  <LocationIcon className="w-4 h-4 text-slate-400" /> Karaveddy (National Standard)
                 </span>
               </div>
 

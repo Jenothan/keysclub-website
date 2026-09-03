@@ -82,17 +82,17 @@
   --sidebar-ring: oklch(0.708 0 0);
 
   /* --- Fluid Typography Scale (Mobile -> Tablet -> Desktop) --- */
-  --font-hero-h1: clamp(2rem, 3.5vw + 1rem, 3.5rem);          /* Mobile: 32px | Tablet: 40px | Desktop: 56px */
-  --font-page-h1: clamp(1.625rem, 2.5vw + 0.8rem, 2.375rem);   /* Mobile: 26-28px | Tablet: 32px | Desktop: 38px */
-  --font-h2: clamp(1.375rem, 2vw + 0.75rem, 2rem);             /* Mobile: 22-24px | Tablet: 28px | Desktop: 32px */
-  --font-h3: clamp(1.125rem, 1.2vw + 0.65rem, 1.4375rem);     /* Mobile: 18-20px | Tablet: 21px | Desktop: 23px */
-  --font-body: clamp(0.9375rem, 0.4vw + 0.825rem, 1.0625rem);  /* Mobile: 15-16px | Tablet: 16px | Desktop: 17px */
-  --font-card-title: clamp(1.0625rem, 0.8vw + 0.85rem, 1.25rem);/* Mobile: 17px | Tablet: 18px | Desktop: 20px */
-  --font-button: clamp(0.906rem, 0.5vw + 0.75rem, 1rem);      /* Mobile: 14.5px | Tablet: 15.5px | Desktop: 16px */
-  --font-input: clamp(0.9375rem, 0.4vw + 0.825rem, 1rem);      /* Mobile: 15-16px | Tablet: 16px | Desktop: 16px */
-  --font-label: clamp(0.8125rem, 0.3vw + 0.75rem, 0.875rem);   /* Mobile: 13-14px | Tablet: 14px | Desktop: 14px */
-  --font-small: clamp(0.75rem, 0.3vw + 0.68rem, 0.84375rem);   /* Mobile: 12-13px | Tablet: 13px | Desktop: 13.5px */
-  --font-navbar: clamp(0.875rem, 0.4vw + 0.75rem, 1rem);       /* Mobile: 14px | Tablet: 15px | Desktop: 16px */
+  --font-hero-h1: clamp(1.625rem, 3vw + 0.875rem, 3.25rem);    /* Mobile: 26px | Tablet: 36px | Desktop: 52px */
+  --font-page-h1: clamp(1.35rem, 2vw + 0.75rem, 2.25rem);      /* Mobile: 21.5px | Tablet: 28px | Desktop: 36px */
+  --font-h2: clamp(1.2rem, 1.5vw + 0.75rem, 1.875rem);         /* Mobile: 19.2px | Tablet: 24px | Desktop: 30px */
+  --font-h3: clamp(1.05rem, 1vw + 0.65rem, 1.35rem);           /* Mobile: 16.8px | Tablet: 19px | Desktop: 21.5px */
+  --font-body: clamp(0.875rem, 0.3vw + 0.775rem, 1rem);        /* Mobile: 14px | Tablet: 15px | Desktop: 16px */
+  --font-card-title: clamp(1rem, 0.6vw + 0.8rem, 1.2rem);     /* Mobile: 16px | Tablet: 17.5px | Desktop: 19px */
+  --font-button: clamp(0.875rem, 0.4vw + 0.75rem, 0.95rem);    /* Mobile: 14px | Tablet: 15px | Desktop: 15.2px */
+  --font-input: clamp(0.875rem, 0.4vw + 0.75rem, 0.95rem);     /* Mobile: 14px | Tablet: 15px | Desktop: 15.2px */
+  --font-label: clamp(0.75rem, 0.3vw + 0.7rem, 0.85rem);       /* Mobile: 12px | Tablet: 13px | Desktop: 13.5px */
+  --font-small: clamp(0.72rem, 0.25vw + 0.65rem, 0.8125rem);   /* Mobile: 11.5px | Tablet: 12.5px | Desktop: 13px */
+  --font-navbar: clamp(0.84rem, 0.3vw + 0.72rem, 0.95rem);     /* Mobile: 13.5px | Tablet: 14.5px | Desktop: 15.2px */
 }
 
 @utility text-hero-h1 {
@@ -212,4 +212,136 @@ body {
   html {
     @apply font-sans;
   }
+
+  input:focus,
+  textarea:focus,
+  select:focus,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    border-color: #ca8a04 !important; /* yellow-600 */
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(202, 138, 4, 0.25) !important;
+  }
+
+  button:focus-visible,
+  [data-state="open"] > button {
+    border-color: #ca8a04 !important;
+  }
+}
+
+/* Custom styles for react-phone-number-input */
+.custom-phone-input {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.custom-phone-input * {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.custom-phone-input .PhoneInputCountry {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: none !important;
+  border: none !important;
+  border-right: 1px solid #e2e8f0 !important; /* Single divider line between flag & number */
+  padding-left: 0.875rem !important;
+  padding-right: 0.75rem !important;
+  margin-right: 0 !important; /* No margin gap between flag divider and number field */
+  height: 100% !important;
+  align-self: stretch !important;
+  background: transparent !important;
+  shrink: 0 !important;
+  transition: border-color 0.2s ease !important;
+}
+
+/* Turn the single divider line yellow when input is focused */
+div:focus-within > .custom-phone-input .PhoneInputCountry,
+.custom-phone-input:focus-within .PhoneInputCountry {
+  border-right-color: #ca8a04 !important;
+}
+
+.custom-phone-input .PhoneInputCountryIcon {
+  width: 1.45rem !important;
+  height: 1rem !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  border-radius: 2px;
+  overflow: hidden;
+  border: none !important;
+  outline: none !important;
+  margin: 0 !important;
+}
+
+.custom-phone-input .PhoneInputCountrySelect,
+.custom-phone-input .PhoneInputCountrySelectArrow,
+.custom-phone-input .PhoneInputCountryCallingCode {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.custom-phone-input .PhoneInputCountryIcon--square {
+  width: 1.45rem !important;
+  height: 1rem !important;
+}
+
+.custom-phone-input .PhoneInputInput {
+  flex: 1 !important;
+  width: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f172a;
+  height: 100% !important;
+  padding-left: 0.75rem !important; /* Smooth left gap starting right after divider line */
+  padding-right: 0.875rem !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+.custom-phone-input .PhoneInputInput:focus,
+.custom-phone-input .PhoneInputInput:focus-visible,
+.custom-phone-input .PhoneInputInput:active,
+.custom-phone-input .PhoneInputInput:-webkit-autofill {
+  border: none !important;
+  border-color: transparent !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-shadow: none !important;
+}
+
+.custom-phone-input .PhoneInputInput::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
 }

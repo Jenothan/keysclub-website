@@ -66,7 +66,7 @@ export default function DashboardLayout({
               >
                 <Menu className="w-6 h-6" />
               </button>
-              <h2 className="text-xl font-extrabold text-[#0f172a] tracking-tight">{getPageTitle()}</h2>
+              <h2 className="text-xl font-extrabold text-[#0f172a] tracking-tight hidden sm:block">{getPageTitle()}</h2>
             </div>
 
             <div className="flex items-center gap-4">

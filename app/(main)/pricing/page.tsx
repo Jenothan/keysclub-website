@@ -36,7 +36,7 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       {/* Hero Section */}
-      <section className="relative py-32 lg:py-48 overflow-hidden">
+      <section className="relative py-16 sm:py-24 lg:py-36 overflow-hidden">
         <div
           className="absolute inset-0 z-0"
           style={{
@@ -49,10 +49,10 @@ export default function PricingPage() {
         <div className="absolute inset-0 bg-[#0f172a]/50 z-0" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 tracking-tight">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-4 tracking-tight">
             Our Pricing Plans
           </h1>
-          <p className="max-w-2xl text-lg md:text-xl text-slate-300 mb-8 leading-relaxed">
+          <p className="max-w-2xl text-sm sm:text-base lg:text-lg text-slate-300 mb-6 leading-relaxed">
             Affordable rates for top-tier facilities. Choose the best option for your sporting journey.
           </p>
         </div>
@@ -60,7 +60,7 @@ export default function PricingPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-15">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          
+
           {/* Badminton Court Pricing */}
           <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-100 flex flex-col relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-xl">
             <div className="mb-6">
@@ -121,10 +121,6 @@ export default function PricingPage() {
               <li className="flex items-start gap-3">
                 <CheckCircleOutline className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
                 <span className="text-slate-200 text-sm font-medium">Exclusive tournament entries</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircleOutline className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
-                <span className="text-slate-200 text-sm font-medium">Free equipment rentals</span>
               </li>
             </ul>
             <Link href="/contact" className="block text-center bg-yellow-400 hover:bg-yellow-400/90 text-[#0f172a] font-extrabold py-3.5 px-6 rounded-xl transition-all shadow-md">

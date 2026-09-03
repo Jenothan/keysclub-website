@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import Clock from '@mui/icons-material/AccessTime';
+import CheckCircle from '@mui/icons-material/CheckCircle';
 import { useRouter } from 'next/navigation';
 import BookingModal from '@/components/BookingModal';
 import { Calendar } from "@/components/ui/calendar"
@@ -10,6 +11,7 @@ import { format } from "date-fns"
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 export default function DashboardAvailabilityPage() {
   const router = useRouter();
@@ -96,7 +98,7 @@ export default function DashboardAvailabilityPage() {
       setSelectedSlots([...selectedSlots, {
         date: calendarDate ? format(calendarDate, "EEEE, dd MMMM yyyy") : "No date selected", 
         time: slot.time,
-        court: 'Court A - Professional Mat',
+        court: 'KEYS Club Badminton Court',
         court_id: slot.court_id || 1,
         start_time: slot.start_time,
         end_time: slot.end_time,
@@ -116,33 +118,32 @@ export default function DashboardAvailabilityPage() {
   };
 
   return (
-    <div className="p-6 md:p-10 w-full space-y-10 pb-20">
+    <div className="p-4 sm:p-6 md:p-10 w-full space-y-6 sm:space-y-8 pb-28 md:pb-20 min-h-screen">
       <div className="max-w-7xl mx-auto">
 
         {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-title font-black text-[#0f172a] tracking-tight mb-2">
+            <h1 className="text-xl sm:text-2xl font-black text-[#0f172a] tracking-tight mb-1">
               Badminton Court Availability
             </h1>
-            <p className="text-slate-500 text-body">
+            <p className="text-slate-500 text-xs sm:text-sm">
               Choose a date to see available booking times.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 bg-slate-100 rounded-lg px-4 py-2 border border-slate-200">
-            <span className="text-slate-500 text-body-sm font-semibold">Operating Hours:</span>
-            <span className="text-slate-900 text-body-sm font-bold">Mon-Sun | 6:00 AM - 10:00 PM</span>
+          <div className="flex items-center gap-3 bg-slate-100 rounded-xl px-4 py-2 border border-slate-200 self-start md:self-auto">
+            <span className="text-slate-500 text-xs font-semibold">Operating Hours:</span>
+            <span className="text-slate-900 text-xs font-bold">Mon-Sun | 6:00 AM - 10:00 PM</span>
           </div>
         </div>
 
         {/* Main Content Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
 
           {/* Left Sidebar - Calendar */}
           <div className="lg:col-span-4 xl:col-span-3">
-            <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6">
-
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sm:p-6">
               <div className="flex justify-center">
                 <Calendar
                   mode="single"
@@ -157,32 +158,125 @@ export default function DashboardAvailabilityPage() {
 
           {/* Right Main Content - Slots */}
           <div className="lg:col-span-8 xl:col-span-9">
-            <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 md:p-8">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sm:p-6 md:p-8">
 
               {/* Header and Legend */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                <h2 className="text-subtitle font-extrabold text-slate-900 tracking-tight">
-                  Available Slots for {calendarDate ? format(calendarDate, "EEEE, MMM dd") : "Selected Date"}
-                </h2>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                <div>
+                  <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                    Slots for {calendarDate ? format(calendarDate, "EEEE, MMM dd") : "Selected Date"}
+                  </h2>
+                  <p className="text-slate-400 text-xs font-bold mt-0.5">Tap available slots to select multiple</p>
+                </div>
 
-                <div className="flex items-center gap-4 text-caption font-bold text-slate-500">
-                  <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-3 text-[11px] font-extrabold text-slate-500 flex-wrap">
+                  <div className="flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Available
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-orange-500"></span> Pending
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-amber-500"></span> Pending
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-red-600"></span> Booked
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-rose-600"></span> Blocked
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-rose-600"></span> Unavailable
                   </div>
                 </div>
               </div>
 
-              {/* Slots Grid */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              {/* ========================================================================= */}
+              {/* 📱 MOBILE VIEW: COMPACT 2-COLUMN SINGLE-LINE TIME SLOT GRID               */}
+              {/* ========================================================================= */}
+              <div className="grid grid-cols-2 gap-2 sm:hidden">
+                {isLoading ? (
+                  <div className="col-span-full py-10 text-center">
+                    <div className="w-6 h-6 border-3 border-yellow-400 border-t-transparent rounded-full animate-spin mx-auto" />
+                  </div>
+                ) : slots.length === 0 ? (
+                  <div className="col-span-full py-8 text-center text-xs font-bold text-slate-400">
+                    No slots available for this date.
+                  </div>
+                ) : slots.every(s => s.status === 'Blocked') ? (
+                  <div className="col-span-full py-12 flex flex-col items-center justify-center bg-rose-50/50 border border-rose-200 rounded-2xl text-center p-4">
+                    <h3 className="text-sm font-black text-rose-950 mb-1">Date Unavailable</h3>
+                    <p className="text-rose-700 text-xs">This date is unavailable for bookings (maintenance or tournament).</p>
+                  </div>
+                ) : (
+                  slots.map((slot, index) => {
+                    const isSelected = selectedSlots.some(s => s.start_time === slot.start_time);
+                    const isAvailable = slot.status === 'Available';
+                    const isPast = slot.status === 'Past';
+                    const isBooked = slot.status === 'Booked';
+                    const isPending = slot.status === 'Pending';
+                    const isBlocked = slot.status === 'Blocked';
+
+                    return (
+                      <div
+                        key={index}
+                        onClick={() => isAvailable && handleToggleSlot(slot)}
+                        className={cn(
+                          "relative p-2.5 rounded-xl border transition-all flex flex-col justify-center select-none cursor-pointer min-h-[64px] overflow-hidden",
+                          isSelected && "bg-yellow-400/15 border-2 border-yellow-400 shadow-xs ring-1 ring-yellow-400/30",
+                          !isSelected && isAvailable && "bg-slate-50 border-slate-200 active:scale-95 hover:border-yellow-400",
+                          isPast && "bg-slate-100/60 border-slate-200 opacity-50 pointer-events-none cursor-not-allowed",
+                          isBooked && "bg-red-50/80 border-red-200 text-red-950",
+                          isPending && "bg-amber-50/80 border-amber-200 text-amber-950",
+                          isBlocked && "bg-rose-50/80 border-rose-200 text-rose-950"
+                        )}
+                      >
+                        {/* Selected Indicator Badge */}
+                        {isSelected && (
+                          <div className="absolute -top-1 -right-1 bg-slate-900 text-yellow-400 rounded-full w-4.5 h-4.5 flex items-center justify-center shadow-xs">
+                            <CheckCircle className="w-3.5 h-3.5" />
+                          </div>
+                        )}
+
+                        {/* Top Row: Time string (Single Line, Non-bold text) */}
+                        <div className="flex items-center justify-between gap-1 min-w-0">
+                          <span className={cn(
+                            "text-[10px] font-medium tracking-tighter whitespace-nowrap truncate min-w-0 flex-1",
+                            isPast && "line-through text-slate-400 font-normal",
+                            isSelected && "text-slate-900 font-bold",
+                            !isSelected && isAvailable && "text-slate-800 font-semibold"
+                          )}>
+                            {slot.time}
+                          </span>
+                          
+                          {/* Status Dot */}
+                          <span className={cn(
+                            "w-2 h-2 rounded-full shrink-0 ml-0.5",
+                            isAvailable && (isSelected ? "bg-slate-900" : "bg-emerald-500"),
+                            isPast && "bg-slate-300",
+                            isPending && "bg-amber-500",
+                            isBooked && "bg-red-500",
+                            isBlocked && "bg-rose-600"
+                          )} />
+                        </div>
+
+                        {/* Bottom Row: Status Badge */}
+                        <div className="flex items-center justify-between text-[9px] mt-1 pt-0.5 border-t border-slate-200/50">
+                          <span className={cn(
+                            "uppercase tracking-wider font-extrabold text-[9px]",
+                            isAvailable && (isSelected ? "text-slate-900" : "text-emerald-700"),
+                            isPast && "text-slate-400 font-normal",
+                            isPending && "text-amber-700",
+                            isBooked && "text-red-700",
+                            isBlocked && "text-rose-700"
+                          )}>
+                            {isPast ? 'Past' : (isSelected ? 'Selected' : (isBlocked ? 'Unavailable' : slot.status))}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* ========================================================================= */}
+              {/* 💻 DESKTOP VIEW: FULL DETAILED TIME CARD GRID                             */}
+              {/* ========================================================================= */}
+              <div className="hidden sm:grid grid-cols-1 xl:grid-cols-2 gap-4">
                 {isLoading ? (
                   <div className="col-span-full py-10 flex justify-center">
                     <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
@@ -198,8 +292,8 @@ export default function DashboardAvailabilityPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                       </svg>
                     </div>
-                    <h3 className="text-xl font-bold text-rose-950 mb-2">Date Blocked</h3>
-                    <p className="text-rose-700 text-center max-w-md">This date has been blocked for maintenance or a scheduled tournament. Please select another date.</p>
+                    <h3 className="text-xl font-bold text-rose-950 mb-2">Date Unavailable</h3>
+                    <p className="text-rose-700 text-center max-w-md">This date is unavailable for bookings (maintenance or scheduled tournament). Please select another date.</p>
                   </div>
                 ) : (
                   slots.map((slot, index) => {
@@ -281,14 +375,14 @@ export default function DashboardAvailabilityPage() {
                           )}
 
                           {slot.status === 'Available' && (
-                            <span className={`font-extrabold text-caption px-3.5 py-1.5 rounded-full uppercase tracking-wider ${isSelected ? 'bg-slate-900 text-[#fbbf24]' : 'bg-emerald-100 text-emerald-700'}`}>
+                            <span className={`font-extrabold text-caption px-3.5 py-1.5 rounded-full uppercase tracking-wider ${isSelected ? 'bg-slate-900 text-yellow-400' : 'bg-emerald-100 text-emerald-700'}`}>
                               {isSelected ? 'Selected' : 'Available'}
                             </span>
                           )}
 
                           {slot.status === 'Blocked' && (
                             <span className="bg-rose-600 text-white font-black text-caption px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-xs">
-                              Blocked
+                              Unavailable
                             </span>
                           )}
                         </div>
@@ -298,9 +392,9 @@ export default function DashboardAvailabilityPage() {
                 )}
               </div>
 
-              {/* Action Area */}
+              {/* Desktop Action Area */}
               {slots.length > 0 && (
-                <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="mt-8 pt-6 border-t border-slate-100 hidden sm:flex flex-row items-center justify-between gap-4">
                   <div className="text-sm font-bold text-slate-500">
                     {selectedSlots.length} slot{selectedSlots.length !== 1 && 's'} selected
                   </div>
@@ -309,7 +403,7 @@ export default function DashboardAvailabilityPage() {
                     disabled={selectedSlots.length === 0}
                     className={`font-bold text-body-sm px-8 py-3 rounded-lg transition shadow-sm w-full sm:w-auto ${
                       selectedSlots.length > 0 
-                        ? 'bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900' 
+                        ? 'bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 cursor-pointer' 
                         : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                     }`}
                   >
@@ -322,6 +416,33 @@ export default function DashboardAvailabilityPage() {
           </div>
 
         </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 📱 MOBILE VIEW: FIXED BOTTOM ACTION DOCK                                  */}
+      {/* ========================================================================= */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 p-3 px-4 flex items-center justify-between gap-3 shadow-2xl">
+        <div>
+          <span className="text-xs font-black text-slate-900 block">
+            {selectedSlots.length} Slot{selectedSlots.length !== 1 && 's'} Selected
+          </span>
+          <span className="text-[10px] font-bold text-slate-400">
+            {selectedSlots.length > 0 ? 'Tap button to reserve' : 'Tap slot above'}
+          </span>
+        </div>
+
+        <button
+          onClick={handleBookSelected}
+          disabled={selectedSlots.length === 0}
+          className={cn(
+            "px-5 py-2.5 rounded-xl font-black text-xs transition-all shadow-xs shrink-0 cursor-pointer",
+            selectedSlots.length > 0
+              ? "bg-yellow-400 text-slate-900 active:scale-95 shadow-md"
+              : "bg-slate-100 text-slate-400 cursor-not-allowed opacity-60"
+          )}
+        >
+          Book Slots
+        </button>
       </div>
 
       <BookingModal

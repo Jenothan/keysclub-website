@@ -91,7 +91,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
-                <span>Karanavai East, Point Pedro, Sri Lanka</span>
+                <span>Karanavai East, Karaveddy, Sri Lanka</span>
               </li>
             </ul>
 

@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/store/authStore';
 import { format } from 'date-fns';
 import api from '@/lib/axios';
+import { formatPhoneWithCountryCode } from '@/lib/phoneUtils';
+import PhoneInput from '@/components/PhoneInput';
 import { toast } from 'sonner';
 
 export default function UserSettingsPage() {
@@ -76,10 +78,11 @@ export default function UserSettingsPage() {
     e.preventDefault();
     if (!newPhoneInput) return;
     setIsSubmittingPhone(true);
+    const formattedPhone = formatPhoneWithCountryCode(newPhoneInput);
     try {
       await api.post('/user/phone/request-otp', {
         purpose: 'new_phone_verify',
-        new_phone: newPhoneInput
+        new_phone: formattedPhone
       });
       setPhoneStep('OTP');
       toast.success('OTP sent to new mobile number');
@@ -94,14 +97,15 @@ export default function UserSettingsPage() {
     e.preventDefault();
     if (!otpInput) return;
     setIsSubmittingPhone(true);
+    const formattedPhone = formatPhoneWithCountryCode(newPhoneInput);
     try {
       await api.post('/user/phone/verify-otp', {
         purpose: 'new_phone_verify',
-        new_phone: newPhoneInput,
+        new_phone: formattedPhone,
         otp: otpInput
       });
       if (user) {
-        setUser({ ...user, phone: newPhoneInput });
+        setUser({ ...user, phone: formattedPhone });
       }
       toast.success('Mobile number updated successfully!');
       setShowEditModal(false);
@@ -140,52 +144,52 @@ export default function UserSettingsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
         {/* Left Column - Profile Card */}
-        <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] p-8">
+        <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-8">
 
-          <div className="flex flex-col items-center mb-8">
-            <div className="relative w-28 h-28 rounded-full bg-slate-100 border-4 border-white shadow-md overflow-hidden mb-4 group cursor-pointer">
-              <div className="w-full h-full bg-yellow-400 flex items-center justify-center text-slate-900 text-3xl font-bold">
+          <div className="flex flex-col items-center mb-6 sm:mb-8">
+            <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-slate-100 border-4 border-white shadow-md overflow-hidden mb-3.5 group cursor-pointer">
+              <div className="w-full h-full bg-yellow-400 flex items-center justify-center text-slate-900 text-xl sm:text-3xl font-bold">
                 {user?.name?.charAt(0) || 'U'}
               </div>
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Camera className="w-6 h-6 text-white" />
+                <Camera className="w-5 h-5 text-white" />
               </div>
             </div>
-            <h2 className="text-xl font-extrabold text-[#0f172a] mb-1 tracking-tight">{user?.name}</h2>
+            <h2 className="text-base sm:text-xl font-extrabold text-[#0f172a] mb-1 tracking-tight text-center">{user?.name}</h2>
           </div>
 
-          <div className="w-full h-px bg-slate-100 mb-6"></div>
+          <div className="w-full h-px bg-slate-100 mb-5 sm:mb-6"></div>
 
-          <div className="space-y-5 mb-8">
+          <div className="space-y-4 sm:space-y-5 mb-6 sm:mb-8">
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Full Name</p>
-              <p className="font-extrabold text-[#0f172a] text-sm">{user?.name || '-'}</p>
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Full Name</p>
+              <p className="font-extrabold text-[#0f172a] text-xs sm:text-sm">{user?.name || '-'}</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email Address</p>
-              <p className="font-extrabold text-[#0f172a] text-sm">{user?.email || '-'}</p>
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Email Address</p>
+              <p className="font-extrabold text-[#0f172a] text-xs sm:text-sm truncate">{user?.email || '-'}</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Mobile Number</p>
-              <p className="font-extrabold text-[#0f172a] text-sm">{user?.phone || '-'}</p>
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Mobile Number</p>
+              <p className="font-extrabold text-[#0f172a] text-xs sm:text-sm">{user?.phone || '-'}</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Member Since</p>
-              <p className="font-extrabold text-[#0f172a] text-sm">{user?.created_at ? format(new Date(user.created_at), 'MMMM yyyy') : 'January 2026'}</p>
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Member Since</p>
+              <p className="font-extrabold text-[#0f172a] text-xs sm:text-sm">{user?.created_at ? format(new Date(user.created_at), 'MMMM yyyy') : 'January 2026'}</p>
             </div>
           </div>
 
           <div className="space-y-3">
-            <button 
+            <button
               onClick={handleOpenProfileEdit}
-              className="w-full bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-bold text-sm h-11 rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+              className="w-full bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-extrabold text-xs sm:text-sm h-11 rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
             >
               <Pencil className="w-4 h-4" />
               Edit Profile Details
             </button>
-            <button 
+            <button
               onClick={handleStartEdit}
-              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs h-10 rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs h-10 rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <Phone className="w-3.5 h-3.5" />
               Change Mobile Number
@@ -198,30 +202,30 @@ export default function UserSettingsPage() {
         <div className="lg:col-span-8 space-y-6">
 
           {/* Security & Password Card */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] p-8">
-            <h2 className="text-xl font-extrabold text-[#0f172a] tracking-tight mb-2">Security & Change Password</h2>
-            <p className="text-slate-500 text-sm mb-6">Keep your account secure by updating your password regularly.</p>
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-8">
+            <h2 className="text-base sm:text-xl font-extrabold text-[#0f172a] tracking-tight mb-1.5">Security & Change Password</h2>
+            <p className="text-slate-500 text-xs font-medium mb-6">Keep your account secure by updating your password regularly.</p>
 
             <form onSubmit={handlePasswordUpdate}>
               <div className="space-y-4 mb-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-[#0f172a]">Current Password</label>
-                  <Input type="password" required value={passwordForm.current_password} onChange={(e) => setPasswordForm({...passwordForm, current_password: e.target.value})} placeholder="••••••••••••" className="h-11 bg-slate-50/50 font-medium" />
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-[#0f172a] uppercase tracking-wider">Current Password</label>
+                  <Input type="password" required value={passwordForm.current_password} onChange={(e) => setPasswordForm({ ...passwordForm, current_password: e.target.value })} placeholder="••••••••••••" className="h-11 bg-slate-50/50 font-medium rounded-xl text-xs sm:text-sm" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-[#0f172a]">New Password</label>
-                    <Input type="password" required minLength={8} value={passwordForm.password} onChange={(e) => setPasswordForm({...passwordForm, password: e.target.value})} placeholder="Enter new password (min. 8 chars)" className="h-11 bg-slate-50/50 font-medium" />
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-extrabold text-[#0f172a] uppercase tracking-wider">New Password</label>
+                    <Input type="password" required minLength={8} value={passwordForm.password} onChange={(e) => setPasswordForm({ ...passwordForm, password: e.target.value })} placeholder="Enter new password (min. 8 chars)" className="h-11 bg-slate-50/50 font-medium rounded-xl text-xs sm:text-sm" />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-[#0f172a]">Confirm New Password</label>
-                    <Input type="password" required minLength={8} value={passwordForm.password_confirmation} onChange={(e) => setPasswordForm({...passwordForm, password_confirmation: e.target.value})} placeholder="Re-enter new password to confirm" className="h-11 bg-slate-50/50 font-medium" />
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-extrabold text-[#0f172a] uppercase tracking-wider">Confirm New Password</label>
+                    <Input type="password" required minLength={8} value={passwordForm.password_confirmation} onChange={(e) => setPasswordForm({ ...passwordForm, password_confirmation: e.target.value })} placeholder="Re-enter new password to confirm" className="h-11 bg-slate-50/50 font-medium rounded-xl text-xs sm:text-sm" />
                   </div>
                 </div>
               </div>
 
               <div className="flex justify-end">
-                <button type="submit" disabled={isUpdatingPassword} className="bg-[#0f172a] hover:bg-[#1e293b] text-white font-bold text-sm px-6 h-11 rounded-xl transition-colors disabled:opacity-50 cursor-pointer shadow-sm">
+                <button type="submit" disabled={isUpdatingPassword} className="w-full sm:w-auto bg-[#0f172a] hover:bg-[#1e293b] text-white font-extrabold text-xs sm:text-sm px-6 h-11 rounded-xl transition-colors disabled:opacity-50 cursor-pointer shadow-sm">
                   {isUpdatingPassword ? 'Updating Password...' : 'Update Password'}
                 </button>
               </div>
@@ -235,8 +239,8 @@ export default function UserSettingsPage() {
       {/* Edit Profile & Mobile Number OTP Modal */}
       {showEditModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative border border-slate-100">
-            <button 
+          <div className="bg-white rounded-2xl p-5 sm:p-8 max-w-md w-full shadow-2xl relative border border-slate-100">
+            <button
               onClick={() => setShowEditModal(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
             >
@@ -248,7 +252,7 @@ export default function UserSettingsPage() {
                 <Phone className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-extrabold text-[#0f172a]">Update Mobile Number</h3>
+                <h3 className="text-base sm:text-lg font-extrabold text-[#0f172a]">Update Mobile Number</h3>
                 <p className="text-xs text-slate-500">Requires OTP Verification</p>
               </div>
             </div>
@@ -259,29 +263,27 @@ export default function UserSettingsPage() {
                   <label className="block text-xs font-extrabold text-[#0f172a] mb-2 uppercase tracking-wider">
                     New Mobile Number
                   </label>
-                  <Input 
-                    type="tel"
+                  <PhoneInput 
                     required
-                    placeholder="+94 7X XXX XXXX"
                     value={newPhoneInput}
-                    onChange={(e) => setNewPhoneInput(e.target.value)}
-                    className="h-12 bg-slate-50 font-bold focus:border-yellow-400 focus:ring-yellow-400"
+                    onChange={(val) => setNewPhoneInput(val)}
+                    placeholder="712345678"
                   />
-                  <p className="text-[11px] text-slate-400 mt-1.5">An OTP verification code will be generated for your new number.</p>
+                  <p className="text-[10px] text-slate-400 mt-1.5">An OTP verification code will be generated for your new number.</p>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-2">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setShowEditModal(false)}
-                    className="px-5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-bold text-xs transition-colors"
+                    className="px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-extrabold text-xs transition-colors"
                   >
                     Cancel
                   </button>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     disabled={isSubmittingPhone}
-                    className="px-6 py-2.5 bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-extrabold text-xs rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+                    className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-extrabold text-xs rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmittingPhone ? 'Sending OTP...' : 'Send OTP'}
                   </button>
@@ -298,29 +300,29 @@ export default function UserSettingsPage() {
                   <label className="block text-xs font-extrabold text-[#0f172a] mb-2 uppercase tracking-wider text-center">
                     Enter 4-Digit OTP
                   </label>
-                  <input 
+                  <input
                     type="text"
                     required
                     maxLength={4}
                     value={otpInput}
                     onChange={(e) => setOtpInput(e.target.value)}
                     placeholder="XXXX"
-                    className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-mono text-2xl tracking-[0.4em] text-center font-bold outline-none focus:border-yellow-400"
+                    className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-mono text-xl sm:text-2xl tracking-[0.4em] text-center font-bold outline-none focus:border-yellow-400"
                   />
                 </div>
 
                 <div className="flex justify-end gap-3 pt-2">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setPhoneStep('INPUT')}
-                    className="px-5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-bold text-xs transition-colors"
+                    className="px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-extrabold text-xs transition-colors"
                   >
                     Back
                   </button>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     disabled={isSubmittingPhone}
-                    className="px-6 py-2.5 bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-extrabold text-xs rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+                    className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 font-extrabold text-xs rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmittingPhone ? 'Verifying...' : 'Verify & Save'}
                   </button>
@@ -334,8 +336,8 @@ export default function UserSettingsPage() {
       {/* Edit Name & Email Modal */}
       {showProfileModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative border border-slate-100">
-            <button 
+          <div className="bg-white rounded-2xl p-5 sm:p-8 max-w-md w-full shadow-2xl relative border border-slate-100">
+            <button
               onClick={() => setShowProfileModal(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
             >
@@ -347,7 +349,7 @@ export default function UserSettingsPage() {
                 <Pencil className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-extrabold text-[#0f172a]">Edit Profile Details</h3>
+                <h3 className="text-base sm:text-lg font-extrabold text-[#0f172a]">Edit Profile Details</h3>
                 <p className="text-xs text-slate-500">Update your account name and email</p>
               </div>
             </div>
@@ -357,13 +359,13 @@ export default function UserSettingsPage() {
                 <label className="block text-xs font-extrabold text-[#0f172a] mb-1.5 uppercase tracking-wider">
                   Full Name
                 </label>
-                <Input 
+                <Input
                   type="text"
                   required
                   placeholder="Your Full Name"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="h-11 bg-slate-50 font-bold focus:border-yellow-400 focus:ring-yellow-400"
+                  className="h-11 bg-slate-50 font-bold focus:border-yellow-400 focus:ring-yellow-400 rounded-xl text-xs sm:text-sm"
                 />
               </div>
 
@@ -371,28 +373,28 @@ export default function UserSettingsPage() {
                 <label className="block text-xs font-extrabold text-[#0f172a] mb-1.5 uppercase tracking-wider">
                   Email Address
                 </label>
-                <Input 
+                <Input
                   type="email"
                   required
                   placeholder="your.email@example.com"
                   value={editEmail}
                   onChange={(e) => setEditEmail(e.target.value)}
-                  className="h-11 bg-slate-50 font-bold focus:border-yellow-400 focus:ring-yellow-400"
+                  className="h-11 bg-slate-50 font-bold focus:border-yellow-400 focus:ring-yellow-400 rounded-xl text-xs sm:text-sm"
                 />
               </div>
 
               <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 mt-4">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setShowProfileModal(false)}
-                  className="px-5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-bold text-xs transition-colors"
+                  className="px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-extrabold text-xs transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={isUpdatingProfile}
-                  className="px-6 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold text-xs rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+                  className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold text-xs rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {isUpdatingProfile ? 'Saving...' : 'Save Profile'}
                 </button>

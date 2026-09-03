@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import Clock from '@mui/icons-material/AccessTime';
+import CheckCircle from '@mui/icons-material/CheckCircle';
 import { useRouter } from 'next/navigation';
 import BookingModal from '@/components/BookingModal';
 import { Calendar } from "@/components/ui/calendar"
@@ -137,7 +138,7 @@ export default function AdminAvailabilityPage() {
       setSelectedSlots([...selectedSlots, {
         date: calendarDate ? format(calendarDate, "EEEE, dd MMMM yyyy") : "No date selected", 
         time: slot.time,
-        court: 'Court A - Professional Mat',
+        court: 'KEYS Club Badminton Court',
         court_id: slot.court_id || 1,
         start_time: slot.start_time,
         end_time: slot.end_time,
@@ -193,7 +194,6 @@ export default function AdminAvailabilityPage() {
         setBlockReason('');
         setDatesToBlock([]);
         fetchBlockedDates();
-        // Force refresh slots if the blocked date is the one currently viewed
         if (datesToBlock.some(d => format(d, 'yyyy-MM-dd') === format(calendarDate!, 'yyyy-MM-dd'))) {
             setCalendarDate(new Date(calendarDate!));
         }
@@ -271,48 +271,44 @@ export default function AdminAvailabilityPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 md:p-10 w-full space-y-8 pb-20 min-h-screen">
+    <div className="p-4 sm:p-6 md:p-10 w-full space-y-6 sm:space-y-8 pb-28 md:pb-20 min-h-screen">
       <div className="max-w-7xl mx-auto">
 
         {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 mb-6 md:mb-10">
           <div>
-            <h1 className="text-2xl font-black text-[#0f172a] tracking-tight mb-2">
-              Admin Availability
+            <h1 className="text-xl sm:text-2xl font-black text-[#0f172a] tracking-tight mb-1">
+              Admin Availability & Slots
             </h1>
-            <p className="text-slate-500 text-sm">
+            <p className="text-slate-500 text-xs sm:text-sm">
               Manage court availability and block dates for tournaments.
             </p>
           </div>
 
-          <div className="flex gap-3 flex-wrap">
+          <div className="flex gap-2.5 sm:gap-3 flex-wrap">
             <button 
                 onClick={() => setIsRecurringModalOpen(true)}
-                className="bg-yellow-50 text-yellow-800 font-bold text-sm px-4 py-2 rounded-lg border border-yellow-200 hover:bg-yellow-100 transition-colors cursor-pointer"
+                className="bg-yellow-50 text-yellow-800 font-extrabold text-xs sm:text-sm px-3.5 sm:px-4 py-2 rounded-xl border border-yellow-200 hover:bg-yellow-100 transition-colors cursor-pointer"
             >
                 Daily Recurring Blocks
             </button>
             <button 
                 onClick={() => setIsBlockingModalOpen(true)}
-                className="bg-red-50 text-red-600 font-bold text-sm px-4 py-2 rounded-lg border border-red-100 hover:bg-red-100 transition-colors cursor-pointer"
+                className="bg-red-50 text-red-600 font-extrabold text-xs sm:text-sm px-3.5 sm:px-4 py-2 rounded-xl border border-red-100 hover:bg-red-100 transition-colors cursor-pointer"
             >
                 Block Whole Date(s)
             </button>
-            <div className="flex items-center gap-3 bg-slate-100 rounded-lg px-4 py-2 border border-slate-200 hidden md:flex">
-              <span className="text-slate-500 text-xs font-semibold">Operating Hours:</span>
-              <span className="text-slate-900 text-xs font-bold">Mon-Sun | 6:00 AM - 10:00 PM</span>
-            </div>
           </div>
         </div>
 
         {/* Recurring Daily Blocks Summary Banner if any exist */}
         {recurringSlotsList.length > 0 && (
-          <div className="mb-6 bg-white p-4 rounded-xl border border-yellow-200 flex items-center gap-4 flex-wrap shadow-sm">
-            <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">Active Daily Recurring Blocks:</span>
+          <div className="mb-4 sm:mb-6 bg-white p-3.5 sm:p-4 rounded-2xl border border-yellow-200 flex items-center gap-2 sm:gap-4 flex-wrap shadow-xs">
+            <span className="text-[10px] sm:text-xs font-black text-slate-700 uppercase tracking-wider">Active Daily Blocks:</span>
             {recurringSlotsList.map((rec) => (
-              <div key={rec.id} className="flex items-center gap-2 bg-yellow-50 text-yellow-900 border border-yellow-200 px-3 py-1.5 rounded-lg text-xs font-bold">
+              <div key={rec.id} className="flex items-center gap-1.5 bg-yellow-50 text-yellow-900 border border-yellow-200 px-2.5 py-1 rounded-lg text-xs font-bold">
                 <span>{rec.start_time.slice(0,5)} - {rec.end_time.slice(0,5)} ({rec.reason})</span>
-                <button onClick={() => handleDeleteRecurringBlock(rec.id)} className="hover:text-red-700 ml-1 cursor-pointer font-extrabold">
+                <button onClick={() => handleDeleteRecurringBlock(rec.id)} className="hover:text-red-700 ml-1 cursor-pointer font-extrabold text-sm">
                   &times;
                 </button>
               </div>
@@ -322,12 +318,12 @@ export default function AdminAvailabilityPage() {
 
         {/* Blocked Dates List */}
         {blockedDatesList.length > 0 && (
-          <div className="mb-6 bg-white p-4 rounded-xl border border-red-100 flex items-center gap-4 flex-wrap">
-            <span className="text-xs font-bold text-slate-500">Currently Blocked Whole Dates:</span>
+          <div className="mb-4 sm:mb-6 bg-white p-3.5 sm:p-4 rounded-2xl border border-red-100 flex items-center gap-2 sm:gap-4 flex-wrap shadow-xs">
+            <span className="text-[10px] sm:text-xs font-black text-slate-500 uppercase tracking-wider">Blocked Dates:</span>
             {blockedDatesList.map((bd) => (
-              <div key={bd.id} className="flex items-center gap-2 bg-red-50 text-red-700 px-3 py-1.5 rounded-lg text-xs font-bold">
+              <div key={bd.id} className="flex items-center gap-1.5 bg-red-50 text-red-700 px-2.5 py-1 rounded-lg text-xs font-bold">
                 {format(new Date(bd.date), 'dd MMM yyyy')}
-                <button onClick={() => handleUnblockDate(bd.date)} className="hover:text-red-900 ml-1 cursor-pointer">
+                <button onClick={() => handleUnblockDate(bd.date)} className="hover:text-red-900 ml-1 cursor-pointer text-sm">
                   &times;
                 </button>
               </div>
@@ -336,12 +332,11 @@ export default function AdminAvailabilityPage() {
         )}
 
         {/* Main Content Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
 
           {/* Left Sidebar - Calendar */}
           <div className="lg:col-span-4 xl:col-span-3">
-            <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6">
-
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sm:p-6">
               <div className="flex justify-center">
                 <Calendar
                   mode="single"
@@ -356,29 +351,136 @@ export default function AdminAvailabilityPage() {
 
           {/* Right Main Content - Slots */}
           <div className="lg:col-span-8 xl:col-span-9">
-            <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 md:p-8">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sm:p-6 md:p-8">
 
               {/* Header and Legend */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                <h2 className="text-subtitle font-extrabold text-slate-900 tracking-tight">
-                  Available Slots for {calendarDate ? format(calendarDate, "EEEE, MMM dd") : "Selected Date"}
-                </h2>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                <div>
+                  <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                    Slots for {calendarDate ? format(calendarDate, "EEEE, MMM dd") : "Selected Date"}
+                  </h2>
+                  <p className="text-slate-400 text-xs font-bold mt-0.5">Tap available slots to select multiple</p>
+                </div>
 
-                <div className="flex items-center gap-4 text-caption font-bold text-slate-500">
-                  <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-3 text-[11px] font-extrabold text-slate-500 flex-wrap">
+                  <div className="flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Available
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-orange-500"></span> Pending
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-amber-500"></span> Pending
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-red-500"></span> Booked / Blocked
                   </div>
                 </div>
               </div>
 
-              {/* Slots Grid */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              {/* ========================================================================= */}
+              {/* 📱 MOBILE VIEW: COMPACT 2-COLUMN SINGLE-LINE TIME SLOT GRID               */}
+              {/* ========================================================================= */}
+              <div className="grid grid-cols-2 gap-2 sm:hidden">
+                {isLoading ? (
+                  <div className="col-span-full py-10 text-center">
+                    <div className="w-6 h-6 border-3 border-yellow-400 border-t-transparent rounded-full animate-spin mx-auto" />
+                  </div>
+                ) : slots.length === 0 ? (
+                  <div className="col-span-full py-8 text-center text-xs font-bold text-slate-400">
+                    No slots available for this date.
+                  </div>
+                ) : (
+                  slots.map((slot, index) => {
+                    const isSelected = selectedSlots.some(s => s.start_time === slot.start_time);
+                    const isAvailable = slot.status === 'Available';
+                    const isPast = slot.status === 'Past';
+                    const isBooked = slot.status === 'Booked';
+                    const isPending = slot.status === 'Pending';
+                    const isBlocked = slot.status === 'Blocked';
+
+                    return (
+                      <div
+                        key={index}
+                        onClick={() => isAvailable && handleToggleSlot(slot)}
+                        className={cn(
+                          "relative p-2.5 rounded-xl border transition-all flex flex-col justify-center select-none cursor-pointer min-h-[64px] overflow-hidden",
+                          isSelected && "bg-yellow-400/15 border-2 border-yellow-400 shadow-xs ring-1 ring-yellow-400/30",
+                          !isSelected && isAvailable && "bg-slate-50 border-slate-200 active:scale-95 hover:border-yellow-400",
+                          isPast && "bg-slate-100/60 border-slate-200 opacity-50 pointer-events-none cursor-not-allowed",
+                          isBooked && "bg-red-50/80 border-red-200 text-red-950",
+                          isPending && "bg-amber-50/80 border-amber-200 text-amber-950",
+                          isBlocked && "bg-rose-50/80 border-rose-200 text-rose-950"
+                        )}
+                      >
+                        {/* Selected Indicator Badge */}
+                        {isSelected && (
+                          <div className="absolute -top-1 -right-1 bg-slate-900 text-yellow-400 rounded-full w-4.5 h-4.5 flex items-center justify-center shadow-xs">
+                            <CheckCircle className="w-3.5 h-3.5" />
+                          </div>
+                        )}
+
+                        {/* Top Row: Time string (Single Line, Non-bold text) */}
+                        <div className="flex items-center justify-between gap-1 min-w-0">
+                          <span className={cn(
+                            "text-[10px] font-medium tracking-tighter whitespace-nowrap truncate min-w-0 flex-1",
+                            isPast && "line-through text-slate-400 font-normal",
+                            isSelected && "text-slate-900 font-bold",
+                            !isSelected && isAvailable && "text-slate-800 font-semibold"
+                          )}>
+                            {slot.time}
+                          </span>
+                          
+                          {/* Status Dot */}
+                          <span className={cn(
+                            "w-2 h-2 rounded-full shrink-0 ml-0.5",
+                            isAvailable && (isSelected ? "bg-slate-900" : "bg-emerald-500"),
+                            isPast && "bg-slate-300",
+                            isPending && "bg-amber-500",
+                            isBooked && "bg-red-500",
+                            isBlocked && "bg-rose-600"
+                          )} />
+                        </div>
+
+                        {/* Bottom Row: Status Badge & Quick Actions */}
+                        <div className="flex items-center justify-between text-[9px] mt-1 pt-0.5 border-t border-slate-200/50">
+                          <span className={cn(
+                            "uppercase tracking-wider font-extrabold text-[9px]",
+                            isAvailable && (isSelected ? "text-slate-900" : "text-emerald-700"),
+                            isPast && "text-slate-400 font-normal",
+                            isPending && "text-amber-700",
+                            isBooked && "text-red-700",
+                            isBlocked && "text-rose-700"
+                          )}>
+                            {isPast ? 'Past' : (isSelected ? 'Selected' : slot.status)}
+                          </span>
+
+                          {isBlocked && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleSlotOverride(slot, 'Available');
+                              }}
+                              className="text-[9px] font-extrabold text-emerald-700 underline shrink-0"
+                            >
+                              Unblock
+                            </button>
+                          )}
+                        </div>
+
+                        {slot.user && (
+                          <span className="text-[9px] font-medium text-slate-500 truncate block mt-0.5">
+                            {slot.user}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* ========================================================================= */}
+              {/* 💻 DESKTOP VIEW: FULL DETAILED TIME CARD GRID                             */}
+              {/* ========================================================================= */}
+              <div className="hidden sm:grid grid-cols-1 xl:grid-cols-2 gap-4">
                 {isLoading ? (
                   <div className="col-span-full py-10 flex justify-center">
                     <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
@@ -499,17 +601,17 @@ export default function AdminAvailabilityPage() {
                 )}
               </div>
 
-              {/* Action Area */}
+              {/* Desktop Action Area */}
               {slots.length > 0 && (
-                <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="mt-8 pt-6 border-t border-slate-100 hidden sm:flex flex-row items-center justify-between gap-4">
                   <div className="text-sm font-bold text-slate-500">
                     {selectedSlots.length} slot{selectedSlots.length !== 1 && 's'} selected
                   </div>
-                  <div className="flex gap-3 w-full sm:w-auto">
+                  <div className="flex gap-3">
                     <button
                       onClick={handleBlockSelectedSlots}
                       disabled={selectedSlots.length === 0}
-                      className={`font-bold text-body-sm px-6 py-3 rounded-lg transition shadow-sm w-full sm:w-auto ${
+                      className={`font-extrabold text-xs px-6 py-3 rounded-xl transition shadow-sm ${
                         selectedSlots.length > 0 
                           ? 'bg-red-600 hover:bg-red-700 text-white cursor-pointer' 
                           : 'bg-slate-100 text-slate-400 cursor-not-allowed'
@@ -520,7 +622,7 @@ export default function AdminAvailabilityPage() {
                     <button
                       onClick={handleBookSelected}
                       disabled={selectedSlots.length === 0}
-                      className={`font-bold text-body-sm px-8 py-3 rounded-lg transition shadow-sm w-full sm:w-auto ${
+                      className={`font-extrabold text-xs px-8 py-3 rounded-xl transition shadow-sm ${
                         selectedSlots.length > 0 
                           ? 'bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 cursor-pointer' 
                           : 'bg-slate-100 text-slate-400 cursor-not-allowed'
@@ -539,6 +641,48 @@ export default function AdminAvailabilityPage() {
 
       </div>
 
+      {/* ========================================================================= */}
+      {/* 📱 MOBILE VIEW: FIXED BOTTOM ACTION DOCK                                  */}
+      {/* ========================================================================= */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 p-3 px-4 flex items-center justify-between gap-3 shadow-2xl">
+        <div>
+          <span className="text-xs font-black text-slate-900 block">
+            {selectedSlots.length} Slot{selectedSlots.length !== 1 && 's'} Selected
+          </span>
+          <span className="text-[10px] font-bold text-slate-400">
+            {selectedSlots.length > 0 ? 'Ready to process' : 'Tap slot above'}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleBlockSelectedSlots}
+            disabled={selectedSlots.length === 0}
+            className={cn(
+              "px-3 py-2 rounded-xl font-black text-xs transition-all shadow-xs shrink-0 cursor-pointer",
+              selectedSlots.length > 0
+                ? "bg-red-600 text-white active:scale-95"
+                : "bg-slate-100 text-slate-400 cursor-not-allowed opacity-60"
+            )}
+          >
+            Block
+          </button>
+          
+          <button
+            onClick={handleBookSelected}
+            disabled={selectedSlots.length === 0}
+            className={cn(
+              "px-4 py-2 rounded-xl font-black text-xs transition-all shadow-xs shrink-0 cursor-pointer",
+              selectedSlots.length > 0
+                ? "bg-yellow-400 text-slate-900 active:scale-95 shadow-md"
+                : "bg-slate-100 text-slate-400 cursor-not-allowed opacity-60"
+            )}
+          >
+            Book Slots
+          </button>
+        </div>
+      </div>
+
       <BookingModal
         isOpen={isModalOpen}
         onClose={() => {
@@ -552,12 +696,12 @@ export default function AdminAvailabilityPage() {
       {/* Whole Date Blocking Modal */}
       {isBlockingModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Block Whole Dates</h2>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <h2 className="text-lg font-black text-slate-900 mb-4">Block Whole Dates</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Select Date(s)</label>
-                <div className="flex justify-center bg-slate-50 border border-slate-200 rounded-lg p-2">
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">Select Date(s)</label>
+                <div className="flex justify-center bg-slate-50 border border-slate-200 rounded-xl p-2">
                   <Calendar
                     mode="multiple"
                     selected={datesToBlock}
@@ -568,25 +712,25 @@ export default function AdminAvailabilityPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Reason (Optional)</label>
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">Reason (Optional)</label>
                 <input 
                   type="text" 
                   placeholder="e.g. Tournament"
                   value={blockReason}
                   onChange={(e) => setBlockReason(e.target.value)}
-                  className="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-yellow-400"
+                  className="w-full border border-slate-200 rounded-xl p-2.5 text-xs font-medium outline-none focus:border-yellow-400"
                 />
               </div>
               <div className="flex gap-3 pt-4">
                 <button 
                   onClick={() => setIsBlockingModalOpen(false)}
-                  className="flex-1 px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-lg hover:bg-slate-200 transition-colors"
+                  className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-600 font-extrabold text-xs rounded-xl hover:bg-slate-200 transition-colors"
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={handleBlockDate}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors"
+                  className="flex-1 px-4 py-2.5 bg-red-600 text-white font-extrabold text-xs rounded-xl hover:bg-red-700 transition-colors"
                 >
                   Confirm Block
                 </button>
@@ -602,7 +746,7 @@ export default function AdminAvailabilityPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 md:p-8 space-y-6">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
-                <h2 className="text-xl font-extrabold text-[#0f172a]">Daily Recurring Blocked Slots</h2>
+                <h2 className="text-lg sm:text-xl font-black text-[#0f172a]">Daily Recurring Blocked Slots</h2>
                 <p className="text-xs text-slate-500 mt-0.5">These time slots will automatically be blocked every day</p>
               </div>
               <button 
@@ -613,22 +757,21 @@ export default function AdminAvailabilityPage() {
               </button>
             </div>
 
-            {/* List of active recurring blocks */}
             <div>
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Current Daily Blocks</h3>
+              <h3 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-3">Current Daily Blocks</h3>
               {recurringSlotsList.length === 0 ? (
-                <p className="text-sm text-slate-400 italic bg-slate-50 p-4 rounded-xl text-center">No daily recurring blocks configured.</p>
+                <p className="text-xs text-slate-400 italic bg-slate-50 p-4 rounded-xl text-center">No daily recurring blocks configured.</p>
               ) : (
                 <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                   {recurringSlotsList.map((rec) => (
                     <div key={rec.id} className="flex items-center justify-between bg-slate-50 border border-slate-200 p-3 rounded-xl">
                       <div>
-                        <span className="font-mono font-bold text-sm text-slate-900 block">{rec.start_time.slice(0, 5)} - {rec.end_time.slice(0, 5)}</span>
-                        <span className="text-xs text-slate-500">{rec.reason}</span>
+                        <span className="font-mono font-bold text-xs text-slate-900 block">{rec.start_time.slice(0, 5)} - {rec.end_time.slice(0, 5)}</span>
+                        <span className="text-[11px] text-slate-500">{rec.reason}</span>
                       </div>
                       <button
                         onClick={() => handleDeleteRecurringBlock(rec.id)}
-                        className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-lg transition-colors cursor-pointer"
+                        className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-600 font-extrabold text-xs rounded-lg transition-colors cursor-pointer"
                       >
                         Remove
                       </button>
@@ -638,14 +781,13 @@ export default function AdminAvailabilityPage() {
               )}
             </div>
 
-            {/* Form to add a new daily recurring block */}
             <form onSubmit={handleAddRecurringBlock} className="border-t border-slate-100 pt-5 space-y-4">
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Add New Daily Block</h3>
+              <h3 className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">Add New Daily Block</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-600 mb-1">Start Time</label>
                   <Select value={newRecStart} onValueChange={setNewRecStart}>
-                    <SelectTrigger className="h-10 bg-slate-50 border-slate-200">
+                    <SelectTrigger className="h-10 bg-slate-50 border-slate-200 text-xs">
                       <SelectValue placeholder="Select Start Time" />
                     </SelectTrigger>
                     <SelectContent>
@@ -660,7 +802,7 @@ export default function AdminAvailabilityPage() {
                 <div>
                   <label className="block text-xs font-bold text-slate-600 mb-1">End Time</label>
                   <Select value={newRecEnd} onValueChange={setNewRecEnd}>
-                    <SelectTrigger className="h-10 bg-slate-50 border-slate-200">
+                    <SelectTrigger className="h-10 bg-slate-50 border-slate-200 text-xs">
                       <SelectValue placeholder="Select End Time" />
                     </SelectTrigger>
                     <SelectContent>
@@ -681,7 +823,7 @@ export default function AdminAvailabilityPage() {
                   value={newRecReason}
                   onChange={(e) => setNewRecReason(e.target.value)}
                   placeholder="e.g. Daily Maintenance / Coaching"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm font-medium outline-none focus:border-yellow-400"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-medium outline-none focus:border-yellow-400"
                 />
               </div>
 
@@ -689,13 +831,13 @@ export default function AdminAvailabilityPage() {
                 <button
                   type="button"
                   onClick={() => setIsRecurringModalOpen(false)}
-                  className="flex-1 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 text-sm transition-colors cursor-pointer"
+                  className="flex-1 py-2.5 bg-slate-100 text-slate-600 font-extrabold rounded-xl hover:bg-slate-200 text-xs transition-colors cursor-pointer"
                 >
                   Done
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold rounded-xl text-sm transition-colors cursor-pointer shadow-sm"
+                  className="flex-1 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold rounded-xl text-xs transition-colors cursor-pointer shadow-sm"
                 >
                   Add Daily Block
                 </button>

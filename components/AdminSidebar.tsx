@@ -78,7 +78,7 @@ export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
   }
 
   return (
-    <div className="w-64 text-white flex flex-col h-screen sticky top-0 shadow-[2px_0_10px_rgba(0,0,0,0.02)] border-r border-slate-800 overflow-hidden">
+    <div className="w-64 text-white flex flex-col h-full shadow-[2px_0_10px_rgba(0,0,0,0.02)] border-r border-slate-800 overflow-hidden">
       {/* Background Image & Overlay */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -116,7 +116,7 @@ export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
           )}
         </div>
 
-        <div className="flex-1 py-8 px-4 flex flex-col gap-2 overflow-y-auto">
+        <div className="flex-1 py-8 px-4 flex flex-col gap-2 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <div className="text-[11px] font-bold text-white uppercase tracking-widest mb-2 px-4">
             Navigation
           </div>
@@ -145,7 +145,7 @@ export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
 
         {/* Sidebar Footer / Logout */}
         <div className="p-4 border-t border-white/10 shrink-0 space-y-3">
-          <button 
+          <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
           >

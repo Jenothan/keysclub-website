@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-32 lg:py-48 overflow-hidden">
+      <section className="relative py-16 sm:py-24 lg:py-36 overflow-hidden">
         {/* Background Image */}
         <div
           className="absolute inset-0 z-0"
@@ -249,7 +249,7 @@ export default function Home() {
                 Karanavai East Youth Sports Club
               </h2>
               <p className="text-body text-slate-500 leading-relaxed mb-8">
-                KEYS Club is one of the premier badminton & indoor sports hubs in point Pedro, Sri Lanka. Established with a strong drive to foster young talent, promote fitness, and host top-tier regional matches. Our court facilities utilize high-grade mats and equipment matching national standards.
+                KEYS Club is one of the premier badminton & indoor sports hubs in Karaveddy, Sri Lanka. Established with a strong drive to foster young talent, promote fitness, and host top-tier regional matches. Our court facilities utilize high-grade mats and equipment matching national standards.
               </p>
               <Link href="/availability">
                 <button className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 py-3 rounded-md transition duration-200 cursor-pointer">

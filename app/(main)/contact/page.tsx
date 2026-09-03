@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import api from '@/lib/axios';
+import { formatPhoneWithCountryCode } from '@/lib/phoneUtils';
+import PhoneInput from '@/components/PhoneInput';
 import { toast } from 'sonner';
 
 const Facebook = (props: React.SVGProps<SVGSVGElement>) => (
@@ -29,6 +31,7 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [websiteData, setWebsiteData] = useState<any>(null);
   const [subject, setSubject] = useState("Tournament");
+  const [mobile, setMobile] = useState("");
 
   React.useEffect(() => {
     api.get('/website-data').then(res => {
@@ -43,7 +46,7 @@ export default function ContactPage() {
     const formData = new FormData(event.currentTarget);
     const data = {
       name: formData.get('name'),
-      mobile: formData.get('mobile'),
+      mobile: formatPhoneWithCountryCode(mobile),
       subject: formData.get('type'),
       message: formData.get('message'),
     };
@@ -60,12 +63,12 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+    <div className="min-h-screen bg-slate-50 py-8 sm:py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-12">
 
         {/* Page Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-[#0f172a] tracking-tight">
+        <div className="text-center space-y-3">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#0f172a] tracking-tight">
             Contact Karanavai East Youth Sports Club
           </h1>
           <p className="text-slate-500 text-body">
@@ -110,7 +113,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Visit Club</p>
-                <h3 className="font-extrabold text-[#0f172a] text-lg mb-1">{websiteData?.club_address || 'Karanavai East, Point Pedro'}</h3>
+                <h3 className="font-extrabold text-[#0f172a] text-lg mb-1">{websiteData?.club_address || 'Karanavai East, Karaveddy, Jaffna'}</h3>
                 <p className="text-slate-500 text-xs font-medium">Jaffna District, Sri Lanka</p>
               </div>
             </div>
@@ -146,7 +149,12 @@ export default function ContactPage() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-[#0f172a]">Mobile Number</label>
-                  <Input name="mobile" required placeholder="771234567" className="h-11 bg-slate-50/50 focus:border-yellow-400 focus:ring-yellow-400" />
+                  <PhoneInput 
+                    required 
+                    value={mobile}
+                    onChange={(val) => setMobile(val)}
+                    placeholder="712345678" 
+                  />
                 </div>
               </div>
 

@@ -15,6 +15,8 @@ import api from '@/lib/axios';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
+import { formatPhoneWithCountryCode } from '@/lib/phoneUtils';
+import PhoneInput from '@/components/PhoneInput';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -36,7 +38,7 @@ export default function SignUpPage() {
     try {
       await api.post('/register/request-otp', {
         name: formData.name,
-        phone: formData.mobile,
+        phone: formatPhoneWithCountryCode(formData.mobile),
         password: formData.password,
       });
       setStep('otp');
@@ -52,12 +54,12 @@ export default function SignUpPage() {
     e.preventDefault();
     const otpCode = otp.join('');
     if (otpCode.length !== 4) return;
-    
+
     setIsSubmitting(true);
     try {
       const res = await api.post('/register/verify', {
         name: formData.name,
-        phone: formData.mobile,
+        phone: formatPhoneWithCountryCode(formData.mobile),
         password: formData.password,
         otp_code: otpCode,
       });
@@ -72,7 +74,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-dvh bg-white md:bg-[#f8fafc] overflow-hidden">
+    <div className="flex flex-col md:flex-row min-h-screen bg-white md:bg-[#f8fafc]">
       {/* Left Pane (Image Background) */}
       <div className="hidden md:flex relative w-full md:w-[45%] lg:w-[50%] bg-[#0f172a] flex-col justify-center px-8 md:px-12 lg:px-20 py-12 md:py-0 overflow-hidden shrink-0">
         {/* Background Image */}
@@ -127,7 +129,7 @@ export default function SignUpPage() {
             </h1>
 
             <p className="max-w-md text-slate-300 leading-relaxed text-body">
-              Welcome to KEYS Club — your premier home for professional badminton court bookings, tournament organization, and community sports development in Point Pedro.
+              Welcome to KEYS Club — your premier home for professional badminton court bookings, tournament organization, and community sports development in Karaveddy.
             </p>
           </div>
 
@@ -143,14 +145,14 @@ export default function SignUpPage() {
 
       {/* Right Pane (Form) */}
       <div className="w-full h-full md:w-[55%] lg:w-[50%] flex flex-col justify-center items-center p-4 md:p-10 lg:p-14 relative overflow-y-auto">
-        
+
         {/* Back Button */}
-        <div className="absolute top-6 left-6 md:top-10 md:left-12 z-10">
+        {/* <div className="absolute top-6 left-6 md:top-10 md:left-12 z-10">
           <Link href="/" className="inline-flex items-center gap-2 text-slate-800 hover:text-slate-900 transition group">
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             <span className="font-bold text-body-sm">Back</span>
           </Link>
-        </div>
+        </div> */}
 
         <div className="w-full max-w-lg bg-white rounded-2xl shadow-[0_4px_25px_rgba(0,0,0,0.06)] border border-slate-100 p-8 md:p-10 lg:p-12 z-10 my-auto">
 
@@ -171,7 +173,7 @@ export default function SignUpPage() {
                       type="text"
                       required
                       value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="Suresh Perera"
                       className="h-12 bg-slate-50 focus:bg-white focus:border-yellow-400 focus:ring-yellow-400 text-sm font-medium"
                     />
@@ -181,13 +183,11 @@ export default function SignUpPage() {
                     <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">
                       Mobile Number
                     </label>
-                    <Input
-                      type="tel"
+                    <PhoneInput
                       required
                       value={formData.mobile}
-                      onChange={(e) => setFormData({...formData, mobile: e.target.value})}
-                      placeholder="+94 77 123 4567"
-                      className="h-12 bg-slate-50 focus:bg-white focus:border-yellow-400 focus:ring-yellow-400 text-sm font-medium"
+                      onChange={(val) => setFormData({ ...formData, mobile: val })}
+                      placeholder="7xxxxxxxx"
                     />
                   </div>
                 </div>
@@ -199,7 +199,7 @@ export default function SignUpPage() {
                   <Input
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="suresh@gmail.com"
                     className="h-12 bg-slate-50 focus:bg-white focus:border-yellow-400 focus:ring-yellow-400 text-sm font-medium"
                   />
@@ -215,7 +215,7 @@ export default function SignUpPage() {
                         type={showPassword ? "text" : "password"}
                         required
                         value={formData.password}
-                        onChange={(e) => setFormData({...formData, password: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         placeholder="••••••••"
                         className="block w-full h-12 px-4 pr-12 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white text-slate-900 text-sm font-medium focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 transition placeholder:text-slate-400"
                       />
@@ -238,7 +238,7 @@ export default function SignUpPage() {
                         type={showConfirmPassword ? "text" : "password"}
                         required
                         value={formData.confirmPassword}
-                        onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                         placeholder="••••••••"
                         className="block w-full h-12 px-4 pr-12 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white text-slate-900 text-sm font-medium focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 transition placeholder:text-slate-400"
                       />
@@ -284,16 +284,16 @@ export default function SignUpPage() {
                 <div>
                   <OTPInput length={4} otp={otp} setOtp={setOtp} />
                 </div>
-                
+
                 <div className="flex gap-3 w-full max-w-xs pt-4">
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setStep('details')}
                     className="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-all"
                   >
                     Back
                   </button>
-                  <button 
+                  <button
                     type="submit"
                     disabled={isSubmitting}
                     className="flex-1 py-3 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold rounded-xl transition-all shadow-sm"

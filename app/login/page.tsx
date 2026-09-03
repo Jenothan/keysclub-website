@@ -15,6 +15,8 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { OTPInput } from '@/components/OTPInput';
 import api from '@/lib/axios';
 import { useAuthStore } from '@/store/authStore';
+import { formatPhoneWithCountryCode } from '@/lib/phoneUtils';
+import PhoneInput from '@/components/PhoneInput';
 import { toast } from 'sonner';
 
 export default function LoginPage() {
@@ -39,12 +41,12 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const response = await api.post('/login', {
-        phone: mobile,
+        phone: formatPhoneWithCountryCode(mobile),
         password: password
       });
 
       const { access_token, user } = response.data;
-      
+
       setAuth(user, access_token);
       toast.success('Login successful!');
 
@@ -65,7 +67,7 @@ export default function LoginPage() {
     setIsForgotLoading(true);
     try {
       await api.post('/password/forgot/request-otp', {
-        phone: forgotPhone,
+        phone: formatPhoneWithCountryCode(forgotPhone),
       });
       setForgotStep('otp');
       toast.success('OTP sent to your mobile number');
@@ -90,7 +92,7 @@ export default function LoginPage() {
     setIsForgotLoading(true);
     try {
       await api.post('/password/forgot/reset', {
-        phone: forgotPhone,
+        phone: formatPhoneWithCountryCode(forgotPhone),
         otp_code: otpCode,
         password: newPassword,
       });
@@ -110,7 +112,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col-reverse md:flex-row h-dvh bg-white md:bg-[#f8fafc] overflow-hidden">
+    <div className="flex flex-col-reverse md:flex-row min-h-screen bg-white md:bg-[#f8fafc]">
 
       {/* Left Pane (Form) */}
       <div className="w-full h-full md:w-[55%] lg:w-[50%] flex flex-col justify-center items-center p-4 md:p-10 lg:p-14 relative overflow-y-auto">
@@ -135,13 +137,11 @@ export default function LoginPage() {
               <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">
                 Mobile Number
               </label>
-              <Input
-                type="tel"
-                placeholder="+94 77 123 4567"
-                className="h-12 text-sm md:text-base bg-slate-50 focus:bg-white focus:border-yellow-400 focus:ring-yellow-400 font-medium"
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
+              <PhoneInput
                 required
+                value={mobile}
+                onChange={(val) => setMobile(val)}
+                placeholder="712345678"
               />
             </div>
 
@@ -224,19 +224,17 @@ export default function LoginPage() {
                 <p className="text-slate-500 text-sm text-center mb-4">
                   Enter your registered mobile number to receive a verification OTP.
                 </p>
-                <div>
-                  <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">
-                    Mobile Number
-                  </label>
-                  <Input
-                    type="tel"
-                    required
-                    placeholder="+94 77 123 4567"
-                    value={forgotPhone}
-                    onChange={(e) => setForgotPhone(e.target.value)}
-                    className="h-11 bg-white"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">
+                      Mobile Number
+                    </label>
+                    <PhoneInput
+                      required
+                      value={forgotPhone}
+                      onChange={(val) => setForgotPhone(val)}
+                      placeholder="712345678"
+                    />
+                  </div>
                 <div className="flex gap-3 pt-2">
                   <button
                     type="button"
@@ -365,7 +363,7 @@ export default function LoginPage() {
             </h1>
 
             <p className="max-w-md text-slate-300 leading-relaxed text-body">
-              Welcome to KEYS Club — your premier home for professional badminton court bookings, tournament organization, and community sports development in Point Pedro.
+              Welcome to KEYS Club — your premier home for professional badminton court bookings, tournament organization, and community sports development in Karaveddy.
             </p>
           </div>
 
