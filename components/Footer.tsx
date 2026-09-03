@@ -1,7 +1,9 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Phone, Mail } from "lucide-react";
+import MapPin from '@mui/icons-material/LocationOn';
+import Phone from '@mui/icons-material/Phone';
+import Mail from '@mui/icons-material/Email';
 
 const Facebook = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -26,7 +28,7 @@ const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
 export default function Footer() {
   return (
     <footer className="bg-[#0f172a] text-slate-400 py-12 border-t border-slate-800">
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-0">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
 
           {/* Column 1: Brand */}
@@ -41,7 +43,7 @@ export default function Footer() {
               />
               <div className="flex flex-col">
                 <span className="font-bold text-subtitle leading-none tracking-tight text-white">KEYS CLUB</span>
-                <span className="text-caption text-yellow-500 uppercase tracking-widest mt-1">KARANAVAI EAST YOUTH SPORTS CLUB</span>
+                <span className="text-caption text-yellow-400 uppercase tracking-widest mt-1">KARANAVAI EAST YOUTH SPORTS CLUB</span>
               </div>
             </div>
             <p className="text-caption leading-relaxed max-w-xs">
@@ -54,43 +56,42 @@ export default function Footer() {
 
           {/* Column 2: Quick Links */}
           <div>
-            <h3 className="text-yellow-500 font-bold text-caption uppercase tracking-wider mb-6">QUICK LINKS</h3>
+            <h3 className="text-yellow-400 font-bold text-caption uppercase tracking-wider mb-6">QUICK LINKS</h3>
             <ul className="space-y-3 text-body-sm">
               <li><Link href="/" className="hover:text-yellow-400 transition">Home</Link></li>
-              <li><Link href="/availability" className="hover:text-yellow-400 transition">Availability</Link></li>
-              <li><Link href="/book" className="hover:text-yellow-400 transition">Book a Court</Link></li>
-              <li><Link href="/tournaments" className="hover:text-yellow-400 transition">Tournaments</Link></li>
+              <li><Link href="/availability" className="hover:text-yellow-400 transition">Court Availability</Link></li>
+              <li><Link href="/pricing" className="hover:text-yellow-400 transition">Pricing Plans</Link></li>
               <li><Link href="/about" className="hover:text-yellow-400 transition">About Us</Link></li>
-              <li><Link href="/contact" className="hover:text-yellow-400 transition">Contact</Link></li>
+              <li><Link href="/contact" className="hover:text-yellow-400 transition">Contact Us</Link></li>
             </ul>
           </div>
 
           {/* Column 3: Services */}
           <div>
-            <h3 className="text-yellow-500 font-bold text-caption uppercase tracking-wider mb-6">SERVICES</h3>
+            <h3 className="text-yellow-400 font-bold text-caption uppercase tracking-wider mb-6">SERVICES</h3>
             <ul className="space-y-3 text-body-sm">
-              <li><Link href="/availability" className="hover:text-yellow-400 transition">Court Availability</Link></li>
-              <li><Link href="/bookings" className="hover:text-yellow-400 transition">My Bookings</Link></li>
-              <li><Link href="/tournaments/inquiry" className="hover:text-yellow-400 transition">Tournament Inquiry</Link></li>
-              <li><Link href="/full-day" className="hover:text-yellow-400 transition">Full-Day Court Inquiry</Link></li>
+              <li><Link href="/availability" className="hover:text-yellow-400 transition">Court Booking</Link></li>
+              <li><Link href="/dashboard/bookings" className="hover:text-yellow-400 transition">My Bookings</Link></li>
+              <li><Link href="/contact" className="hover:text-yellow-400 transition">Tournament Inquiry</Link></li>
+              <li><Link href="/contact" className="hover:text-yellow-400 transition">Full-Day Court Request</Link></li>
             </ul>
           </div>
 
           {/* Column 4: Contact */}
           <div>
-            <h3 className="text-yellow-500 font-bold text-caption uppercase tracking-wider mb-6">CONTACT</h3>
+            <h3 className="text-yellow-400 font-bold text-caption uppercase tracking-wider mb-6">CONTACT</h3>
             <ul className="space-y-4 text-body-sm">
               <li className="flex items-start gap-3">
-                <Phone className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
+                <Phone className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
                 <span>+94 77 123 4567</span>
               </li>
               <li className="flex items-start gap-3">
-                <Mail className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
+                <Mail className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
                 <span>info@keysclub.lk</span>
               </li>
               <li className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
-                <span>Karanavai East, Point Pedro, Sri Lanka</span>
+                <MapPin className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
+                <span>Karanavai East, Karaveddy, Sri Lanka</span>
               </li>
             </ul>
 
@@ -101,16 +102,16 @@ export default function Footer() {
               <a href="#" className="text-slate-400 hover:text-white transition">
                 <Instagram className="w-5 h-5" />
               </a>
-              <a href="#" className="text-slate-400 hover:text-white transition">
-                <Twitter className="w-5 h-5" />
-              </a>
             </div>
           </div>
 
         </div>
 
-        <div className="border-t border-slate-800 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center text-caption text-slate-500">
+        <div className="border-t border-slate-800 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center text-caption text-slate-500 gap-4">
           <p>&copy; {new Date().getFullYear()} Karanavai East Youth Sports Club. All Rights Reserved.</p>
+          <p className="text-slate-400 font-medium">
+            Website by <a href="tel:+94763326098" className="text-yellow-400 font-bold hover:underline transition-colors">Esan Jenothan: +94763326098</a>
+          </p>
         </div>
       </div>
     </footer>

@@ -1,31 +1,53 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Trophy,
-  Users,
-  Target,
-  Heart,
-  Calendar,
-  Medal,
-  Dumbbell,
-  CheckCircle2,
-  Clock,
-  ShieldCheck,
-  Activity
-} from "lucide-react";
+import Trophy from '@mui/icons-material/EmojiEvents';
+import Users from '@mui/icons-material/Group';
+import Target from '@mui/icons-material/Adjust';
+import Heart from '@mui/icons-material/Favorite';
+import Calendar from '@mui/icons-material/CalendarMonth';
+import Medal from '@mui/icons-material/WorkspacePremium';
+import Dumbbell from '@mui/icons-material/FitnessCenter';
+import CheckCircle2 from '@mui/icons-material/CheckCircleOutlined';
+import Clock from '@mui/icons-material/AccessTime';
+import ShieldCheck from '@mui/icons-material/GppGood';
+import Timeline from '@mui/icons-material/Timeline';
 import { Button } from "@/components/ui/button";
-
-export const metadata = {
-  title: "About Us - KEYS Club",
-  description: "Learn more about Karanavai East Youth Sports Club and our mission to promote badminton and active living.",
-};
+import api from '@/lib/axios';
 
 export default function AboutPage() {
+  const [websiteData, setWebsiteData] = useState({
+    court_pricing: 'Rs. 400',
+    full_day_pricing: 'Rs. 3,000',
+    membership_pricing: 'Rs. 1,000',
+    registration_fee: 'Rs. 2,000',
+  });
+
+  useEffect(() => {
+    const fetchWebsiteData = async () => {
+      try {
+        const response = await api.get('/website-data');
+        if (response.data) {
+          setWebsiteData({
+            court_pricing: response.data.court_pricing || 'Rs. 400',
+            full_day_pricing: response.data.full_day_pricing || 'Rs. 3,000',
+            membership_pricing: response.data.membership_pricing || 'Rs. 1,000',
+            registration_fee: response.data.registration_fee || 'Rs. 2,000',
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch website data for About page', error);
+      }
+    };
+    fetchWebsiteData();
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* 1. ABOUT US PAGE HERO */}
-      <section className="relative py-32 lg:py-48 overflow-hidden">
+      <section className="relative py-16 sm:py-24 lg:py-36 overflow-hidden">
         <div
           className="absolute inset-0 z-0"
           style={{
@@ -40,24 +62,24 @@ export default function AboutPage() {
           <Image
             src="/logo.png"
             alt="KEYS Club Logo"
-            width={100}
-            height={100}
-            className="object-contain mb-8"
+            width={80}
+            height={80}
+            className="object-contain mb-6 w-16 h-16 sm:w-24 sm:h-24"
           />
-          <h1 className="text-display font-extrabold text-white mb-6">
+          <h1 className="text-display font-extrabold text-white mb-4 text-center">
             About Karanavai East Youth Sports Club
           </h1>
-          <p className="max-w-3xl text-subtitle text-slate-300 mb-8 leading-relaxed">
+          <p className="max-w-3xl text-subtitle text-slate-300 mb-6 leading-relaxed text-center">
             Building a stronger, healthier and more active community through badminton, youth sports and recreation.
           </p>
         </div>
       </section>
 
       {/* 2. WHO WE ARE */}
-      <section className="py-20 bg-slate-50">
+      <section className="py-12 sm:py-20 bg-slate-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <span className="text-caption font-bold text-blue-600 uppercase tracking-wider">Who We Are</span>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-[#0f172a] mt-4 mb-8">
+          <span className="text-caption font-bold text-yellow-400 uppercase tracking-wider">Who We Are</span>
+          <h2 className="text-xl sm:text-3xl lg:text-4xl font-extrabold text-[#0f172a] mt-3 mb-6">
             A Community-Focused Sports Hub
           </h2>
           <div className="space-y-6 text-slate-600 text-body leading-relaxed text-left md:text-center">
@@ -77,8 +99,8 @@ export default function AboutPage() {
       {/* 3. OUR VISION */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-block bg-blue-50 border border-blue-100 rounded-3xl p-10 md:p-16 w-full max-w-4xl mx-auto shadow-sm">
-            <span className="text-caption font-bold text-blue-600 uppercase tracking-wider">Our Vision</span>
+          <div className="inline-block bg-yellow-400/10 border border-yellow-400 rounded-3xl p-10 md:p-16 w-full max-w-4xl mx-auto shadow-sm">
+            <span className="text-caption font-bold text-yellow-400 uppercase tracking-wider">Our Vision</span>
             <h2 className="text-2xl md:text-4xl font-extrabold text-[#0f172a] mt-6 leading-tight">
               To build an active, healthy and connected community through sports.
             </h2>
@@ -90,7 +112,7 @@ export default function AboutPage() {
       <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <span className="text-caption font-bold text-blue-600 uppercase tracking-wider">Our Mission</span>
+            <span className="text-caption font-bold text-yellow-400 uppercase tracking-wider">Our Mission</span>
             <h2 className="text-title font-extrabold text-[#0f172a] mt-4">
               Driving Positive Change
             </h2>
@@ -98,7 +120,7 @@ export default function AboutPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-yellow-400 transition-all flex flex-col items-center text-center h-full">
-              <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6 shrink-0">
+              <div className="w-14 h-14 bg-yellow-400/10 text-yellow-400 rounded-full flex items-center justify-center mb-6 shrink-0">
                 <Target className="w-7 h-7" />
               </div>
               <h3 className="font-bold text-[#0f172a] text-lg mb-3">Promote Badminton</h3>
@@ -108,7 +130,7 @@ export default function AboutPage() {
             </div>
 
             <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-yellow-400 transition-all flex flex-col items-center text-center h-full">
-              <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6 shrink-0">
+              <div className="w-14 h-14 bg-yellow-400/10 text-yellow-400 rounded-full flex items-center justify-center mb-6 shrink-0">
                 <Users className="w-7 h-7" />
               </div>
               <h3 className="font-bold text-[#0f172a] text-lg mb-3">Support Youth</h3>
@@ -118,7 +140,7 @@ export default function AboutPage() {
             </div>
 
             <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-yellow-400 transition-all flex flex-col items-center text-center h-full">
-              <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6 shrink-0">
+              <div className="w-14 h-14 bg-yellow-400/10 text-yellow-400 rounded-full flex items-center justify-center mb-6 shrink-0">
                 <Trophy className="w-7 h-7" />
               </div>
               <h3 className="font-bold text-[#0f172a] text-lg mb-3">Encourage Competition</h3>
@@ -128,7 +150,7 @@ export default function AboutPage() {
             </div>
 
             <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-yellow-400 transition-all flex flex-col items-center text-center h-full">
-              <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6 shrink-0">
+              <div className="w-14 h-14 bg-yellow-400/10 text-yellow-400 rounded-full flex items-center justify-center mb-6 shrink-0">
                 <Heart className="w-7 h-7" />
               </div>
               <h3 className="font-bold text-[#0f172a] text-lg mb-3">Build Community</h3>
@@ -144,7 +166,7 @@ export default function AboutPage() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <span className="text-caption font-bold text-blue-600 uppercase tracking-wider">What We Offer</span>
+            <span className="text-caption font-bold text-yellow-400 uppercase tracking-wider">What We Offer</span>
             <h2 className="text-title font-extrabold text-[#0f172a] mt-4">
               Comprehensive Sporting Facilities
             </h2>
@@ -152,7 +174,7 @@ export default function AboutPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="flex items-start gap-5 p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-yellow-400 bg-slate-50 hover:bg-white transition-all">
-              <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center justify-center shrink-0 text-blue-600">
+              <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center justify-center shrink-0 text-yellow-400">
                 <Calendar className="w-6 h-6" />
               </div>
               <div>
@@ -164,7 +186,7 @@ export default function AboutPage() {
             </div>
 
             <div className="flex items-start gap-5 p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-yellow-400 bg-slate-50 hover:bg-white transition-all">
-              <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center justify-center shrink-0 text-blue-600">
+              <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center justify-center shrink-0 text-yellow-400">
                 <Medal className="w-6 h-6" />
               </div>
               <div>
@@ -176,7 +198,7 @@ export default function AboutPage() {
             </div>
 
             <div className="flex items-start gap-5 p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-yellow-400 bg-slate-50 hover:bg-white transition-all">
-              <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center justify-center shrink-0 text-blue-600">
+              <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center justify-center shrink-0 text-yellow-400">
                 <Dumbbell className="w-6 h-6" />
               </div>
               <div>
@@ -188,7 +210,7 @@ export default function AboutPage() {
             </div>
 
             <div className="flex items-start gap-5 p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-yellow-400 bg-slate-50 hover:bg-white transition-all">
-              <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center justify-center shrink-0 text-blue-600">
+              <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center justify-center shrink-0 text-yellow-400">
                 <Users className="w-6 h-6" />
               </div>
               <div>
@@ -202,7 +224,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 6 & 7. COURT BOOKING & MEMBERSHIP (PRICING CLARITY) */}
+      {/* 6 & 7. COURT BOOKING & MEMBERSHIP (DYNAMIC PRICING) */}
       <section className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -214,56 +236,63 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 
             {/* Hourly Booking */}
-            <div className="bg-white rounded-2xl p-8 flex flex-col h-full border border-transparent hover:border-yellow-400 transition-all shadow-lg">
-              <div className="text-caption font-bold text-blue-600 uppercase tracking-wider mb-2">Hourly Court Rate</div>
+            <div className="bg-white rounded-2xl p-8 flex flex-col h-full border border-slate-100 hover:border-yellow-400 transition-all shadow-lg hover:-translate-y-1">
+              <div className="text-caption font-bold text-yellow-500 uppercase tracking-wider mb-2">Hourly Court Rate</div>
               <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-3xl font-extrabold text-[#0f172a]">Rs. 400</span>
+                <span className="text-3xl lg:text-4xl font-extrabold text-[#0f172a]">{websiteData.court_pricing}</span>
                 <span className="text-slate-500 font-medium">/ Hour</span>
               </div>
               <p className="text-slate-600 text-sm leading-relaxed mb-8 grow">
                 Players can book the badminton court for an individual hourly session.
               </p>
               <Link href="/availability">
-                <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold rounded-lg h-12 transition">
+                <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold rounded-xl h-12 transition shadow-sm">
                   Check Availability
                 </Button>
               </Link>
             </div>
 
-            {/* Monthly Package */}
-            <div className="bg-white rounded-2xl p-8 flex flex-col h-full border border-transparent hover:border-yellow-400 transition-all shadow-lg">
-              <div className="text-caption font-bold text-blue-600 uppercase tracking-wider mb-2">Monthly Court Package</div>
+            {/* Full Day Booking */}
+            <div className="bg-white rounded-2xl p-8 flex flex-col h-full border border-slate-100 hover:border-yellow-400 transition-all shadow-lg hover:-translate-y-1">
+              <div className="text-caption font-bold text-yellow-500 uppercase tracking-wider mb-2">Full Day Court Booking</div>
               <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-3xl font-extrabold text-[#0f172a]">Rs. 2,000</span>
+                <span className="text-3xl lg:text-4xl font-extrabold text-[#0f172a]">{websiteData.full_day_pricing}</span>
+                <span className="text-slate-500 font-medium">/ Day</span>
               </div>
               <p className="text-slate-600 text-sm leading-relaxed mb-8 grow">
-                Monthly badminton court payment/package according to the club's current pricing structure.
+                Book the full badminton court for tournaments, organized events, and all-day sports functions.
               </p>
+              <Link href="/contact">
+                <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl h-12 transition shadow-sm">
+                  Contact For Booking
+                </Button>
+              </Link>
             </div>
 
-            {/* Monthly Membership */}
-            <div className="bg-white rounded-2xl p-8 flex flex-col h-full border border-transparent hover:border-yellow-400 transition-all shadow-lg">
-              <div className="text-caption font-bold text-blue-600 uppercase tracking-wider mb-2">Monthly Membership Fee</div>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-3xl font-extrabold text-[#0f172a]">Rs. 500</span>
+            {/* Badminton Court Membership */}
+            <div className="bg-[#0f172a] rounded-2xl p-8 flex flex-col h-full border border-slate-800 transition-all shadow-xl hover:-translate-y-1 relative">
+              <div className="absolute top-0 right-0 bg-yellow-400 text-[#0f172a] text-xs font-black px-3.5 py-1.5 rounded-bl-xl uppercase tracking-wider shadow-sm">
+                Most Popular
               </div>
-              <p className="text-slate-600 text-sm leading-relaxed mb-8 grow">
-                Members can pay the applicable monthly membership amount and participate according to the club's membership and court-use arrangements.
-              </p>
-            </div>
-
-            {/* Yearly Membership */}
-            <div className="bg-white rounded-2xl p-8 flex flex-col h-full border border-transparent hover:border-yellow-400 transition-all shadow-lg">
-              <div className="text-caption font-bold text-blue-600 uppercase tracking-wider mb-2">Yearly Membership Fee</div>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-3xl font-extrabold text-[#0f172a]">Rs. 2,000</span>
+              <div className="text-caption font-bold text-yellow-400 uppercase tracking-wider mb-2">Badminton Court Membership</div>
+              <div className="flex items-baseline gap-1 mb-2">
+                <span className="text-3xl lg:text-4xl font-extrabold text-white">{websiteData.membership_pricing}</span>
+                <span className="text-slate-400 font-medium">/ Month</span>
               </div>
-              <p className="text-slate-600 text-sm leading-relaxed mb-8 grow">
-                Members can pay the applicable yearly membership amount and participate according to the club's membership and court-use arrangements.
+              <div className="mb-6 inline-flex items-center gap-1.5 text-xs text-yellow-400 font-extrabold bg-yellow-400/10 px-3 py-1.5 rounded-lg border border-yellow-400/20 self-start">
+                <span>+ {websiteData.registration_fee} / Year Membership Fee</span>
+              </div>
+              <p className="text-slate-300 text-sm leading-relaxed mb-8 grow">
+                Members pay the {websiteData.membership_pricing} monthly court fee plus applicable {websiteData.registration_fee} annual membership fee for full court access and player privileges.
               </p>
+              <Link href="/contact">
+                <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold rounded-xl h-12 transition shadow-md">
+                  Join Badminton Court Membership
+                </Button>
+              </Link>
             </div>
 
           </div>
@@ -286,11 +315,11 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row items-center gap-16">
             <div className="w-full lg:w-1/2">
-              <span className="text-caption font-bold text-blue-600 uppercase tracking-wider">Our Community</span>
+              <span className="text-caption font-bold text-yellow-400 uppercase tracking-wider">Our Community</span>
               <h2 className="text-title font-extrabold text-[#0f172a] mt-4 mb-6">
                 More Than Just a Court
               </h2>
-              <p className="text-body text-slate-500 leading-relaxed text-lg">
+              <p className="text-body text-slate-500 leading-relaxed">
                 Our club is more than a place to play badminton. It is a space where young people and community members can connect, stay active, improve their sporting abilities and enjoy healthy recreation together.
               </p>
             </div>
@@ -315,27 +344,27 @@ export default function AboutPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
             <div className="bg-white p-6 rounded-xl border border-gray-100 hover:border-yellow-400 flex flex-col items-center shadow-sm hover:shadow-lg transition-all">
-              <ShieldCheck className="w-8 h-8 text-blue-600 mb-4" />
+              <ShieldCheck className="w-8 h-8 text-yellow-400 mb-4" />
               <h4 className="font-bold text-[#0f172a] mb-2">Sportsmanship</h4>
               <p className="text-sm text-slate-500 leading-relaxed">Respect, fairness and positive competition.</p>
             </div>
             <div className="bg-white p-6 rounded-xl border border-gray-100 hover:border-yellow-400 flex flex-col items-center shadow-sm hover:shadow-lg transition-all">
-              <Users className="w-8 h-8 text-blue-600 mb-4" />
+              <Users className="w-8 h-8 text-yellow-400 mb-4" />
               <h4 className="font-bold text-[#0f172a] mb-2">Teamwork</h4>
               <p className="text-sm text-slate-500 leading-relaxed">Working together and supporting one another.</p>
             </div>
             <div className="bg-white p-6 rounded-xl border border-gray-100 hover:border-yellow-400 flex flex-col items-center shadow-sm hover:shadow-lg transition-all">
-              <Clock className="w-8 h-8 text-blue-600 mb-4" />
+              <Clock className="w-8 h-8 text-yellow-400 mb-4" />
               <h4 className="font-bold text-[#0f172a] mb-2">Discipline</h4>
               <p className="text-sm text-slate-500 leading-relaxed">Encouraging commitment, practice and consistency.</p>
             </div>
             <div className="bg-white p-6 rounded-xl border border-gray-100 hover:border-yellow-400 flex flex-col items-center shadow-sm hover:shadow-lg transition-all">
-              <Heart className="w-8 h-8 text-blue-600 mb-4" />
+              <Heart className="w-8 h-8 text-yellow-400 mb-4" />
               <h4 className="font-bold text-[#0f172a] mb-2">Community</h4>
               <p className="text-sm text-slate-500 leading-relaxed">Creating an inclusive and supportive sporting environment.</p>
             </div>
             <div className="bg-white p-6 rounded-xl border border-gray-100 hover:border-yellow-400 flex flex-col items-center shadow-sm hover:shadow-lg transition-all">
-              <Activity className="w-8 h-8 text-blue-600 mb-4" />
+              <Timeline className="w-8 h-8 text-yellow-400 mb-4" />
               <h4 className="font-bold text-[#0f172a] mb-2">Healthy Living</h4>
               <p className="text-sm text-slate-500 leading-relaxed">Promoting an active and healthy lifestyle through sports.</p>
             </div>
@@ -355,27 +384,27 @@ export default function AboutPage() {
 
             <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
               <div className="flex items-start gap-4">
-                <CheckCircle2 className="w-6 h-6 text-blue-600 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-6 h-6 text-yellow-400 shrink-0 mt-0.5" />
                 <span className="font-medium text-lg text-slate-700">Easy badminton court availability checking</span>
               </div>
               <div className="flex items-start gap-4">
-                <CheckCircle2 className="w-6 h-6 text-blue-600 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-6 h-6 text-yellow-400 shrink-0 mt-0.5" />
                 <span className="font-medium text-lg text-slate-700">Simple online booking process</span>
               </div>
               <div className="flex items-start gap-4">
-                <CheckCircle2 className="w-6 h-6 text-blue-600 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-6 h-6 text-yellow-400 shrink-0 mt-0.5" />
                 <span className="font-medium text-lg text-slate-700">Affordable court and membership options</span>
               </div>
               <div className="flex items-start gap-4">
-                <CheckCircle2 className="w-6 h-6 text-blue-600 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-6 h-6 text-yellow-400 shrink-0 mt-0.5" />
                 <span className="font-medium text-lg text-slate-700">Community-focused sports environment</span>
               </div>
               <div className="flex items-start gap-4">
-                <CheckCircle2 className="w-6 h-6 text-blue-600 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-6 h-6 text-yellow-400 shrink-0 mt-0.5" />
                 <span className="font-medium text-lg text-slate-700">Opportunities for tournaments and events</span>
               </div>
               <div className="flex items-start gap-4">
-                <CheckCircle2 className="w-6 h-6 text-blue-600 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-6 h-6 text-yellow-400 shrink-0 mt-0.5" />
                 <span className="font-medium text-lg text-slate-700">Suitable for youth, regular players and community members</span>
               </div>
             </div>

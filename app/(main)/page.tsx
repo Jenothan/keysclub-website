@@ -1,13 +1,18 @@
 import React from "react";
 import Image from "next/image";
-import { Calendar, Clock, ShieldCheck, XCircle, MessageSquare } from "lucide-react";
+import Link from "next/link";
+import Calendar from '@mui/icons-material/CalendarMonth';
+import Clock from '@mui/icons-material/AccessTime';
+import ShieldCheck from '@mui/icons-material/GppGood';
+import XCircle from '@mui/icons-material/Cancel';
+import MessageSquare from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import { Button } from "@/components/ui/button"
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-32 lg:py-48 overflow-hidden">
+      <section className="relative py-16 sm:py-24 lg:py-36 overflow-hidden">
         {/* Background Image */}
         <div
           className="absolute inset-0 z-0"
@@ -20,7 +25,7 @@ export default function Home() {
         {/* Dark Blue Overlay */}
         <div className="absolute inset-0 bg-[#0f172a]/50 z-0" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-2 sm:px-4 lg:px-0 text-center flex flex-col items-center">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
           <div className="inline-block border border-yellow-400 rounded-full px-5 py-1.5 mb-8">
             <span className="text-yellow-400 text-sm font-semibold tracking-wide">
               Open Every Day | 6:00 AM - 10:00 PM
@@ -37,19 +42,23 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 h-12 rounded-md transition duration-200">
-              Check Availability
-            </Button>
-            <Button variant="outline" className="bg-transparent border border-white text-white hover:bg-white/10 hover:text-white font-bold px-8 h-12 rounded-md transition duration-200">
-              Book a Court
-            </Button>
+            <Link href="/availability">
+              <Button className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 h-12 rounded-md transition duration-200 cursor-pointer">
+                Check Availability
+              </Button>
+            </Link>
+            <Link href="/contact#enquiry_form" className="cursor-pointer">
+              <Button variant="outline" className="bg-transparent border border-white text-white hover:bg-white/10 hover:text-white font-bold px-8 h-12 rounded-md transition duration-200 cursor-pointer">
+                Full Day Booking
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Booking Widget (Separate Section) */}
       <section className="py-12 bg-white">
-        <div className="max-w-5xl mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] p-6 md:p-8 flex flex-col md:flex-row gap-6 items-end border border-gray-100">
 
             <div className="flex-1 w-full">
@@ -64,7 +73,7 @@ export default function Home() {
                   type="text"
                   readOnly
                   value="Tomorrow, 27 October 2026"
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-md bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-md bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 />
               </div>
             </div>
@@ -81,15 +90,17 @@ export default function Home() {
                   type="text"
                   readOnly
                   value="06:00 PM - 07:00 PM"
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-md bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-md bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 />
               </div>
             </div>
 
             <div className="w-full md:w-auto">
-              <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 h-11.5 rounded-md transition duration-200">
-                Check Availability
-              </Button>
+              <Link href="/availability">
+                <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 h-11.5 rounded-md transition duration-200 cursor-pointer">
+                  Check Availability
+                </Button>
+              </Link>
             </div>
 
           </div>
@@ -98,7 +109,7 @@ export default function Home() {
 
       {/* How It Works Section */}
       <section className="py-16 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-title font-extrabold text-slate-900 mb-4">How It Works</h2>
             <p className="text-body text-slate-500">Reserve your court slot in 5 simple, automated steps</p>
@@ -107,8 +118,8 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {/* Step 1 */}
             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-yellow-400 hover:shadow-lg transition-all">
-              <div className="absolute top-4 right-4 text-4xl font-bold text-gray-100 group-hover:text-blue-50 transition">01</div>
-              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white mb-6 relative z-10 shadow-md">
+              <div className="absolute top-4 right-4 text-4xl font-bold text-white group-hover:text-yellow-200 transition">01</div>
+              <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-slate-900 mb-6 relative z-10 shadow-md">
                 <Calendar className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-slate-900 mb-2 relative z-10 text-subtitle">Check Availability</h3>
@@ -119,20 +130,20 @@ export default function Home() {
 
             {/* Step 2 */}
             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-yellow-400 hover:shadow-lg transition-all">
-              <div className="absolute top-4 right-4 text-4xl font-bold text-gray-100 group-hover:text-blue-50 transition">02</div>
-              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white mb-6 relative z-10 shadow-md">
+              <div className="absolute top-4 right-4 text-4xl font-bold text-white group-hover:text-yellow-200 transition">02</div>
+              <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-slate-900 mb-6 relative z-10 shadow-md">
                 <Clock className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-slate-900 mb-2 relative z-10 text-subtitle">Choose Your Time</h3>
               <p className="text-slate-500 text-body-sm relative z-10 leading-relaxed">
-                Select preferred court and time slot
+                Select your preferred time slot
               </p>
             </div>
 
             {/* Step 3 */}
             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-yellow-400 hover:shadow-lg transition-all">
-              <div className="absolute top-4 right-4 text-4xl font-bold text-gray-100 group-hover:text-blue-50 transition">03</div>
-              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white mb-6 relative z-10 shadow-md">
+              <div className="absolute top-4 right-4 text-4xl font-bold text-white group-hover:text-yellow-200 transition">03</div>
+              <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-slate-900 mb-6 relative z-10 shadow-md">
                 <ShieldCheck className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-slate-900 mb-2 relative z-10 text-subtitle">Verify Your Mobile</h3>
@@ -143,8 +154,8 @@ export default function Home() {
 
             {/* Step 4 */}
             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-yellow-400 hover:shadow-lg transition-all">
-              <div className="absolute top-4 right-4 text-4xl font-bold text-gray-100 group-hover:text-blue-50 transition">04</div>
-              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white mb-6 relative z-10 shadow-md">
+              <div className="absolute top-4 right-4 text-4xl font-bold text-white group-hover:text-yellow-200 transition">04</div>
+              <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-slate-900 mb-6 relative z-10 shadow-md">
                 <XCircle className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-slate-900 mb-2 relative z-10 text-subtitle">Send Booking Request</h3>
@@ -155,8 +166,8 @@ export default function Home() {
 
             {/* Step 5 */}
             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-yellow-400 hover:shadow-lg transition-all">
-              <div className="absolute top-4 right-4 text-4xl font-bold text-gray-100 group-hover:text-blue-50 transition">05</div>
-              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white mb-6 relative z-10 shadow-md">
+              <div className="absolute top-4 right-4 text-4xl font-bold text-white group-hover:text-yellow-200 transition">05</div>
+              <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-slate-900 mb-6 relative z-10 shadow-md">
                 <MessageSquare className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-slate-900 mb-2 relative z-10 text-subtitle">Get Confirmation</h3>
@@ -169,7 +180,7 @@ export default function Home() {
       </section>
       {/* Tournament / Full Day Section */}
       <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-title font-extrabold text-slate-900 mb-4">
               Planning a Tournament or Need the Court for a Full Day?
@@ -182,42 +193,42 @@ export default function Home() {
             <div className="border border-gray-100 rounded-xl p-8 shadow-sm hover:shadow-lg hover:border-yellow-400 transition-all bg-white flex flex-col h-full">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="font-bold text-slate-900 text-subtitle">Regular Court Booking</h3>
-                <span className="bg-blue-50 text-blue-600 text-caption font-semibold px-2.5 py-1 rounded-full">Hourly</span>
+                <span className="bg-yellow-400/10 text-slate-900 text-caption font-semibold px-2.5 py-1 rounded-full border border-yellow-400">Hourly</span>
               </div>
               <p className="text-slate-500 text-body-sm mb-12 grow">
                 Hourly standard bookings for recreation and regular training. Best for 2-4 players.
               </p>
-              <a href="#" className="text-blue-600 font-semibold text-body-sm flex items-center hover:text-blue-700">
+              <Link href="/availability" className="text-yellow-500 font-extrabold text-body-sm flex items-center hover:underline">
                 Check Availability <span className="ml-1">→</span>
-              </a>
+              </Link>
             </div>
 
             {/* Card 2 */}
             <div className="border border-gray-100 rounded-xl p-8 shadow-sm hover:shadow-lg hover:border-yellow-400 transition-all bg-white flex flex-col h-full">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="font-bold text-slate-900 text-subtitle">Tournament Booking</h3>
-                <span className="bg-blue-50 text-blue-600 text-caption font-semibold px-2.5 py-1 rounded-full">Event</span>
+                <span className="bg-yellow-400/10 text-slate-900 text-caption font-semibold px-2.5 py-1 rounded-full border border-yellow-400">Event</span>
               </div>
               <p className="text-slate-500 text-body-sm mb-12 grow">
                 Hosting a local community tournament? Get custom arrangements, umpire chairs, and event boards.
               </p>
-              <a href="#" className="text-blue-600 font-semibold text-body-sm flex items-center hover:text-blue-700">
+              <Link href="/contact" className="text-yellow-500 font-extrabold text-body-sm flex items-center hover:underline">
                 Make an Inquiry <span className="ml-1">→</span>
-              </a>
+              </Link>
             </div>
 
             {/* Card 3 */}
             <div className="border border-gray-100 rounded-xl p-8 shadow-sm hover:shadow-lg hover:border-yellow-400 transition-all bg-white flex flex-col h-full">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="font-bold text-slate-900 text-subtitle">Full-Day Court</h3>
-                <span className="bg-blue-50 text-blue-600 text-caption font-semibold px-2.5 py-1 rounded-full">Corporate</span>
+                <span className="bg-yellow-400/10 text-slate-900 text-caption font-semibold px-2.5 py-1 rounded-full border border-yellow-400">Corporate</span>
               </div>
               <p className="text-slate-500 text-body-sm mb-12 grow">
                 Reserve full-day exclusive access of courts for sports meets, club training camps, or school events.
               </p>
-              <a href="#" className="text-blue-600 font-semibold text-body-sm flex items-center hover:text-blue-700">
+              <Link href="/contact" className="text-yellow-500 font-extrabold text-body-sm flex items-center hover:underline">
                 Request Full-Day Booking <span className="ml-1">→</span>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -225,7 +236,7 @@ export default function Home() {
 
       {/* About The Club Section */}
       <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center gap-16">
             <div className="w-full md:w-5/12">
               <div className="bg-slate-50 rounded-3xl p-12 flex items-center justify-center w-full aspect-square border border-gray-100 shadow-[0_20px_50px_rgb(0,0,0,0.06)]">
@@ -233,16 +244,18 @@ export default function Home() {
               </div>
             </div>
             <div className="w-full md:w-7/12">
-              <span className="text-caption font-bold text-blue-600 uppercase tracking-wider">ABOUT THE CLUB</span>
+              <span className="text-caption font-bold text-yellow-500 uppercase tracking-wider">ABOUT THE CLUB</span>
               <h2 className="text-title font-extrabold text-slate-900 mt-4 mb-6">
                 Karanavai East Youth Sports Club
               </h2>
               <p className="text-body text-slate-500 leading-relaxed mb-8">
-                KEYS Club is one of the premier badminton & indoor sports hubs in point Pedro, Sri Lanka. Established with a strong drive to foster young talent, promote fitness, and host top-tier regional matches. Our court facilities utilize high-grade mats and equipment matching national standards.
+                KEYS Club is one of the premier badminton & indoor sports hubs in Karaveddy, Sri Lanka. Established with a strong drive to foster young talent, promote fitness, and host top-tier regional matches. Our court facilities utilize high-grade mats and equipment matching national standards.
               </p>
-              <button className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 py-3 rounded-md transition duration-200">
-                Join the Game / Book a Court
-              </button>
+              <Link href="/availability">
+                <button className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 py-3 rounded-md transition duration-200 cursor-pointer">
+                  Join the Game / Book a Court
+                </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -250,18 +263,22 @@ export default function Home() {
 
       {/* Have a Question Section */}
       <section className="py-16 bg-[#0f172a] text-center border-b border-slate-800">
-        <div className="max-w-3xl mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-title font-bold text-white mb-6">Have a Question?</h2>
           <p className="text-body text-slate-400 mb-10">
             For specific tournaments, monthly passes, custom slots or events booking, our admin panel is here to support you.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 py-3 rounded-md transition duration-200">
-              Contact Us
-            </button>
-            <button className="bg-transparent border border-white text-white hover:bg-white/10 font-bold px-8 py-3 rounded-md transition duration-200">
-              Make an Inquiry
-            </button>
+            <Link href="/contact">
+              <button className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 py-3 rounded-md transition duration-200 cursor-pointer">
+                Contact Us
+              </button>
+            </Link>
+            <Link href="/contact">
+              <button className="bg-transparent border border-white text-white hover:bg-white/10 font-bold px-8 py-3 rounded-md transition duration-200 cursor-pointer">
+                Make an Inquiry
+              </button>
+            </Link>
           </div>
         </div>
       </section>
