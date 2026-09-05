@@ -20,13 +20,32 @@ import PhoneInput from '@/components/PhoneInput';
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { setAuth } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
+  const { user, token, setAuth } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [step, setStep] = useState<'details' | 'otp'>('details');
   const [formData, setFormData] = useState({ name: '', mobile: '', email: '', password: '', confirmPassword: '' });
   const [otp, setOtp] = useState<string[]>(Array(4).fill(''));
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  React.useEffect(() => {
+    if (mounted && token) {
+      router.replace('/');
+    }
+  }, [mounted, token, router]);
+
+  if (!mounted || token) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +63,17 @@ export default function SignUpPage() {
       setStep('otp');
       toast.success('OTP sent to your mobile number');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to request OTP');
+      const msg = error.response?.data?.message
+        || error.response?.data?.errors?.phone?.[0]
+        || error.response?.data?.errors?.email?.[0]
+        || 'Failed to request OTP';
+
+      const lower = msg.toLowerCase();
+      if (lower.includes('already taken') || lower.includes('already registered') || lower.includes('already exists') || lower.includes('in use')) {
+        toast.warning(msg);
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setIsSubmitting(false);
     }

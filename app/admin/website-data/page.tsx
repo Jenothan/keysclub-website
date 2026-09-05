@@ -25,6 +25,8 @@ export default function WebsiteDataPage() {
     primary_phone: '',
     support_email: '',
     club_address: '',
+    facebook_url: '',
+    instagram_url: '',
     court_pricing: '',
     full_day_pricing: '',
     membership_pricing: '',
@@ -40,6 +42,8 @@ export default function WebsiteDataPage() {
             primary_phone: res.data.primary_phone || '',
             support_email: res.data.support_email || '',
             club_address: res.data.club_address || '',
+            facebook_url: res.data.facebook_url || '',
+            instagram_url: res.data.instagram_url || '',
             court_pricing: res.data.court_pricing || 'LKR 400',
             full_day_pricing: res.data.full_day_pricing || 'LKR 3,000',
             membership_pricing: res.data.membership_pricing || 'LKR 1,000',
@@ -47,7 +51,7 @@ export default function WebsiteDataPage() {
           });
         }
       }).catch(err => console.error("Failed to load website data", err))
-      .finally(() => setIsLoading(false));
+        .finally(() => setIsLoading(false));
     } else {
       setIsLoading(false);
     }
@@ -108,27 +112,39 @@ export default function WebsiteDataPage() {
 
         {/* Website General Settings */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-8">
-          <h2 className="text-base sm:text-lg font-extrabold text-[#0f172a] mb-2">Public Contact Information</h2>
+          <h2 className="text-base sm:text-lg font-extrabold text-[#0f172a] mb-2">Public Contact & Social Links Information</h2>
           <p className="text-xs text-slate-500 mb-6">This information will be displayed publicly on the contact page and footer of the website.</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-1.5">
               <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
-                <Phone className="w-3.5 h-3.5 text-slate-400" /> Support Phone
+                <Phone className="w-3.5 h-3.5 text-yellow-500" /> Support Phone
               </label>
-              <Input name="primary_phone" value={formData.primary_phone} onChange={handleChange} className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
+              <Input name="primary_phone" value={formData.primary_phone} onChange={handleChange} placeholder="+94 77 123 4567" className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
-                <Mail className="w-3.5 h-3.5 text-slate-400" /> Support Email
+                <Mail className="w-3.5 h-3.5 text-yellow-500" /> Support Email
               </label>
-              <Input name="support_email" value={formData.support_email} onChange={handleChange} className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
+              <Input name="support_email" value={formData.support_email} onChange={handleChange} placeholder="info@keysclub.lk" className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
             </div>
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
-                <MapPin className="w-3.5 h-3.5 text-slate-400" /> Club Location / Address
+                <MapPin className="w-3.5 h-3.5 text-yellow-500" /> Club Location / Address
               </label>
-              <Input name="club_address" value={formData.club_address} onChange={handleChange} className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
+              <Input name="club_address" value={formData.club_address} onChange={handleChange} placeholder="Karanavai East, Karaveddy, Jaffna, Sri Lanka." className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
+                <Globe className="w-3.5 h-3.5 text-yellow-500" /> Facebook Page Link
+              </label>
+              <Input name="facebook_url" value={formData.facebook_url} onChange={handleChange} placeholder="https://facebook.com/yourpage" className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
+                <Globe className="w-3.5 h-3.5 text-yellow-500" /> Instagram Profile Link
+              </label>
+              <Input name="instagram_url" value={formData.instagram_url} onChange={handleChange} placeholder="https://instagram.com/yourprofile" className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
             </div>
           </div>
           <div className="mt-6 flex justify-end">
@@ -146,32 +162,32 @@ export default function WebsiteDataPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-1.5">
-              <label className="text-xs font-extrabold text-[#0f172a] uppercase tracking-wider">
-                Court Hourly Rate (e.g. LKR 400)
+              <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
+                Court Hourly Rate
               </label>
               <Input name="court_pricing" value={formData.court_pricing} onChange={handleChange} placeholder="LKR 400" className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-extrabold text-[#0f172a] uppercase tracking-wider">
-                Club Membership Monthly Rate (e.g. LKR 1,000)
+              <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
+                Club Membership Monthly Rate
               </label>
               <Input name="membership_pricing" value={formData.membership_pricing} onChange={handleChange} placeholder="LKR 1,000" className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-extrabold text-[#0f172a] uppercase tracking-wider">
-                One-Time Annual Registration Fee (e.g. LKR 2,000)
+              <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
+                One-Time Annual Registration Fee
               </label>
               <Input name="registration_fee" value={formData.registration_fee} onChange={handleChange} placeholder="LKR 2,000" className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-extrabold text-[#0f172a] uppercase tracking-wider">
-                Full Day Rate (e.g. LKR 3,000)
+              <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
+                Full Day Rate
               </label>
               <Input name="full_day_pricing" value={formData.full_day_pricing} onChange={handleChange} placeholder="LKR 3,000" className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
-                <Clock className="w-3.5 h-3.5 text-slate-400" /> Opening Time
+                <Clock className="w-3.5 h-3.5 text-yellow-500" /> Opening Time
               </label>
               <Select defaultValue="06:00 AM">
                 <SelectTrigger className="h-11 bg-slate-50/50 text-xs sm:text-sm font-medium rounded-xl">
@@ -187,7 +203,7 @@ export default function WebsiteDataPage() {
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
-                <Clock className="w-3.5 h-3.5 text-slate-400" /> Closing Time
+                <Clock className="w-3.5 h-3.5 text-yellow-500" /> Closing Time
               </label>
               <Select defaultValue="10:00 PM">
                 <SelectTrigger className="h-11 bg-slate-50/50 text-xs sm:text-sm font-medium rounded-xl">
