@@ -187,7 +187,7 @@ export default function AdminDashboardPage() {
             ) : recentRequests.length > 0 ? (
               recentRequests.map((req) => {
                 const statusInfo = computeBookingStatus(req);
-                const userName = req.user ? req.user.name : (req.customer_name || 'Walk-in Customer');
+                const userName = req.customer_name || req.user?.name || req.booked_by?.name || 'Walk-in Customer';
                 const userInitial = userName.charAt(0).toUpperCase();
 
                 return (

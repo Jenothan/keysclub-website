@@ -23,7 +23,6 @@ export default function AdminSettingsPage() {
   // Profile Edit State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [profileName, setProfileName] = useState('');
-  const [profileEmail, setProfileEmail] = useState('');
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
   // Password Update State
@@ -37,22 +36,20 @@ export default function AdminSettingsPage() {
   useEffect(() => {
     if (user) {
       setProfileName(user.name || '');
-      setProfileEmail(user.email || '');
     }
   }, [user]);
 
   const handleOpenEditModal = () => {
     if (user) {
       setProfileName(user.name || '');
-      setProfileEmail(user.email || '');
     }
     setIsEditModalOpen(true);
   };
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!profileName.trim() || !profileEmail.trim()) {
-      toast.error('Name and Email are required');
+    if (!profileName.trim()) {
+      toast.error('Name is required');
       return;
     }
 
@@ -60,7 +57,6 @@ export default function AdminSettingsPage() {
     try {
       const response = await api.put('/user', {
         name: profileName.trim(),
-        email: profileEmail.trim(),
       });
       
       toast.success(response.data.message || 'Profile updated successfully!');
@@ -71,7 +67,7 @@ export default function AdminSettingsPage() {
       
       setIsEditModalOpen(false);
     } catch (error: any) {
-      const errMsg = error.response?.data?.message || error.response?.data?.errors?.email?.[0] || 'Failed to update profile';
+      const errMsg = error.response?.data?.message || 'Failed to update profile';
       toast.error(errMsg);
     } finally {
       setIsUpdatingProfile(false);
@@ -142,7 +138,7 @@ export default function AdminSettingsPage() {
             <h2 className="text-base sm:text-xl font-extrabold text-[#0f172a] mb-1 tracking-tight text-center">
               {user?.name || 'Super Admin'}
             </h2>
-            <span className="bg-yellow-400/20 text-slate-900 font-extrabold text-[10px] sm:text-[11px] px-3 py-0.5 rounded-full border border-yellow-400/40 uppercase tracking-wider">
+            <span className="bg-yellow-400/20 text-[#0f172a] font-extrabold text-[10px] sm:text-[11px] px-3 py-0.5 rounded-full border border-yellow-400/40 uppercase tracking-wider">
               {user?.role || 'Administrator'}
             </span>
           </div>
@@ -162,13 +158,6 @@ export default function AdminSettingsPage() {
                 <Phone className="w-3.5 h-3.5 text-slate-400" /> Mobile Number
               </p>
               <p className="font-extrabold text-[#0f172a] text-xs sm:text-sm">{user?.phone || '+94 76 332 6098'}</p>
-            </div>
-
-            <div>
-              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5 flex items-center gap-1">
-                <Mail className="w-3.5 h-3.5 text-slate-400" /> Email Address
-              </p>
-              <p className="font-extrabold text-[#0f172a] text-xs sm:text-sm truncate">{user?.email || 'admin@keysclub.lk'}</p>
             </div>
 
             <div>
@@ -273,7 +262,7 @@ export default function AdminSettingsPage() {
               <Pencil className="w-5 h-5 text-yellow-500" /> Edit Admin Profile
             </DialogTitle>
             <DialogDescription className="text-slate-400 text-xs mt-0.5">
-              Update your administrator name and contact email address.
+              Update your administrator name.
             </DialogDescription>
           </DialogHeader>
 
@@ -286,18 +275,6 @@ export default function AdminSettingsPage() {
                 value={profileName}
                 onChange={(e) => setProfileName(e.target.value)}
                 placeholder="Enter full name" 
-                className="h-11 bg-slate-50/50 focus:border-yellow-400 text-xs sm:text-sm font-medium rounded-xl" 
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-extrabold text-[#0f172a] uppercase tracking-wider">Email Address</label>
-              <Input 
-                type="email" 
-                required
-                value={profileEmail}
-                onChange={(e) => setProfileEmail(e.target.value)}
-                placeholder="admin@keysclub.lk" 
                 className="h-11 bg-slate-50/50 focus:border-yellow-400 text-xs sm:text-sm font-medium rounded-xl" 
               />
             </div>

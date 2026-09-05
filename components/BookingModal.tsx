@@ -278,7 +278,7 @@ export default function BookingModal({ isOpen, onClose, selectedSlots }: Booking
                   Close & View My Bookings
                 </Button>
 
-                <p className="text-[11px] text-slate-400 text-center">Confirmation will be sent through SMS and/or email.</p>
+                <p className="text-[11px] text-slate-400 text-center">Confirmation will be sent through SMS.</p>
               </div>
             )}
 

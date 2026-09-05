@@ -27,7 +27,7 @@ export default function AdminManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const [formState, setFormState] = useState<FormState>('list');
-  const [formData, setFormData] = useState({ name: '', mobile: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ name: '', mobile: '', password: '' });
   const [otp, setOtp] = useState<string[]>(Array(4).fill(''));
   const [error, setError] = useState('');
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
@@ -89,7 +89,6 @@ export default function AdminManagementPage() {
     try {
       await api.post('/super-admin/managers/request-otp', {
         name: formData.name,
-        email: formData.email,
         phone: formatPhoneWithCountryCode(formData.mobile),
         password: formData.password
       });
@@ -99,7 +98,6 @@ export default function AdminManagementPage() {
     } catch (err: any) {
       const msg = err.response?.data?.message
         || err.response?.data?.errors?.phone?.[0]
-        || err.response?.data?.errors?.email?.[0]
         || 'Failed to request OTP';
 
       const lower = msg.toLowerCase();
@@ -125,7 +123,7 @@ export default function AdminManagementPage() {
       toast.success('Administrator added successfully');
       setFormState('list');
       setIsOtpModalOpen(false);
-      setFormData({ name: '', mobile: '', email: '', password: '' });
+      setFormData({ name: '', mobile: '', password: '' });
       setOtp(Array(4).fill(''));
       setError('');
       fetchAdmins();
@@ -215,7 +213,7 @@ export default function AdminManagementPage() {
                   </div>
                   <div className="min-w-0">
                     <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm truncate">{admin.name}</h4>
-                    <p className="text-[11px] font-semibold text-slate-500 truncate">{admin.email}</p>
+                    <p className="text-[11px] font-semibold text-slate-500 truncate">{admin.phone || ''}</p>
                     <span className={cn(
                       "inline-block mt-1 px-2 py-0.5 text-[10px] font-extrabold rounded-md uppercase tracking-wider",
                       admin.role === 'Super Admin' ? "bg-purple-100 text-purple-700" : "bg-yellow-100 text-yellow-800"
@@ -262,7 +260,7 @@ export default function AdminManagementPage() {
                           </div>
                           <div>
                             <div className="font-bold text-[#0f172a]">{admin.name}</div>
-                            <div className="text-sm text-slate-500">{admin.email}</div>
+                            <div className="text-sm text-slate-500">{admin.phone || ''}</div>
                           </div>
                         </div>
                       </td>
@@ -337,18 +335,7 @@ export default function AdminManagementPage() {
                   className="h-10 sm:h-11 rounded-xl"
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="block text-[11px] sm:text-xs font-extrabold text-slate-700 uppercase tracking-wider">Email Address</label>
-                <Input
-                  required
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="john@example.com"
-                  className="h-10 sm:h-11 bg-slate-50/50 focus:bg-white text-xs sm:text-sm placeholder:text-[11px] sm:placeholder:text-xs rounded-xl"
-                />
-              </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 md:col-span-2">
                 <label className="block text-[11px] sm:text-xs font-extrabold text-slate-700 uppercase tracking-wider">Temporary Password</label>
                 <Input
                   required

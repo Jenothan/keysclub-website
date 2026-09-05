@@ -25,7 +25,7 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [step, setStep] = useState<'details' | 'otp'>('details');
-  const [formData, setFormData] = useState({ name: '', mobile: '', email: '', password: '', confirmPassword: '' });
+  const [formData, setFormData] = useState({ name: '', mobile: '', password: '', confirmPassword: '' });
   const [otp, setOtp] = useState<string[]>(Array(4).fill(''));
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -65,7 +65,6 @@ export default function SignUpPage() {
     } catch (error: any) {
       const msg = error.response?.data?.message
         || error.response?.data?.errors?.phone?.[0]
-        || error.response?.data?.errors?.email?.[0]
         || 'Failed to request OTP';
 
       const lower = msg.toLowerCase();
@@ -219,19 +218,6 @@ export default function SignUpPage() {
                       placeholder="7xxxxxxxx"
                     />
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">
-                    Email Address
-                  </label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="suresh@gmail.com"
-                    className="h-12 bg-slate-50 focus:bg-white focus:border-yellow-400 focus:ring-yellow-400 text-sm font-medium"
-                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

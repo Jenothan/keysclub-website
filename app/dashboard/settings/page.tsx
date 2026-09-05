@@ -24,10 +24,9 @@ export default function UserSettingsPage() {
   });
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
-  // Edit Name & Email Profile States
+  // Edit Name Profile States
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [editName, setEditName] = useState(user?.name || '');
-  const [editEmail, setEditEmail] = useState(user?.email || '');
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
   // Edit Phone Modal States (with OTP Verification)
@@ -39,21 +38,19 @@ export default function UserSettingsPage() {
 
   const handleOpenProfileEdit = () => {
     setEditName(user?.name || '');
-    setEditEmail(user?.email || '');
     setShowProfileModal(true);
   };
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editName.trim() || !editEmail.trim()) {
-      toast.error('Name and Email are required');
+    if (!editName.trim()) {
+      toast.error('Name is required');
       return;
     }
     setIsUpdatingProfile(true);
     try {
       const res = await api.put('/user', {
         name: editName.trim(),
-        email: editEmail.trim(),
       });
       if (res.data.user && user) {
         setUser(res.data.user);
@@ -164,10 +161,6 @@ export default function UserSettingsPage() {
             <div>
               <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Full Name</p>
               <p className="font-extrabold text-[#0f172a] text-xs sm:text-sm">{user?.name || '-'}</p>
-            </div>
-            <div>
-              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Email Address</p>
-              <p className="font-extrabold text-[#0f172a] text-xs sm:text-sm truncate">{user?.email || '-'}</p>
             </div>
             <div>
               <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">Mobile Number</p>
@@ -333,7 +326,7 @@ export default function UserSettingsPage() {
         </div>
       )}
 
-      {/* Edit Name & Email Modal */}
+      {/* Edit Name Modal */}
       {showProfileModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-5 sm:p-8 max-w-md w-full shadow-2xl relative border border-slate-100">
@@ -350,7 +343,7 @@ export default function UserSettingsPage() {
               </div>
               <div>
                 <h3 className="text-base sm:text-lg font-extrabold text-[#0f172a]">Edit Profile Details</h3>
-                <p className="text-xs text-slate-500">Update your account name and email</p>
+                <p className="text-xs text-slate-500">Update your account name</p>
               </div>
             </div>
 
@@ -365,20 +358,6 @@ export default function UserSettingsPage() {
                   placeholder="Your Full Name"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="h-11 bg-slate-50 font-bold focus:border-yellow-400 focus:ring-yellow-400 rounded-xl text-xs sm:text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-extrabold text-[#0f172a] mb-1.5 uppercase tracking-wider">
-                  Email Address
-                </label>
-                <Input
-                  type="email"
-                  required
-                  placeholder="your.email@example.com"
-                  value={editEmail}
-                  onChange={(e) => setEditEmail(e.target.value)}
                   className="h-11 bg-slate-50 font-bold focus:border-yellow-400 focus:ring-yellow-400 rounded-xl text-xs sm:text-sm"
                 />
               </div>
