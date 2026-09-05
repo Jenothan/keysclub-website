@@ -1,9 +1,12 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import MapPin from '@mui/icons-material/LocationOn';
 import Phone from '@mui/icons-material/Phone';
 import Mail from '@mui/icons-material/Email';
+import api from '@/lib/axios';
 
 const Facebook = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -26,6 +29,22 @@ const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export default function Footer() {
+  const [websiteData, setWebsiteData] = useState<{
+    primary_phone?: string;
+    support_email?: string;
+    club_address?: string;
+    facebook_url?: string;
+    instagram_url?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    api.get('/website-data')
+      .then((res) => {
+        if (res.data) setWebsiteData(res.data);
+      })
+      .catch((err) => console.error("Failed to load website data in footer", err));
+  }, []);
+
   return (
     <footer className="bg-[#0f172a] text-slate-400 py-12 border-t border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -83,23 +102,53 @@ export default function Footer() {
             <ul className="space-y-4 text-body-sm">
               <li className="flex items-start gap-3">
                 <Phone className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
-                <span>+94 77 123 4567</span>
+                {websiteData?.primary_phone ? (
+                  <a href={`tel:${websiteData.primary_phone}`} className="hover:text-yellow-400 transition">
+                    {websiteData.primary_phone}
+                  </a>
+                ) : (
+                  <span>+94 77 123 4567</span>
+                )}
               </li>
               <li className="flex items-start gap-3">
                 <Mail className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
-                <span>info@keysclub.lk</span>
+                {websiteData?.support_email ? (
+                  <a href={`mailto:${websiteData.support_email}`} className="hover:text-yellow-400 transition">
+                    {websiteData.support_email}
+                  </a>
+                ) : (
+                  <span>info@keysclub.lk</span>
+                )}
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
-                <span>Karanavai East, Karaveddy, Sri Lanka</span>
+                <span>
+                  {websiteData?.club_address || (
+                    <>
+                      Karanavai East, Karaveddy, <br /> Jaffna, Sri Lanka.
+                    </>
+                  )}
+                </span>
               </li>
             </ul>
 
             <div className="flex gap-4 mt-6">
-              <a href="#" className="text-slate-400 hover:text-white transition">
+              <a
+                href={websiteData?.facebook_url || "#"}
+                target={websiteData?.facebook_url ? "_blank" : undefined}
+                rel={websiteData?.facebook_url ? "noopener noreferrer" : undefined}
+                className="text-slate-400 hover:text-white transition"
+                aria-label="Facebook"
+              >
                 <Facebook className="w-5 h-5" />
               </a>
-              <a href="#" className="text-slate-400 hover:text-white transition">
+              <a
+                href={websiteData?.instagram_url || "#"}
+                target={websiteData?.instagram_url ? "_blank" : undefined}
+                rel={websiteData?.instagram_url ? "noopener noreferrer" : undefined}
+                className="text-slate-400 hover:text-white transition"
+                aria-label="Instagram"
+              >
                 <Instagram className="w-5 h-5" />
               </a>
             </div>

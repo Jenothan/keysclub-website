@@ -38,7 +38,7 @@ export default function PhoneInput({
         placeholder={placeholder}
         required={required}
         disabled={disabled}
-        className="w-full h-full flex items-center text-sm font-medium text-slate-900 custom-phone-input"
+        className="w-full h-full flex items-center text-xs sm:text-sm font-medium text-slate-900 custom-phone-input"
       />
     </div>
   );

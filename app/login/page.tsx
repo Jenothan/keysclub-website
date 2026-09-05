@@ -21,11 +21,12 @@ import { toast } from 'sonner';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  const { user, token, setAuth } = useAuthStore();
   const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { setAuth } = useAuthStore();
 
   // Forgot Password State
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
@@ -35,6 +36,24 @@ export default function LoginPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isForgotLoading, setIsForgotLoading] = useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  React.useEffect(() => {
+    if (mounted && token) {
+      router.replace('/');
+    }
+  }, [mounted, token, router]);
+
+  if (!mounted || token) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,7 +160,7 @@ export default function LoginPage() {
                 required
                 value={mobile}
                 onChange={(val) => setMobile(val)}
-                placeholder="712345678"
+                placeholder="7xxxxxxxx"
               />
             </div>
 
@@ -224,17 +243,17 @@ export default function LoginPage() {
                 <p className="text-slate-500 text-sm text-center mb-4">
                   Enter your registered mobile number to receive a verification OTP.
                 </p>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">
-                      Mobile Number
-                    </label>
-                    <PhoneInput
-                      required
-                      value={forgotPhone}
-                      onChange={(val) => setForgotPhone(val)}
-                      placeholder="712345678"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">
+                    Mobile Number
+                  </label>
+                  <PhoneInput
+                    required
+                    value={forgotPhone}
+                    onChange={(val) => setForgotPhone(val)}
+                    placeholder="712345678"
+                  />
+                </div>
                 <div className="flex gap-3 pt-2">
                   <button
                     type="button"

@@ -169,7 +169,7 @@ export default function AdminUsersPage() {
         <div className="relative flex-[2] w-full min-w-0">
           <LayoutGrid className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-yellow-500 font-bold" />
           <Input 
-            placeholder="Search by Name, Mobile Number, or Email..." 
+            placeholder="Search by Name or Mobile Number..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-12 h-12 bg-white border-slate-200 focus:border-yellow-600 w-full font-medium"

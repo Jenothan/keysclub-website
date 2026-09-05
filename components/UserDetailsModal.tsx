@@ -77,12 +77,6 @@ export default function UserDetailsModal({
                 </span>
               </div>
               <div>
-                <span className="text-[11px] font-bold text-slate-400 block">Email Address</span>
-                <span className="font-bold text-slate-700 text-body-sm flex items-center gap-1.5 mt-0.5">
-                  <MailIcon className="w-4 h-4 text-slate-400" /> {user.email || '-'}
-                </span>
-              </div>
-              <div>
                 <span className="text-[11px] font-bold text-slate-400 block">Member Since</span>
                 <span className="font-bold text-slate-700 text-body-sm flex items-center gap-1.5 mt-0.5">
                   <Calendar className="w-4 h-4 text-slate-400" /> {joinDate}

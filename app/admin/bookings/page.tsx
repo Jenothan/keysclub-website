@@ -389,8 +389,8 @@ export default function AdminBookingsPage() {
           ) : filteredBookings.length > 0 ? (
             filteredBookings.map((req) => {
               const statusInfo = computeBookingStatus(req);
-              const displayName = req.customer_name || (req.user ? req.user.name : 'Walk-in Customer');
-              const displayPhone = req.customer_phone || req.user?.phone || '';
+              const displayName = req.customer_name || req.user?.name || req.booked_by?.name || 'Walk-in Customer';
+              const displayPhone = req.customer_phone || req.user?.phone || req.booked_by?.phone || '';
               const userInitial = displayName.charAt(0).toUpperCase();
 
               return (
@@ -459,8 +459,8 @@ export default function AdminBookingsPage() {
                 ) : filteredBookings.length > 0 ? (
                   filteredBookings.map((req) => {
                     const statusInfo = computeBookingStatus(req);
-                    const displayName = req.customer_name || (req.user ? req.user.name : 'Walk-in Customer');
-                    const displayPhone = req.customer_phone || req.user?.phone || '';
+                    const displayName = req.customer_name || req.user?.name || req.booked_by?.name || 'Walk-in Customer';
+                    const displayPhone = req.customer_phone || req.user?.phone || req.booked_by?.phone || '';
 
                     return (
                       <tr 

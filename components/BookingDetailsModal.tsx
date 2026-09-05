@@ -43,9 +43,8 @@ export default function BookingDetailsModal({
   const formattedDate = bookingDate ? format(bookingDate, 'EEEE, dd MMMM yyyy') : '-';
   const requestDate = booking.created_at ? format(new Date(booking.created_at), 'dd MMM yyyy, hh:mm a') : '-';
 
-  const customerName = booking.user?.name || booking.customer_name || 'Walk-in Customer';
-  const customerPhone = booking.user?.phone || booking.customer_phone || '-';
-  const customerEmail = booking.user?.email || '-';
+  const customerName = booking.customer_name || booking.user?.name || (booking.booked_by?.name ? booking.booked_by.name : 'Walk-in Customer');
+  const customerPhone = booking.customer_phone || booking.user?.phone || (booking.booked_by?.phone ? booking.booked_by.phone : '-');
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -87,14 +86,6 @@ export default function BookingDetailsModal({
                   <PhoneIcon className="w-3.5 h-3.5 text-slate-400" /> {customerPhone}
                 </span>
               </div>
-              {customerEmail !== '-' && (
-                <div className="sm:col-span-2">
-                  <span className="text-[11px] font-bold text-slate-400 block">Email Address</span>
-                  <span className="font-medium text-slate-600 text-body-sm flex items-center gap-1">
-                    <MailIcon className="w-3.5 h-3.5 text-slate-400" /> {customerEmail}
-                  </span>
-                </div>
-              )}
               {booking.booked_by && (
                 <div className="sm:col-span-2 pt-2 border-t border-slate-200/60">
                   <span className="text-[11px] font-bold text-slate-400 block">Created By</span>

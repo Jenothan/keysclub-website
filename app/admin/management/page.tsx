@@ -27,7 +27,7 @@ export default function AdminManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const [formState, setFormState] = useState<FormState>('list');
-  const [formData, setFormData] = useState({ name: '', mobile: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ name: '', mobile: '', password: '' });
   const [otp, setOtp] = useState<string[]>(Array(4).fill(''));
   const [error, setError] = useState('');
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
@@ -65,15 +65,21 @@ export default function AdminManagementPage() {
 
   const isLimitReached = admins.length >= 5;
 
-  const handleRemoveAdmin = async (id: number) => {
-    if (admins.length <= 1) return;
-    if (!confirm('Are you sure you want to remove this administrator?')) return;
+  const [deleteAdminTarget, setDeleteAdminTarget] = useState<any | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const confirmDeleteAdmin = async () => {
+    if (!deleteAdminTarget) return;
+    setIsDeleting(true);
     try {
-      await api.delete(`/super-admin/managers/${id}`);
-      setAdmins(admins.filter(a => a.id !== id));
+      await api.delete(`/super-admin/managers/${deleteAdminTarget.id}`);
+      setAdmins(prev => prev.filter(a => a.id !== deleteAdminTarget.id));
       toast.success('Administrator removed successfully');
-    } catch (err) {
-      toast.error('Failed to remove administrator');
+      setDeleteAdminTarget(null);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to remove administrator');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -83,7 +89,6 @@ export default function AdminManagementPage() {
     try {
       await api.post('/super-admin/managers/request-otp', {
         name: formData.name,
-        email: formData.email,
         phone: formatPhoneWithCountryCode(formData.mobile),
         password: formData.password
       });
@@ -91,10 +96,15 @@ export default function AdminManagementPage() {
       setError('');
       toast.success('OTP sent to mobile number');
     } catch (err: any) {
-      if (err.response?.status === 422) {
-        toast.error(err.response.data.message || 'Maximum limit of 5 administrators reached.');
+      const msg = err.response?.data?.message
+        || err.response?.data?.errors?.phone?.[0]
+        || 'Failed to request OTP';
+
+      const lower = msg.toLowerCase();
+      if (lower.includes('already taken') || lower.includes('already registered') || lower.includes('already exists') || lower.includes('in use')) {
+        toast.warning(msg);
       } else {
-        toast.error('Failed to request OTP');
+        toast.error(msg);
       }
     } finally {
       setIsSubmitting(false);
@@ -113,12 +123,14 @@ export default function AdminManagementPage() {
       toast.success('Administrator added successfully');
       setFormState('list');
       setIsOtpModalOpen(false);
-      setFormData({ name: '', mobile: '', email: '', password: '' });
+      setFormData({ name: '', mobile: '', password: '' });
       setOtp(Array(4).fill(''));
       setError('');
       fetchAdmins();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid OTP code.');
+      const msg = err.response?.data?.message || 'Invalid OTP code.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -201,7 +213,7 @@ export default function AdminManagementPage() {
                   </div>
                   <div className="min-w-0">
                     <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm truncate">{admin.name}</h4>
-                    <p className="text-[11px] font-semibold text-slate-500 truncate">{admin.email}</p>
+                    <p className="text-[11px] font-semibold text-slate-500 truncate">{admin.phone || ''}</p>
                     <span className={cn(
                       "inline-block mt-1 px-2 py-0.5 text-[10px] font-extrabold rounded-md uppercase tracking-wider",
                       admin.role === 'Super Admin' ? "bg-purple-100 text-purple-700" : "bg-yellow-100 text-yellow-800"
@@ -214,8 +226,8 @@ export default function AdminManagementPage() {
                 <div className="flex items-center gap-2 shrink-0">
                   {admin.role !== 'Super Admin' && (
                     <button
-                      onClick={() => handleRemoveAdmin(admin.id)}
-                      className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
+                      onClick={() => setDeleteAdminTarget(admin)}
+                      className="p-2 text-red-500 hover:text-red-400 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
                       title="Remove Admin"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -248,7 +260,7 @@ export default function AdminManagementPage() {
                           </div>
                           <div>
                             <div className="font-bold text-[#0f172a]">{admin.name}</div>
-                            <div className="text-sm text-slate-500">{admin.email}</div>
+                            <div className="text-sm text-slate-500">{admin.phone || ''}</div>
                           </div>
                         </div>
                       </td>
@@ -269,8 +281,8 @@ export default function AdminManagementPage() {
                       <td className="p-4 text-right pr-6">
                         {admin.role !== 'Super Admin' && (
                           <button
-                            onClick={() => handleRemoveAdmin(admin.id)}
-                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                            onClick={() => setDeleteAdminTarget(admin)}
+                            className="p-2 text-red-400 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                             title="Remove Admin"
                           >
                             <Trash2 className="w-5 h-5" />
@@ -301,47 +313,37 @@ export default function AdminManagementPage() {
             <p className="text-slate-500 text-xs sm:text-sm mt-1">Provide the necessary information to create a new administrator account.</p>
           </div>
 
-          <form onSubmit={handleDetailsSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">Full Name</label>
+          <form onSubmit={handleDetailsSubmit} className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <div className="space-y-1.5">
+                <label className="block text-[11px] sm:text-xs font-extrabold text-slate-700 uppercase tracking-wider">Full Name</label>
                 <Input
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g. John Doe"
-                  className="h-11 bg-white border-slate-200"
+                  className="h-10 sm:h-11 bg-slate-50/50 focus:bg-white text-xs sm:text-sm placeholder:text-[11px] sm:placeholder:text-xs rounded-xl"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">Mobile Number</label>
-                <PhoneInput 
+              <div className="space-y-1.5">
+                <label className="block text-[11px] sm:text-xs font-extrabold text-slate-700 uppercase tracking-wider">Mobile Number</label>
+                <PhoneInput
                   required
                   value={formData.mobile}
-                  onChange={(val) => setFormData({...formData, mobile: val})}
+                  onChange={(val) => setFormData({ ...formData, mobile: val })}
                   placeholder="712345678"
+                  className="h-10 sm:h-11 rounded-xl"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">Email Address</label>
-                <Input
-                  required
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="john@example.com"
-                  className="h-11 bg-white border-slate-200"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">Temporary Password</label>
+              <div className="space-y-1.5 md:col-span-2">
+                <label className="block text-[11px] sm:text-xs font-extrabold text-slate-700 uppercase tracking-wider">Temporary Password</label>
                 <Input
                   required
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="••••••••"
-                  className="h-11 bg-white border-slate-200"
+                  className="h-10 sm:h-11 bg-slate-50/50 focus:bg-white text-xs sm:text-sm placeholder:text-[11px] sm:placeholder:text-xs rounded-xl"
                 />
               </div>
             </div>
@@ -349,9 +351,17 @@ export default function AdminManagementPage() {
             <div className="pt-4 flex justify-end border-t border-slate-100 mt-6">
               <button
                 type="submit"
-                className="px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl transition-all shadow-sm cursor-pointer"
+                disabled={isSubmitting}
+                className="px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl transition-all shadow-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 min-w-[200px]"
               >
-                Continue to Verification
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
+                    <span>Sending OTP...</span>
+                  </>
+                ) : (
+                  <span>Continue to Verification</span>
+                )}
               </button>
             </div>
           </form>
@@ -381,18 +391,69 @@ export default function AdminManagementPage() {
                 <button
                   type="button"
                   onClick={() => setIsOtpModalOpen(false)}
-                  className="flex-1 py-3 bg-slate-100 text-slate-700 font-extrabold text-xs sm:text-sm rounded-xl hover:bg-slate-200 transition-all cursor-pointer"
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 bg-slate-100 text-slate-700 font-extrabold text-xs sm:text-sm rounded-xl hover:bg-slate-200 transition-all cursor-pointer disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl transition-all shadow-sm cursor-pointer"
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl transition-all shadow-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  Verify & Add
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
+                      <span>Verifying...</span>
+                    </>
+                  ) : (
+                    <span>Verify & Add</span>
+                  )}
                 </button>
               </div>
             </form>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* --- Delete Admin Confirmation Modal --- */}
+      <Dialog open={!!deleteAdminTarget} onOpenChange={(open) => !open && setDeleteAdminTarget(null)}>
+        <DialogContent className="sm:max-w-md p-0 border-0 bg-transparent shadow-none [&>button]:hidden">
+          <DialogTitle className="sr-only">Confirm Delete Administrator</DialogTitle>
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-xl p-6 md:p-8 text-center relative w-full overflow-hidden">
+            <div className="w-14 h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-xs">
+              <Trash2 className="w-7 h-7" />
+            </div>
+            <h2 className="text-lg sm:text-xl font-extrabold text-[#0f172a] mb-2">Remove Administrator?</h2>
+            <p className="text-slate-500 text-xs sm:text-sm mb-6 leading-relaxed">
+              Are you sure you want to remove <span className="font-bold text-slate-800">{deleteAdminTarget?.name}</span>? This action cannot be undone.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setDeleteAdminTarget(null)}
+                disabled={isDeleting}
+                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs sm:text-sm rounded-xl transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteAdmin}
+                disabled={isDeleting}
+                className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs sm:text-sm rounded-xl transition-all shadow-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Removing...</span>
+                  </>
+                ) : (
+                  <span>Delete Admin</span>
+                )}
+              </button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

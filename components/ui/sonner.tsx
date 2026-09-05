@@ -14,35 +14,38 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
+      richColors
+      closeButton
+      position="top-right"
       className="toaster group"
       icons={{
         success: (
-          <CircleCheckIcon className="size-4" />
+          <CircleCheckIcon className="w-5 h-5 text-emerald-600 shrink-0" />
         ),
         info: (
-          <InfoIcon className="size-4" />
+          <InfoIcon className="w-5 h-5 text-blue-600 shrink-0" />
         ),
         warning: (
-          <TriangleAlertIcon className="size-4" />
+          <TriangleAlertIcon className="w-5 h-5 text-amber-600 shrink-0" />
         ),
         error: (
-          <OctagonXIcon className="size-4" />
+          <OctagonXIcon className="w-5 h-5 text-red-600 shrink-0" />
         ),
         loading: (
-          <Loader2Icon className="size-4 animate-spin" />
+          <Loader2Icon className="w-5 h-5 text-yellow-600 animate-spin shrink-0" />
         ),
       }}
-      style={
-        {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
-          "--border-radius": "var(--radius)",
-        } as React.CSSProperties
-      }
       toastOptions={{
         classNames: {
-          toast: "cn-toast",
+          toast: "group toast font-sans text-xs sm:text-sm font-extrabold rounded-2xl p-4 flex items-center gap-3 border shadow-lg transition-all",
+          success: "!bg-emerald-50 !text-emerald-950 !border-emerald-300 [&_svg]:!text-emerald-600",
+          error: "!bg-red-50 !text-red-950 !border-red-300 [&_svg]:!text-red-600",
+          warning: "!bg-amber-50 !text-amber-950 !border-amber-300 [&_svg]:!text-amber-600",
+          info: "!bg-blue-50 !text-blue-950 !border-blue-300 [&_svg]:!text-blue-600",
+          description: "text-slate-500 font-medium text-xs",
+          actionButton: "!bg-slate-900 !text-white font-bold rounded-xl",
+          cancelButton: "!bg-slate-100 !text-slate-700 font-bold rounded-xl",
+          closeButton: "!bg-slate-200/60 hover:!bg-slate-300/80 !text-slate-700 !border-0",
         },
       }}
       {...props}
