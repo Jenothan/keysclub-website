@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-16 sm:py-24 lg:py-36 overflow-hidden">
+      <section className="relative min-h-[calc(100vh-80px)] flex flex-col justify-center items-center py-16 sm:py-24 lg:py-36 overflow-hidden w-full">
         {/* Background Image */}
         <div
           className="absolute inset-0 z-0"

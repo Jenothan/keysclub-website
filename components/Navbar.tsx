@@ -14,7 +14,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuthStore();
-  const isLoggedIn = !!user;
+  const isRegisteredUser = !!user && !user.is_guest;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -38,7 +38,7 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Home", href: "/" },
-    ...(isLoggedIn ? [{ name: "Dashboard", href: (user?.role === 'Admin' || user?.role === 'Super Admin') ? "/admin" : "/dashboard" }] : []),
+    ...(isRegisteredUser ? [{ name: "Dashboard", href: (user?.role === 'Admin' || user?.role === 'Super Admin') ? "/admin" : "/dashboard" }] : []),
     { name: "Availability", href: "/availability" },
     { name: "Pricing", href: "/pricing" },
     { name: "About Us", href: "/about" },
@@ -92,7 +92,7 @@ export default function Navbar() {
 
             {/* Desktop Auth / Profile Area */}
             <div className="hidden md:flex items-center space-x-4">
-              {isLoggedIn ? (
+              {isRegisteredUser ? (
                 <div className="flex items-center gap-4">
                   <Link href={(user?.role === 'Admin' || user?.role === 'Super Admin') ? '/admin' : '/dashboard/profile'} className="flex items-center gap-3 cursor-pointer p-1.5 rounded-xl hover:bg-slate-100/70 transition-all group">
                     <div className="text-right flex flex-col justify-center">
@@ -172,7 +172,7 @@ export default function Navbar() {
             </div>
 
             <div className="flex flex-col space-y-4 pt-2">
-              {isLoggedIn ? (
+              {isRegisteredUser ? (
                 <>
                   <div className="flex items-center gap-4 px-2">
                     <Image

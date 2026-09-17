@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Phone from '@mui/icons-material/Phone';
 import Mail from '@mui/icons-material/Email';
 import MapPin from '@mui/icons-material/LocationOn';
-import MessageCircle from '@mui/icons-material/Chat';
+import WhatsApp from '@mui/icons-material/WhatsApp';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -27,11 +28,19 @@ const Instagram = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export default function ContactPage() {
+function ContactFormContent() {
+  const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [websiteData, setWebsiteData] = useState<any>(null);
   const [subject, setSubject] = useState("Tournament");
   const [mobile, setMobile] = useState("");
+
+  React.useEffect(() => {
+    const paramSubject = searchParams.get('subject');
+    if (paramSubject) {
+      setSubject(paramSubject);
+    }
+  }, [searchParams]);
 
   React.useEffect(() => {
     api.get('/website-data').then(res => {
@@ -155,7 +164,7 @@ export default function ContactPage() {
                   className="w-9.5 h-9.5 sm:w-10.5 sm:h-10.5 rounded-full flex items-center justify-center text-yellow-500 hover:text-emerald-600 bg-yellow-400/10 border border-yellow-400/20 hover:border-emerald-300 hover:bg-emerald-50 transition-all cursor-pointer hover:scale-105"
                   aria-label="WhatsApp"
                 >
-                  <MessageCircle className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+                  <WhatsApp className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
                 </a>
               </div>
             </div>
@@ -226,5 +235,17 @@ export default function ContactPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ContactPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
+      <ContactFormContent />
+    </Suspense>
   );
 }

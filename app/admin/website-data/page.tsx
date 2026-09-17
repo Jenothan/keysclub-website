@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import api from '@/lib/axios';
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function WebsiteDataPage() {
   const { user } = useAuthStore();
@@ -31,6 +32,9 @@ export default function WebsiteDataPage() {
     full_day_pricing: '',
     membership_pricing: '',
     registration_fee: '',
+    peak_start_time: '15:00:00',
+    peak_end_time: '20:00:00',
+    peak_off_days: ['Saturday', 'Sunday'],
   });
 
   useEffect(() => {
@@ -48,6 +52,9 @@ export default function WebsiteDataPage() {
             full_day_pricing: res.data.full_day_pricing || 'LKR 3,000',
             membership_pricing: res.data.membership_pricing || 'LKR 1,000',
             registration_fee: res.data.registration_fee || 'LKR 2,000',
+            peak_start_time: res.data.peak_start_time || '15:00:00',
+            peak_end_time: res.data.peak_end_time || '20:00:00',
+            peak_off_days: Array.isArray(res.data.peak_off_days) ? res.data.peak_off_days : ['Saturday', 'Sunday'],
           });
         }
       }).catch(err => console.error("Failed to load website data", err))
@@ -61,7 +68,7 @@ export default function WebsiteDataPage() {
     setIsSaving(true);
     try {
       await api.post('/super-admin/website-data', formData);
-      toast.success('Website data updated successfully');
+      toast.success('Website data and peak settings updated successfully');
     } catch (error) {
       toast.error('Failed to update website data');
     } finally {
@@ -71,6 +78,19 @@ export default function WebsiteDataPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const togglePeakOffDay = (day: string) => {
+    const current = formData.peak_off_days || [];
+    if (current.includes(day)) {
+      setFormData({ ...formData, peak_off_days: current.filter(d => d !== day) });
+    } else {
+      if (current.length >= 2) {
+        toast.error('Peak Hours do not apply on 2 days. Please unselect one before selecting another.');
+        return;
+      }
+      setFormData({ ...formData, peak_off_days: [...current, day] });
+    }
   };
 
   if (role !== 'Super Admin') {
@@ -89,11 +109,29 @@ export default function WebsiteDataPage() {
 
   if (isLoading) {
     return (
-      <div className="p-4 sm:p-6 md:p-10 w-full min-h-[60vh] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+      <div className="p-4 sm:p-6 md:p-10 w-full pb-20 min-h-screen space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-7 w-64" />
+          <Skeleton className="h-4 w-80" />
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 sm:p-8 space-y-6 shadow-sm">
+          <Skeleton className="h-6 w-72" />
+          <Skeleton className="h-4 w-96" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-11 w-full rounded-xl" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
+
+  const allDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
   return (
     <div className="p-4 sm:p-6 md:p-10 w-full pb-20 min-h-screen">
@@ -103,10 +141,10 @@ export default function WebsiteDataPage() {
         {/* Header */}
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-[#0f172a] tracking-tight mb-1">
-            Website Data & Pricing Configuration
+            Website Data & Peak Hours Configuration
           </h1>
           <p className="text-slate-500 text-xs sm:text-sm">
-            Update public contact info, court hourly rates, and membership fees.
+            Update public contact info, pricing, and configure Member-only Peak Hours & off-days.
           </p>
         </div>
 
@@ -155,6 +193,105 @@ export default function WebsiteDataPage() {
           </div>
         </div>
 
+        {/* ⚡ PEAK HOURS CONFIGURATION SECTION FOR SUPER ADMIN */}
+        <div className="bg-yellow-50/60 rounded-2xl border border-yellow-200 shadow-sm p-5 sm:p-8">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-base sm:text-lg font-black text-[#0f172a] flex items-center gap-2">
+              ⚡ Member-Only Peak Hours Configuration
+            </h2>
+            <span className="text-[10px] font-black text-slate-900 bg-yellow-400 border border-yellow-500 px-3 py-1 rounded-full uppercase tracking-wider shadow-2xs">
+              Super Admin Exclusive
+            </span>
+          </div>
+          <p className="text-xs text-slate-600 mb-6 leading-relaxed">
+            During Peak Hours, court slots are restricted exclusively to registered <strong>Members</strong> (guest bookings not allowed).
+            Peak slots display glowing borders on peak days. Set daily time range and select 2 Off-Days per week when Peak Hours are inactive.
+          </p>
+
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
+                  <Clock className="w-3.5 h-3.5 text-yellow-600" /> Peak Hours Start Time
+                </label>
+                <Select
+                  value={formData.peak_start_time}
+                  onValueChange={(val) => setFormData({ ...formData, peak_start_time: val })}
+                >
+                  <SelectTrigger className="h-11 bg-white border-yellow-300 text-xs sm:text-sm font-bold rounded-xl focus:border-yellow-500">
+                    <SelectValue placeholder="Select Start Time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="15:00:00">03:00 PM</SelectItem>
+                    <SelectItem value="16:00:00">04:00 PM</SelectItem>
+                    <SelectItem value="17:00:00">05:00 PM</SelectItem>
+                    <SelectItem value="18:00:00">06:00 PM</SelectItem>
+                    <SelectItem value="19:00:00">07:00 PM</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
+                  <Clock className="w-3.5 h-3.5 text-yellow-600" /> Peak Hours End Time
+                </label>
+                <Select
+                  value={formData.peak_end_time}
+                  onValueChange={(val) => setFormData({ ...formData, peak_end_time: val })}
+                >
+                  <SelectTrigger className="h-11 bg-white border-yellow-300 text-xs sm:text-sm font-bold rounded-xl focus:border-yellow-500">
+                    <SelectValue placeholder="Select End Time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="18:00:00">06:00 PM</SelectItem>
+                    <SelectItem value="19:00:00">07:00 PM</SelectItem>
+                    <SelectItem value="20:00:00">08:00 PM</SelectItem>
+                    <SelectItem value="21:00:00">09:00 PM</SelectItem>
+                    <SelectItem value="22:00:00">10:00 PM</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Peak Off Days Selection */}
+            <div className="space-y-2 pt-2 border-t border-yellow-200">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-extrabold text-[#0f172a] uppercase tracking-wider">
+                  Peak Off-Days (Select 2 Days where Peak Hours do NOT apply)
+                </label>
+                <span className="text-[11px] font-black text-slate-800">
+                  {formData.peak_off_days.length}/2 Off-Days Selected
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2 pt-1">
+                {allDays.map((day) => {
+                  const isSelected = formData.peak_off_days.includes(day);
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => togglePeakOffDay(day)}
+                      className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer border ${isSelected
+                          ? "bg-yellow-400 text-slate-900 border-yellow-500 shadow-sm"
+                          : "bg-white text-slate-700 border-slate-200 hover:border-yellow-400"
+                        }`}
+                    >
+                      {day} {isSelected ? "✓ (Off-Day)" : ""}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 flex justify-end">
+            <button onClick={handleSave} disabled={isSaving} className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold text-xs sm:text-sm h-11 px-8 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer">
+              <Save className="w-4 h-4" />
+              {isSaving ? 'Saving...' : 'Save Peak Settings'}
+            </button>
+          </div>
+        </div>
+
         {/* Court Configuration */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-8">
           <h2 className="text-base sm:text-lg font-extrabold text-[#0f172a] mb-2">Court & Booking Configuration</h2>
@@ -184,38 +321,6 @@ export default function WebsiteDataPage() {
                 Full Day Rate
               </label>
               <Input name="full_day_pricing" value={formData.full_day_pricing} onChange={handleChange} placeholder="LKR 3,000" className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
-                <Clock className="w-3.5 h-3.5 text-yellow-500" /> Opening Time
-              </label>
-              <Select defaultValue="06:00 AM">
-                <SelectTrigger className="h-11 bg-slate-50/50 text-xs sm:text-sm font-medium rounded-xl">
-                  <SelectValue placeholder="06:00 AM" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="05:00 AM">05:00 AM</SelectItem>
-                  <SelectItem value="06:00 AM">06:00 AM</SelectItem>
-                  <SelectItem value="07:00 AM">07:00 AM</SelectItem>
-                  <SelectItem value="08:00 AM">08:00 AM</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
-                <Clock className="w-3.5 h-3.5 text-yellow-500" /> Closing Time
-              </label>
-              <Select defaultValue="10:00 PM">
-                <SelectTrigger className="h-11 bg-slate-50/50 text-xs sm:text-sm font-medium rounded-xl">
-                  <SelectValue placeholder="10:00 PM" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="08:00 PM">08:00 PM</SelectItem>
-                  <SelectItem value="09:00 PM">09:00 PM</SelectItem>
-                  <SelectItem value="10:00 PM">10:00 PM</SelectItem>
-                  <SelectItem value="11:00 PM">11:00 PM</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
           <div className="mt-6 flex justify-end">

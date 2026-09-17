@@ -21,21 +21,35 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import RescheduleModal from '@/components/RescheduleModal';
 import BookingDetailsModal from '@/components/BookingDetailsModal';
-import { computeBookingStatus } from '@/lib/bookingUtils';
+import ConfirmActionModal from '@/components/ConfirmActionModal';
+import { computeBookingStatus, groupBookings, GroupedBooking } from '@/lib/bookingUtils';
 import { useAuthStore } from '@/store/authStore';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminBookingsPage() {
   const { user } = useAuthStore();
-  const [allBookings, setAllBookings] = useState<any[]>([]);
+  const [allBookings, setAllBookings] = useState<GroupedBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
   const [rescheduleBooking, setRescheduleBooking] = useState<any | null>(null);
-  const [selectedDetailBooking, setSelectedDetailBooking] = useState<any | null>(null);
+  const [selectedDetailBooking, setSelectedDetailBooking] = useState<GroupedBooking | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Statuses');
   const [creatorFilter, setCreatorFilter] = useState('All Creators');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    action: 'confirm' | 'reject' | 'cancel' | null;
+    booking: GroupedBooking | null;
+    isLoading: boolean;
+  }>({
+    isOpen: false,
+    action: null,
+    booking: null,
+    isLoading: false,
+  });
 
   const [adminStaffList, setAdminStaffList] = useState<any[]>([]);
 
@@ -43,7 +57,8 @@ export default function AdminBookingsPage() {
     setLoading(true);
     try {
       const response = await api.get('/admin/bookings');
-      setAllBookings(response.data);
+      const grouped = groupBookings(response.data);
+      setAllBookings(grouped);
     } catch (error) {
       console.error('Failed to fetch bookings', error);
       toast.error('Failed to load bookings');
@@ -66,13 +81,30 @@ export default function AdminBookingsPage() {
     }
   }, [user]);
 
-  const handleAction = async (id: number, action: 'confirm' | 'reject' | 'cancel') => {
+  const requestConfirmAction = (booking: GroupedBooking, action: 'confirm' | 'reject' | 'cancel') => {
+    setConfirmModal({
+      isOpen: true,
+      action,
+      booking,
+      isLoading: false,
+    });
+  };
+
+  const executeConfirmedAction = async () => {
+    if (!confirmModal.booking || !confirmModal.action) return;
+    setConfirmModal((prev) => ({ ...prev, isLoading: true }));
     try {
-      await api.post(`/admin/bookings/${id}/${action}`);
-      toast.success(`Booking ${action}ed successfully`);
+      await api.post(`/admin/bookings/${confirmModal.booking.id}/${confirmModal.action}`);
+      const actionPast = confirmModal.action === 'confirm' ? 'confirmed' : confirmModal.action === 'reject' ? 'rejected' : 'cancelled';
+      toast.success(`Booking ${actionPast} successfully`);
+      setConfirmModal({ isOpen: false, action: null, booking: null, isLoading: false });
+      if (selectedDetailBooking?.id === confirmModal.booking.id) {
+        setSelectedDetailBooking(null);
+      }
       fetchBookings();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || `Failed to ${action} booking`);
+      toast.error(error.response?.data?.message || `Failed to ${confirmModal.action} booking`);
+      setConfirmModal((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -295,7 +327,7 @@ export default function AdminBookingsPage() {
         <div className="relative flex-[2] w-full min-w-0">
           <LayoutGrid className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-yellow-500 font-bold" />
           <Input 
-            placeholder="Search Name, Phone, or Booking ID..." 
+            placeholder="Search Name, Phone, or Booking Reference..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-12 h-12 bg-white border-slate-200 focus:border-yellow-600 w-full font-medium"
@@ -383,8 +415,19 @@ export default function AdminBookingsPage() {
       <div className="block md:hidden">
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-100 overflow-hidden">
           {loading ? (
-            <div className="p-8 text-center">
-              <div className="w-6 h-6 border-3 border-yellow-400 border-t-transparent rounded-full animate-spin mx-auto" />
+            <div className="p-4 space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <Skeleton className="w-10 h-10 rounded-xl shrink-0" />
+                    <div className="space-y-1.5 flex-1 min-w-0">
+                      <Skeleton className="h-4 w-28 sm:w-36 rounded-md" />
+                      <Skeleton className="h-3 w-40 sm:w-48 rounded-md" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-6 w-20 rounded-full shrink-0" />
+                </div>
+              ))}
             </div>
           ) : filteredBookings.length > 0 ? (
             filteredBookings.map((req) => {
@@ -395,7 +438,7 @@ export default function AdminBookingsPage() {
 
               return (
                 <div
-                  key={req.id}
+                  key={req.booking_reference || req.id}
                   onClick={() => setSelectedDetailBooking(req)}
                   className="p-4 flex items-center justify-between gap-3 hover:bg-slate-50 transition-colors cursor-pointer active:bg-slate-100"
                 >
@@ -403,13 +446,20 @@ export default function AdminBookingsPage() {
                     <div className="w-10 h-10 rounded-xl bg-yellow-400/20 border border-yellow-400/30 text-slate-900 font-black flex items-center justify-center shrink-0 text-xs shadow-xs">
                       {userInitial}
                     </div>
-                    <div className="min-w-0">
-                      <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm truncate">{displayName}</h4>
-                      <p className="text-[11px] font-semibold text-slate-500 truncate">
-                        #KC-{req.id} {displayPhone ? `• ${displayPhone}` : ''} • {req.booking_date}
+                    <div className="min-w-0 space-y-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="font-extrabold text-slate-900 text-xs truncate">{displayName}</h4>
+                        {(req.total_slots_count || (req.slots && req.slots.length)) > 1 && (
+                          <span className="text-[9px] font-black text-slate-700 bg-yellow-100 border border-yellow-300 px-1.5 py-0.5 rounded-md">
+                            {req.total_slots_count || req.slots.length} Slots
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] font-bold text-slate-500 truncate">
+                        {req.booking_reference} {displayPhone ? `• ${displayPhone}` : ''} • {req.booking_date}
                       </p>
-                      <p className="text-[10px] font-bold text-slate-700 truncate">
-                        {req.start_time} - {req.end_time}
+                      <p className="text-[10px] font-extrabold text-amber-700 truncate">
+                        {req.time_display || `${req.start_time} - ${req.end_time}`}
                       </p>
                     </div>
                   </div>
@@ -441,21 +491,23 @@ export default function AdminBookingsPage() {
               <thead className="text-xs font-extrabold text-slate-600 bg-slate-50/80">
                 <tr>
                   <th className="px-6 py-4 rounded-l-lg">Customer / User</th>
-                  <th className="px-6 py-4">Booking ID</th>
-                  <th className="px-6 py-4">Booking Date & Slot</th>
+                  <th className="px-6 py-4">Booking Ref</th>
+                  <th className="px-6 py-4">Booking Date & Slots</th>
                   <th className="px-6 py-4 text-center">Status</th>
                   <th className="px-6 py-4 text-right rounded-r-lg">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {loading ? (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-16 text-center">
-                      <div className="flex justify-center items-center">
-                        <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
-                      </div>
-                    </td>
-                  </tr>
+                  Array.from({ length: 5 }).map((_, idx) => (
+                    <tr key={idx}>
+                      <td className="px-6 py-4"><Skeleton className="h-4 w-32 rounded-md" /></td>
+                      <td className="px-6 py-4"><Skeleton className="h-4 w-20 rounded-md" /></td>
+                      <td className="px-6 py-4"><Skeleton className="h-4 w-44 rounded-md" /></td>
+                      <td className="px-6 py-4 text-center"><Skeleton className="h-6 w-24 rounded-full mx-auto" /></td>
+                      <td className="px-6 py-4 text-right"><Skeleton className="h-8 w-16 rounded-lg ml-auto" /></td>
+                    </tr>
+                  ))
                 ) : filteredBookings.length > 0 ? (
                   filteredBookings.map((req) => {
                     const statusInfo = computeBookingStatus(req);
@@ -464,13 +516,21 @@ export default function AdminBookingsPage() {
 
                     return (
                       <tr 
-                        key={req.id} 
+                        key={req.booking_reference || req.id} 
                         onClick={() => setSelectedDetailBooking(req)}
                         className="hover:bg-yellow-400/5 transition-colors group cursor-pointer"
                       >
                         <td className="px-6 py-5">
-                          <p className="font-extrabold text-[#0f172a] group-hover:text-yellow-600 transition-colors">
+                          <p className="font-extrabold text-[#0f172a] group-hover:text-yellow-600 transition-colors flex items-center gap-2">
                             {displayName}
+                            {req.user && (
+                              <span className={cn(
+                                "text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider",
+                                req.user.is_guest ? "bg-amber-100 text-amber-800" : "bg-blue-100 text-blue-800"
+                              )}>
+                                {req.user.is_guest ? 'Guest' : 'User'}
+                              </span>
+                            )}
                           </p>
                           {displayPhone && (
                             <p className="text-xs text-slate-400 font-semibold mt-0.5">
@@ -478,13 +538,32 @@ export default function AdminBookingsPage() {
                             </p>
                           )}
                         </td>
-                        <td className="px-6 py-5 font-black text-[#0f172a]">#KC-{req.id}</td>
+                        <td className="px-6 py-5">
+                          <span className="font-black text-[#0f172a] bg-yellow-400/20 text-yellow-950 px-2.5 py-1 rounded-md border border-yellow-400/30">
+                            {req.booking_reference}
+                          </span>
+                          {(req.total_slots_count || (req.slots && req.slots.length)) > 1 && (
+                            <span className="block text-[10px] font-extrabold text-slate-500 mt-1">
+                              {req.total_slots_count || req.slots.length} Slots Booked
+                            </span>
+                          )}
+                        </td>
                         <td className="px-6 py-5 text-slate-700 font-bold">
                           <div>
                             <span>{req.booking_date ? format(new Date(req.booking_date), 'dd MMM yyyy') : '-'}</span>
-                            <span className="text-xs text-slate-400 font-semibold block mt-0.5">
-                              {req.start_time} - {req.end_time}
-                            </span>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {req.time_ranges && req.time_ranges.length > 0 ? (
+                                req.time_ranges.map((tr: string, i: number) => (
+                                  <span key={i} className="text-[11px] font-extrabold bg-slate-100 text-slate-800 px-2 py-0.5 rounded-md">
+                                    {tr}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-[11px] font-extrabold bg-slate-100 text-slate-800 px-2 py-0.5 rounded-md">
+                                  {req.start_time} - {req.end_time}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-5 text-center">
@@ -505,13 +584,13 @@ export default function AdminBookingsPage() {
                             {req.status === 'Pending' ? (
                               <div className="flex items-center gap-1.5">
                                 <button 
-                                  onClick={() => handleAction(req.id, 'confirm')} 
+                                  onClick={() => requestConfirmAction(req, 'confirm')} 
                                   className="bg-[#10b981] hover:bg-[#059669] text-white text-[11px] font-extrabold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                                 >
                                   Confirm
                                 </button>
                                 <button 
-                                  onClick={() => handleAction(req.id, 'reject')} 
+                                  onClick={() => requestConfirmAction(req, 'reject')} 
                                   className="bg-[#ef4444] hover:bg-[#dc2626] text-white text-[11px] font-extrabold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                                 >
                                   Reject
@@ -536,7 +615,7 @@ export default function AdminBookingsPage() {
                                           Reschedule Slot
                                         </button>
                                         <button 
-                                          onClick={() => { handleAction(req.id, 'cancel'); setOpenDropdownId(null); }}
+                                          onClick={() => { requestConfirmAction(req, 'cancel'); setOpenDropdownId(null); }}
                                           className="w-full px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-colors block cursor-pointer"
                                         >
                                           Cancel Booking
@@ -581,10 +660,19 @@ export default function AdminBookingsPage() {
         onClose={() => setSelectedDetailBooking(null)}
         booking={selectedDetailBooking}
         isAdmin={true}
-        onConfirm={(id) => handleAction(id, 'confirm')}
-        onReject={(id) => handleAction(id, 'reject')}
+        onConfirm={(id) => {
+          const target = allBookings.find(b => b.id === id) || selectedDetailBooking;
+          if (target) requestConfirmAction(target, 'confirm');
+        }}
+        onReject={(id) => {
+          const target = allBookings.find(b => b.id === id) || selectedDetailBooking;
+          if (target) requestConfirmAction(target, 'reject');
+        }}
         onReschedule={(b) => setRescheduleBooking(b)}
-        onCancel={(id) => handleAction(id, 'cancel')}
+        onCancel={(id) => {
+          const target = allBookings.find(b => b.id === id) || selectedDetailBooking;
+          if (target) requestConfirmAction(target, 'cancel');
+        }}
       />
 
       {/* Reschedule Modal */}
@@ -599,6 +687,17 @@ export default function AdminBookingsPage() {
           }}
         />
       )}
+
+      {/* Action Confirmation Modal */}
+      <ConfirmActionModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+        onConfirmAction={executeConfirmedAction}
+        action={confirmModal.action}
+        booking={confirmModal.booking}
+        isLoading={confirmModal.isLoading}
+      />
     </div>
   );
 }
+

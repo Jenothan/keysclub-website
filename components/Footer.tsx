@@ -6,6 +6,7 @@ import Link from "next/link";
 import MapPin from '@mui/icons-material/LocationOn';
 import Phone from '@mui/icons-material/Phone';
 import Mail from '@mui/icons-material/Email';
+import WhatsApp from '@mui/icons-material/WhatsApp';
 import api from '@/lib/axios';
 
 const Facebook = (props: React.SVGProps<SVGSVGElement>) => (
@@ -90,9 +91,9 @@ export default function Footer() {
             <h3 className="text-yellow-400 font-bold text-caption uppercase tracking-wider mb-6">SERVICES</h3>
             <ul className="space-y-3 text-body-sm">
               <li><Link href="/availability" className="hover:text-yellow-400 transition">Court Booking</Link></li>
-              <li><Link href="/dashboard/bookings" className="hover:text-yellow-400 transition">My Bookings</Link></li>
-              <li><Link href="/contact" className="hover:text-yellow-400 transition">Tournament Inquiry</Link></li>
-              <li><Link href="/contact" className="hover:text-yellow-400 transition">Full-Day Court Request</Link></li>
+              <li><Link href="/contact?subject=Badminton%20Court%20Membership#enquiry_form" className="hover:text-yellow-400 transition">Badminton Court Membership</Link></li>
+              <li><Link href="/contact?subject=Tournament#enquiry_form" className="hover:text-yellow-400 transition">Tournament Inquiry</Link></li>
+              <li><Link href="/contact?subject=Full%20Day%20Court%20Booking#enquiry_form" className="hover:text-yellow-400 transition">Full-Day Court Request</Link></li>
             </ul>
           </div>
 
@@ -132,12 +133,12 @@ export default function Footer() {
               </li>
             </ul>
 
-            <div className="flex gap-4 mt-6">
+            <div className="flex flex-row items-center gap-4 mt-6">
               <a
                 href={websiteData?.facebook_url || "#"}
                 target={websiteData?.facebook_url ? "_blank" : undefined}
                 rel={websiteData?.facebook_url ? "noopener noreferrer" : undefined}
-                className="text-slate-400 hover:text-white transition"
+                className="text-slate-400 hover:text-blue-500 transition-colors"
                 aria-label="Facebook"
               >
                 <Facebook className="w-5 h-5" />
@@ -146,10 +147,19 @@ export default function Footer() {
                 href={websiteData?.instagram_url || "#"}
                 target={websiteData?.instagram_url ? "_blank" : undefined}
                 rel={websiteData?.instagram_url ? "noopener noreferrer" : undefined}
-                className="text-slate-400 hover:text-white transition"
+                className="text-slate-400 hover:text-pink-500 transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
+              </a>
+              <a
+                href={websiteData?.primary_phone ? `https://wa.me/${websiteData.primary_phone.replace(/[^0-9]/g, '')}` : "#"}
+                target={websiteData?.primary_phone ? "_blank" : undefined}
+                rel={websiteData?.primary_phone ? "noopener noreferrer" : undefined}
+                className="text-slate-400 hover:text-emerald-400 transition-colors"
+                aria-label="WhatsApp"
+              >
+                <WhatsApp className="w-5 h-5" />
               </a>
             </div>
           </div>

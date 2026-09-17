@@ -8,60 +8,119 @@ import ShieldCheck from '@mui/icons-material/GppGood';
 import MessageSquare from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import EyeIcon from '@mui/icons-material/Visibility';
 import ChevronRight from '@mui/icons-material/ChevronRight';
+import { format } from 'date-fns';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { computeBookingStatus } from '@/lib/bookingUtils';
+import { computeBookingStatus, groupBookings, GroupedBooking } from '@/lib/bookingUtils';
 import BookingDetailsModal from '@/components/BookingDetailsModal';
+import ConfirmActionModal from '@/components/ConfirmActionModal';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useAuthStore } from '@/store/authStore';
 
 export default function AdminDashboardPage() {
+  const { user } = useAuthStore();
   const [loading, setLoading] = useState(true);
-  const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<GroupedBooking | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    action: 'confirm' | 'reject' | 'cancel' | null;
+    booking: GroupedBooking | null;
+    isLoading: boolean;
+  }>({
+    isOpen: false,
+    action: null,
+    booking: null,
+    isLoading: false,
+  });
   const [stats, setStats] = useState({
     todays_bookings: 0,
     pending_requests: 0,
+    new_inquiries: 0,
     confirmed_bookings: 0,
-    new_inquiries: 0
   });
+  const [recentRequests, setRecentRequests] = useState<GroupedBooking[]>([]);
 
-  const [recentRequests, setRecentRequests] = useState<any[]>([]);
+  const requestConfirmAction = (booking: GroupedBooking, action: 'confirm' | 'reject' | 'cancel') => {
+    setConfirmModal({
+      isOpen: true,
+      action,
+      booking,
+      isLoading: false,
+    });
+  };
 
-  const fetchStatsAndRecent = async () => {
+  const executeConfirmedAction = async () => {
+    if (!confirmModal.booking || !confirmModal.action) return;
+    setConfirmModal((prev) => ({ ...prev, isLoading: true }));
+    try {
+      await api.post(`/admin/bookings/${confirmModal.booking.id}/${confirmModal.action}`);
+      const actionPast = confirmModal.action === 'confirm' ? 'confirmed' : confirmModal.action === 'reject' ? 'rejected' : 'cancelled';
+      toast.success(`Booking ${actionPast} successfully`);
+      setConfirmModal({ isOpen: false, action: null, booking: null, isLoading: false });
+      if (selectedBooking?.id === confirmModal.booking.id) {
+        setSelectedBooking(null);
+      }
+      fetchDashboardData();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || `Failed to ${confirmModal.action} booking`);
+      setConfirmModal((prev) => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      const [statsRes, bookingsRes] = await Promise.all([
-        api.get('/admin/stats'),
-        api.get('/admin/bookings')
-      ]);
+      const response = await api.get('/admin/bookings');
+      const rawBookings = response.data;
+      const groupedBookings = groupBookings(rawBookings);
 
-      setStats(statsRes.data);
-      setRecentRequests(bookingsRes.data.slice(0, 6));
+      const todayStr = format(new Date(), 'yyyy-MM-dd');
+
+      const todaysCount = groupedBookings.filter((b: GroupedBooking) => {
+        if (!b.booking_date) return false;
+        const bDateStr = format(new Date(b.booking_date), 'yyyy-MM-dd');
+        return bDateStr === todayStr && b.status !== 'Cancelled' && b.status !== 'Rejected';
+      }).length;
+
+      const pendingCount = groupedBookings.filter((b: GroupedBooking) => b.status === 'Pending').length;
+      const confirmedCount = groupedBookings.filter((b: GroupedBooking) => b.status === 'Confirmed' || b.status === 'Ongoing').length;
+
+      setStats({
+        todays_bookings: todaysCount,
+        pending_requests: pendingCount,
+        new_inquiries: 0,
+        confirmed_bookings: confirmedCount,
+      });
+
+      setRecentRequests(groupedBookings.slice(0, 5));
     } catch (error) {
       console.error('Failed to fetch dashboard data', error);
+      toast.error('Failed to load dashboard overview');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchStatsAndRecent();
+    fetchDashboardData();
   }, []);
 
   return (
-    <div className="p-4 sm:p-6 md:p-10 w-full space-y-6 md:space-y-8 pb-20">
+    <div className="p-4 sm:p-6 md:p-10 w-full space-y-6 md:space-y-8 pb-20 min-h-screen">
 
       {/* Header */}
       <div>
         <h1 className="text-xl sm:text-2xl font-black text-[#0f172a] tracking-tight mb-1">
-          Admin Dashboard Overview
+          Welcome back, {user?.name || 'Administrator'}
         </h1>
         <p className="text-slate-500 text-xs sm:text-sm">
-          Real-time summary of today's court bookings, pending requests, and new inquiries.
+          Here's a quick overview of court bookings, pending requests, and operations today.
         </p>
       </div>
 
       {/* ========================================================================= */}
-      {/* 📱 MOBILE VIEW: APPLE-WALLET INSPIRED DESIGN (Visible on Mobile Devices) */}
+      {/* 📱 MOBILE VIEW: APPLE-WALLET INSPIRED DESIGN                             */}
       {/* ========================================================================= */}
       <div className="block md:hidden space-y-6">
 
@@ -84,9 +143,13 @@ export default function AdminDashboardPage() {
           <div className="mb-6">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Today's Total Bookings</p>
             <div className="flex items-baseline gap-2">
-              <h2 className="text-4xl font-black text-white tracking-tight">
-                {loading ? '..' : stats.todays_bookings.toString().padStart(2, '0')}
-              </h2>
+              {loading ? (
+                <Skeleton className="h-10 w-20 bg-white/20 rounded-lg" />
+              ) : (
+                <h2 className="text-4xl font-black text-white tracking-tight">
+                  {stats.todays_bookings.toString().padStart(2, '0')}
+                </h2>
+              )}
               <span className="text-xs font-extrabold text-yellow-400">Court Sessions Today</span>
             </div>
           </div>
@@ -104,7 +167,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* 2. Middle Stats Grid (2 Columns: Left 2 stacked cards, Right 1 tall card) */}
+        {/* 2. Middle Stats Grid */}
         <div className="grid grid-cols-2 gap-4">
           
           {/* Left Column (2 stacked cards) */}
@@ -119,10 +182,14 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
               <div>
-                <h3 className="text-2xl font-black text-[#0f172a]">
-                  {loading ? '..' : stats.pending_requests.toString().padStart(2, '0')}
-                </h3>
-                <p className="text-[10px] font-bold text-amber-600 mt-0.5">Requires Action</p>
+                {loading ? (
+                  <Skeleton className="h-8 w-14 rounded-lg my-0.5" />
+                ) : (
+                  <h3 className="text-2xl font-black text-[#0f172a]">
+                    {stats.pending_requests.toString().padStart(2, '0')}
+                  </h3>
+                )}
+                <p className="text-[10px] font-bold text-amber-600 mt-0.5">Requests</p>
               </div>
             </div>
 
@@ -135,9 +202,13 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
               <div>
-                <h3 className="text-2xl font-black text-[#0f172a]">
-                  {loading ? '..' : stats.new_inquiries.toString().padStart(2, '0')}
-                </h3>
+                {loading ? (
+                  <Skeleton className="h-8 w-14 rounded-lg my-0.5" />
+                ) : (
+                  <h3 className="text-2xl font-black text-[#0f172a]">
+                    {stats.new_inquiries.toString().padStart(2, '0')}
+                  </h3>
+                )}
                 <p className="text-[10px] font-bold text-slate-400 mt-0.5">Customer Messages</p>
               </div>
             </div>
@@ -154,9 +225,13 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
               <div>
-                <h3 className="text-3xl font-black text-[#0f172a]">
-                  {loading ? '..' : stats.confirmed_bookings.toString().padStart(2, '0')}
-                </h3>
+                {loading ? (
+                  <Skeleton className="h-9 w-16 rounded-lg my-0.5" />
+                ) : (
+                  <h3 className="text-3xl font-black text-[#0f172a]">
+                    {stats.confirmed_bookings.toString().padStart(2, '0')}
+                  </h3>
+                )}
                 <p className="text-[10px] font-bold text-emerald-600 mt-0.5">Approved Sessions</p>
               </div>
             </div>
@@ -170,10 +245,10 @@ export default function AdminDashboardPage() {
 
         </div>
 
-        {/* 3. Bottom Latest Transactions / Booking Activity List */}
+        {/* 3. Bottom Latest Booking Requests List */}
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between px-1">
-            <h3 className="text-sm sm:text-base font-black text-[#0f172a] tracking-tight">Latest Card Bookings</h3>
+            <h3 className="text-sm sm:text-base font-black text-[#0f172a] tracking-tight">Recent Booking Requests</h3>
             <Link href="/admin/bookings" className="text-xs font-extrabold text-yellow-600 hover:underline">
               View All
             </Link>
@@ -181,8 +256,19 @@ export default function AdminDashboardPage() {
 
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-100 overflow-hidden">
             {loading ? (
-              <div className="p-8 text-center">
-                <div className="w-6 h-6 border-3 border-yellow-400 border-t-transparent rounded-full animate-spin mx-auto" />
+              <div className="p-4 space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-1">
+                      <Skeleton className="w-10 h-10 rounded-xl shrink-0" />
+                      <div className="space-y-1.5 flex-1">
+                        <Skeleton className="h-4 w-32 rounded-md" />
+                        <Skeleton className="h-3 w-48 rounded-md" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-6 w-20 rounded-full shrink-0" />
+                  </div>
+                ))}
               </div>
             ) : recentRequests.length > 0 ? (
               recentRequests.map((req) => {
@@ -192,7 +278,7 @@ export default function AdminDashboardPage() {
 
                 return (
                   <div
-                    key={req.id}
+                    key={req.booking_reference || req.id}
                     onClick={() => setSelectedBooking(req)}
                     className="p-4 flex items-center justify-between gap-3 hover:bg-slate-50 transition-colors cursor-pointer active:bg-slate-100"
                   >
@@ -200,13 +286,20 @@ export default function AdminDashboardPage() {
                       <div className="w-10 h-10 rounded-xl bg-yellow-400/20 border border-yellow-400/30 text-slate-900 font-black flex items-center justify-center shrink-0 text-sm shadow-xs">
                         {userInitial}
                       </div>
-                      <div className="min-w-0">
-                        <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm truncate">{userName}</h4>
-                        <p className="text-[11px] font-semibold text-slate-500 truncate">
-                          #KC-{req.id} • {req.booking_date}
+                      <div className="min-w-0 space-y-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm truncate">{userName}</h4>
+                          {(req.total_slots_count || (req.slots && req.slots.length)) > 1 && (
+                            <span className="text-[9px] font-black text-slate-700 bg-yellow-100 border border-yellow-300 px-1.5 py-0.5 rounded-md">
+                              {req.total_slots_count || req.slots.length} Slots
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] font-bold text-slate-500 truncate">
+                          {req.booking_reference} • {req.booking_date}
                         </p>
-                        <p className="text-[10px] font-bold text-slate-700 truncate">
-                          {req.start_time} - {req.end_time}
+                        <p className="text-[10px] font-extrabold text-amber-700 truncate">
+                          {req.time_display || `${req.start_time} - ${req.end_time}`}
                         </p>
                       </div>
                     </div>
@@ -231,7 +324,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* ========================================================================= */}
-      {/* 💻 DESKTOP VIEW: STANDARD DASHBOARD GRID & TABLE (Visible on Desktop)     */}
+      {/* 💻 DESKTOP VIEW: STANDARD DASHBOARD GRID & TABLE                         */}
       {/* ========================================================================= */}
       <div className="hidden md:block space-y-8">
 
@@ -248,7 +341,7 @@ export default function AdminDashboardPage() {
             </div>
             <div className="flex items-baseline gap-2">
               {loading ? (
-                <div className="h-9 w-16 bg-slate-200 animate-pulse rounded-lg"></div>
+                <Skeleton className="h-9 w-16 rounded-lg my-0.5" />
               ) : (
                 <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.todays_bookings.toString().padStart(2, '0')}</h3>
               )}
@@ -266,11 +359,11 @@ export default function AdminDashboardPage() {
             </div>
             <div className="flex items-baseline gap-2">
               {loading ? (
-                <div className="h-9 w-16 bg-slate-200 animate-pulse rounded-lg"></div>
+                <Skeleton className="h-9 w-16 rounded-lg my-0.5" />
               ) : (
                 <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.pending_requests.toString().padStart(2, '0')}</h3>
               )}
-              <span className="text-lg font-bold text-[#0f172a]">Slots</span>
+              <span className="text-lg font-bold text-[#0f172a]">Requests</span>
             </div>
           </div>
 
@@ -284,11 +377,11 @@ export default function AdminDashboardPage() {
             </div>
             <div className="flex items-baseline gap-2">
               {loading ? (
-                <div className="h-9 w-16 bg-slate-200 animate-pulse rounded-lg"></div>
+                <Skeleton className="h-9 w-16 rounded-lg my-0.5" />
               ) : (
                 <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.confirmed_bookings.toString().padStart(2, '0')}</h3>
               )}
-              <span className="text-lg font-bold text-[#0f172a]">Slots</span>
+              <span className="text-lg font-bold text-[#0f172a]">Sessions</span>
             </div>
           </div>
 
@@ -302,7 +395,7 @@ export default function AdminDashboardPage() {
             </div>
             <div className="flex items-baseline gap-2">
               {loading ? (
-                <div className="h-9 w-16 bg-slate-200 animate-pulse rounded-lg"></div>
+                <Skeleton className="h-9 w-16 rounded-lg my-0.5" />
               ) : (
                 <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.new_inquiries.toString().padStart(2, '0')}</h3>
               )}
@@ -326,16 +419,24 @@ export default function AdminDashboardPage() {
 
           <div className="overflow-x-auto">
             {loading ? (
-              <div className="py-16 flex justify-center items-center">
-                <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+              <div className="p-6 space-y-3">
+                {[1, 2, 3, 4].map((n) => (
+                  <div key={n} className="flex items-center justify-between gap-4 py-2">
+                    <Skeleton className="h-5 w-36 rounded-md" />
+                    <Skeleton className="h-5 w-24 rounded-md" />
+                    <Skeleton className="h-5 w-48 rounded-md" />
+                    <Skeleton className="h-6 w-24 rounded-full" />
+                    <Skeleton className="h-8 w-8 rounded-lg" />
+                  </div>
+                ))}
               </div>
             ) : (
               <table className="w-full text-sm text-left whitespace-nowrap">
                 <thead className="text-xs font-bold text-slate-500 bg-slate-50/50">
                   <tr>
                     <th className="px-6 py-4">User</th>
-                    <th className="px-6 py-4">Booking ID</th>
-                    <th className="px-6 py-4">Booking Date & Slot</th>
+                    <th className="px-6 py-4">Booking Ref</th>
+                    <th className="px-6 py-4">Booking Date & Slots</th>
                     <th className="px-6 py-4 text-center">Status</th>
                     <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
@@ -344,34 +445,69 @@ export default function AdminDashboardPage() {
                   {recentRequests.length > 0 ? (
                     recentRequests.map((req) => {
                       const statusInfo = computeBookingStatus(req);
+                      const displayName = req.customer_name || req.user?.name || req.booked_by?.name || 'Walk-in Customer';
+
                       return (
-                      <tr 
-                        key={req.id} 
-                        onClick={() => setSelectedBooking(req)}
-                        className="hover:bg-yellow-400/5 transition-colors group cursor-pointer"
-                      >
-                        <td className="px-6 py-4 font-bold text-[#0f172a] group-hover:text-yellow-600 transition-colors">
-                          {req.user ? req.user.name : (req.customer_name || 'Walk-in')}
-                        </td>
-                        <td className="px-6 py-4 font-black text-[#0f172a]">#KC-{req.id}</td>
-                        <td className="px-6 py-4 text-slate-700 font-medium">
-                          {req.booking_date} ({req.start_time} - {req.end_time})
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className={cn("text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-xs", statusInfo.badgeClass)}>
-                            {statusInfo.label}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            onClick={() => setSelectedBooking(req)}
-                            className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-900 transition-colors cursor-pointer"
-                          >
-                            <EyeIcon className="w-5 h-5" />
-                          </button>
-                        </td>
-                      </tr>
-                    )})
+                        <tr 
+                          key={req.booking_reference || req.id} 
+                          onClick={() => setSelectedBooking(req)}
+                          className="hover:bg-yellow-400/5 transition-colors group cursor-pointer"
+                        >
+                          <td className="px-6 py-4 font-extrabold text-[#0f172a] group-hover:text-yellow-600 transition-colors flex items-center gap-2">
+                            {displayName}
+                            {req.user && (
+                              <span className={cn(
+                                "text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider",
+                                req.user.is_guest ? "bg-amber-100 text-amber-800" : "bg-blue-100 text-blue-800"
+                              )}>
+                                {req.user.is_guest ? 'Guest' : 'User'}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="font-black text-[#0f172a] bg-yellow-400/20 text-yellow-950 px-2.5 py-1 rounded-md border border-yellow-400/30">
+                              {req.booking_reference}
+                            </span>
+                            {(req.total_slots_count || (req.slots && req.slots.length)) > 1 && (
+                              <span className="block text-[10px] font-extrabold text-slate-500 mt-1">
+                                {req.total_slots_count || req.slots.length} Slots Booked
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-slate-700 font-bold">
+                            <div>
+                              <span>{req.booking_date}</span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {req.time_ranges && req.time_ranges.length > 0 ? (
+                                  req.time_ranges.map((tr: string, i: number) => (
+                                    <span key={i} className="text-[11px] font-extrabold bg-slate-100 text-slate-800 px-2 py-0.5 rounded-md">
+                                      {tr}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-[11px] font-extrabold bg-slate-100 text-slate-800 px-2 py-0.5 rounded-md">
+                                    {req.start_time} - {req.end_time}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className={cn("text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-xs", statusInfo.badgeClass)}>
+                              {statusInfo.label}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => setSelectedBooking(req)}
+                              className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-900 transition-colors cursor-pointer"
+                            >
+                              <EyeIcon className="w-5 h-5" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
                   ) : (
                     <tr>
                       <td colSpan={5} className="px-6 py-10 text-center text-slate-500 font-medium">
@@ -393,35 +529,31 @@ export default function AdminDashboardPage() {
         onClose={() => setSelectedBooking(null)}
         booking={selectedBooking}
         isAdmin={true}
-        onConfirm={async (id) => {
-          try {
-            await api.post(`/admin/bookings/${id}/confirm`);
-            toast.success('Booking confirmed successfully');
-            fetchStatsAndRecent();
-          } catch (e: any) {
-            toast.error(e.response?.data?.message || 'Failed to confirm');
-          }
+        onConfirm={(id) => {
+          const target = recentRequests.find(b => b.id === id) || selectedBooking;
+          if (target) requestConfirmAction(target, 'confirm');
         }}
-        onReject={async (id) => {
-          try {
-            await api.post(`/admin/bookings/${id}/reject`);
-            toast.success('Booking rejected successfully');
-            fetchStatsAndRecent();
-          } catch (e: any) {
-            toast.error(e.response?.data?.message || 'Failed to reject');
-          }
+        onReject={(id) => {
+          const target = recentRequests.find(b => b.id === id) || selectedBooking;
+          if (target) requestConfirmAction(target, 'reject');
         }}
-        onCancel={async (id) => {
-          try {
-            await api.post(`/admin/bookings/${id}/cancel`);
-            toast.success('Booking cancelled successfully');
-            fetchStatsAndRecent();
-          } catch (e: any) {
-            toast.error(e.response?.data?.message || 'Failed to cancel');
-          }
+        onCancel={(id) => {
+          const target = recentRequests.find(b => b.id === id) || selectedBooking;
+          if (target) requestConfirmAction(target, 'cancel');
         }}
+      />
+
+      {/* Action Confirmation Modal */}
+      <ConfirmActionModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+        onConfirmAction={executeConfirmedAction}
+        action={confirmModal.action}
+        booking={confirmModal.booking}
+        isLoading={confirmModal.isLoading}
       />
 
     </div>
   );
 }
+

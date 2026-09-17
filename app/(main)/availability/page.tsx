@@ -12,6 +12,9 @@ import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+
+import { isPeakDay, isPeakSlot, PeakConfig, DEFAULT_PEAK_CONFIG } from '@/lib/peakUtils';
 
 export default function AvailabilityPage() {
   const router = useRouter();
@@ -21,8 +24,21 @@ export default function AvailabilityPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSlots, setSelectedSlots] = useState<any[]>([]);
   const [calendarDate, setCalendarDate] = useState<Date | undefined>(new Date());
-  const [slots, setSlots] = useState<{ time: string; status: string; start_time: string; end_time: string; court_id: number }[]>([]);
+  const [slots, setSlots] = useState<{ time: string; status: string; start_time: string; end_time: string; court_id: number; is_peak?: boolean; is_peak_day?: boolean }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [peakConfig, setPeakConfig] = useState<PeakConfig>(DEFAULT_PEAK_CONFIG);
+
+  useEffect(() => {
+    api.get('/website-data').then((res) => {
+      if (res.data) {
+        setPeakConfig({
+          peak_start_time: res.data.peak_start_time || '15:00:00',
+          peak_end_time: res.data.peak_end_time || '20:00:00',
+          peak_off_days: Array.isArray(res.data.peak_off_days) ? res.data.peak_off_days : ['Saturday', 'Sunday'],
+        });
+      }
+    }).catch(() => {});
+  }, []);
 
   const fetchAvailability = async () => {
     if (!calendarDate) return;
@@ -48,6 +64,7 @@ export default function AvailabilityPage() {
       const todayDateStr = format(new Date(), 'yyyy-MM-dd');
       const isSelectedToday = selectedDateStr === todayDateStr;
       const isSelectedPastDate = selectedDateStr < todayDateStr;
+      const isCurrentPeakDay = isPeakDay(calendarDate, peakConfig.peak_off_days);
 
       for (let hour = 6; hour < 22; hour++) {
         const startStr = `${hour.toString().padStart(2, '0')}:00:00`;
@@ -67,12 +84,16 @@ export default function AvailabilityPage() {
           }
         }
         
+        const isPeak = isPeakSlot(startStr, endStr, calendarDate, peakConfig);
+
         hardcodedSlots.push({
           time: `${formatTime(startStr)} - ${formatTime(endStr)}`,
           status,
           start_time: startStr,
           end_time: endStr,
-          court_id: backendSlot?.court_id || activeCourtId
+          court_id: backendSlot?.court_id || activeCourtId,
+          is_peak: isPeak,
+          is_peak_day: isCurrentPeakDay
         });
       }
       
@@ -88,13 +109,37 @@ export default function AvailabilityPage() {
 
   useEffect(() => {
     fetchAvailability();
-  }, [calendarDate]);
+  }, [calendarDate, peakConfig]);
 
   const handleToggleSlot = (slot: any) => {
     const isSelected = selectedSlots.some(s => s.start_time === slot.start_time);
     if (isSelected) {
       setSelectedSlots(selectedSlots.filter(s => s.start_time !== slot.start_time));
     } else {
+      const isAdmin = user?.role === 'Admin' || user?.role === 'Super Admin';
+      const isMember = !!user && !user.is_guest;
+
+      // 1. Peak Hour Member Restriction Check
+      if (slot.is_peak && slot.is_peak_day && !isAdmin && !isMember) {
+        toast.error('Peak hour slots are reserved exclusively for registered Members. Please log in or choose non-peak slots.', { duration: 4000 });
+        return;
+      }
+
+      // 2. Max 3 Total Slots Per Day Limit Check
+      if (!isAdmin && selectedSlots.length >= 3) {
+        toast.error('Maximum 3 slots per day allowed.', { duration: 4000 });
+        return;
+      }
+
+      // 3. Max 2 Peak Hour Slots Per Day Limit Check
+      if (!isAdmin && slot.is_peak && slot.is_peak_day) {
+        const selectedPeakCount = selectedSlots.filter(s => s.is_peak && s.is_peak_day).length;
+        if (selectedPeakCount >= 2) {
+          toast.error('Maximum 2 peak hour slots per day allowed.', { duration: 4000 });
+          return;
+        }
+      }
+
       setSelectedSlots([...selectedSlots, {
         date: calendarDate ? format(calendarDate, "EEEE, dd MMMM yyyy") : "No date selected", 
         time: slot.time,
@@ -102,19 +147,41 @@ export default function AvailabilityPage() {
         court_id: slot.court_id || 1,
         start_time: slot.start_time,
         end_time: slot.end_time,
+        is_peak: slot.is_peak,
+        is_peak_day: slot.is_peak_day,
         rawDate: calendarDate ? format(calendarDate, 'yyyy-MM-dd') : ''
       }]);
     }
   };
 
-  const handleBookSelected = () => {
-    if (!isLoggedIn) {
-      router.push('/login');
-    } else if (selectedSlots.length > 0) {
-      setIsModalOpen(true);
-    } else {
+  const handleBookSelected = async () => {
+    if (selectedSlots.length === 0) {
       toast.error('Please select at least one available slot.');
+      return;
     }
+
+    if (calendarDate) {
+      try {
+        const dateStr = format(calendarDate, 'yyyy-MM-dd');
+        const res = await api.get(`/availability?date=${dateStr}`);
+        const currentSlots = res.data || [];
+        const unavailableSlot = selectedSlots.find(selected => {
+          const matched = currentSlots.find((cs: any) => cs.start_time === selected.start_time);
+          return matched && matched.status !== 'Available';
+        });
+
+        if (unavailableSlot) {
+          toast.error('This slot is currently booked. Please choose another slot.', { duration: 5000 });
+          setSelectedSlots([]);
+          fetchAvailability();
+          return;
+        }
+      } catch (err) {
+        // proceed if network error on pre-check
+      }
+    }
+
+    setIsModalOpen(true);
   };
 
   return (
@@ -171,16 +238,22 @@ export default function AvailabilityPage() {
 
                 <div className="flex items-center gap-3 text-[11px] font-extrabold text-slate-500 flex-wrap">
                   <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Available
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Available
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-amber-500"></span> Pending
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse border border-amber-500"></span> Peak (Member)
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-red-600"></span> Booked
+                    <span className="w-2.5 h-2.5 rounded-full bg-yellow-400"></span> Selected
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-rose-600"></span> Unavailable
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Pending Admin
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-600"></span> Booked
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-600"></span> Unavailable
                   </div>
                 </div>
               </div>
@@ -190,9 +263,9 @@ export default function AvailabilityPage() {
               {/* ========================================================================= */}
               <div className="grid grid-cols-2 gap-2 sm:hidden">
                 {isLoading ? (
-                  <div className="col-span-full py-10 text-center">
-                    <div className="w-6 h-6 border-3 border-yellow-400 border-t-transparent rounded-full animate-spin mx-auto" />
-                  </div>
+                  Array.from({ length: 8 }).map((_, i) => (
+                    <Skeleton key={i} className="h-16 w-full rounded-xl" />
+                  ))
                 ) : slots.length === 0 ? (
                   <div className="col-span-full py-8 text-center text-xs font-bold text-slate-400">
                     No slots available for this date.
@@ -210,6 +283,7 @@ export default function AvailabilityPage() {
                     const isBooked = slot.status === 'Booked';
                     const isPending = slot.status === 'Pending';
                     const isBlocked = slot.status === 'Blocked';
+                    const isPeakActive = slot.is_peak && slot.is_peak_day && isAvailable;
 
                     return (
                       <div
@@ -218,7 +292,8 @@ export default function AvailabilityPage() {
                         className={cn(
                           "relative p-2.5 rounded-xl border transition-all flex flex-col justify-center select-none cursor-pointer min-h-[64px] overflow-hidden",
                           isSelected && "bg-yellow-400/15 border-2 border-yellow-400 shadow-xs ring-1 ring-yellow-400/30",
-                          !isSelected && isAvailable && "bg-slate-50 border-slate-200 active:scale-95 hover:border-yellow-400",
+                          !isSelected && isAvailable && !isPeakActive && "bg-slate-50 border-slate-200 active:scale-95 hover:border-yellow-400",
+                          !isSelected && isPeakActive && "bg-amber-50/30 border-2 border-amber-400 ring-2 ring-yellow-400/80 shadow-[0_0_15px_rgba(250,204,21,0.5)] animate-pulse active:scale-95",
                           isPast && "bg-slate-100/60 border-slate-200 opacity-50 pointer-events-none cursor-not-allowed",
                           isBooked && "bg-red-50/80 border-red-200 text-red-950",
                           isPending && "bg-amber-50/80 border-amber-200 text-amber-950",
@@ -246,7 +321,7 @@ export default function AvailabilityPage() {
                           {/* Status Dot */}
                           <span className={cn(
                             "w-2 h-2 rounded-full shrink-0 ml-0.5",
-                            isAvailable && (isSelected ? "bg-slate-900" : "bg-emerald-500"),
+                            isAvailable && (isSelected ? "bg-slate-900" : (isPeakActive ? "bg-amber-500 animate-pulse" : "bg-emerald-500")),
                             isPast && "bg-slate-300",
                             isPending && "bg-amber-500",
                             isBooked && "bg-red-500",
@@ -258,13 +333,13 @@ export default function AvailabilityPage() {
                         <div className="flex items-center justify-between text-[9px] mt-1 pt-0.5 border-t border-slate-200/50">
                           <span className={cn(
                             "uppercase tracking-wider font-extrabold text-[9px]",
-                            isAvailable && (isSelected ? "text-slate-900" : "text-emerald-700"),
+                            isAvailable && (isSelected ? "text-slate-900" : (isPeakActive ? "text-amber-800" : "text-emerald-700")),
                             isPast && "text-slate-400 font-normal",
                             isPending && "text-amber-700",
                             isBooked && "text-red-700",
                             isBlocked && "text-rose-700"
                           )}>
-                            {isPast ? 'Past' : (isSelected ? 'Selected' : (isBlocked ? 'Unavailable' : slot.status))}
+                            {isPast ? 'Past' : (isSelected ? 'Selected' : (isPeakActive ? '⚡ Peak' : (isBlocked ? 'Unavailable' : slot.status)))}
                           </span>
                         </div>
                       </div>
@@ -278,9 +353,9 @@ export default function AvailabilityPage() {
               {/* ========================================================================= */}
               <div className="hidden sm:grid grid-cols-1 md:grid-cols-2 gap-4">
                 {isLoading ? (
-                  <div className="col-span-full py-10 flex justify-center">
-                    <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
-                  </div>
+                  Array.from({ length: 8 }).map((_, i) => (
+                    <Skeleton key={i} className="h-16 w-full rounded-xl" />
+                  ))
                 ) : slots.length === 0 ? (
                   <div className="col-span-full py-10 text-center text-slate-500 font-bold">
                     No slots available for this date.
@@ -298,6 +373,7 @@ export default function AvailabilityPage() {
                 ) : (
                   slots.map((slot, index) => {
                     const isSelected = selectedSlots.some(s => s.start_time === slot.start_time);
+                    const isPeakActive = slot.is_peak && slot.is_peak_day && slot.status === 'Available';
                     
                     let cardStyle = 'border-slate-100 bg-slate-50 opacity-70';
                     let clockStyle = 'bg-white text-slate-400';
@@ -307,6 +383,10 @@ export default function AvailabilityPage() {
                       cardStyle = 'border-yellow-400 bg-yellow-400 text-slate-900 shadow-[0_0_0_1px_#facc15]';
                       clockStyle = 'bg-slate-900 text-yellow-400';
                       textStyle = 'text-slate-900';
+                    } else if (isPeakActive) {
+                      cardStyle = 'cursor-pointer bg-amber-50/30 border-2 border-amber-400 ring-2 ring-yellow-400/80 shadow-[0_0_15px_rgba(250,204,21,0.5)] animate-pulse hover:bg-yellow-100/30';
+                      clockStyle = 'bg-amber-100 text-amber-900 border border-amber-300';
+                      textStyle = 'text-amber-950 font-extrabold';
                     } else if (slot.status === 'Available') {
                       cardStyle = 'cursor-pointer hover:border-yellow-400 hover:shadow-sm bg-[#f8fafc] border-slate-200';
                       clockStyle = 'bg-white text-slate-400 group-hover:text-slate-900';
@@ -357,31 +437,31 @@ export default function AvailabilityPage() {
 
                         <div className="flex items-center gap-3">
                           {slot.status === 'Past' && (
-                            <span className="bg-slate-200 text-slate-500 font-extrabold text-caption px-3.5 py-1.5 rounded-full uppercase tracking-wider">
+                            <span className="bg-slate-200 text-slate-500 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                               Past Slot
                             </span>
                           )}
 
                           {slot.status === 'Booked' && (
-                            <span className="bg-red-600 text-white font-black text-caption px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-xs">
+                            <span className="bg-red-600 text-white font-black text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
                               Booked
                             </span>
                           )}
 
                           {slot.status === 'Pending' && (
-                            <span className="bg-amber-500 text-white font-extrabold text-caption px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-xs">
+                            <span className="bg-amber-500 text-white font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
                               Pending Admin
                             </span>
                           )}
 
                           {slot.status === 'Available' && (
-                            <span className={`font-extrabold text-caption px-3.5 py-1.5 rounded-full uppercase tracking-wider ${isSelected ? 'bg-slate-900 text-yellow-400' : 'bg-emerald-100 text-emerald-700'}`}>
+                            <span className={`font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider ${isSelected ? 'bg-slate-900 text-yellow-400' : 'bg-emerald-100 text-emerald-700'}`}>
                               {isSelected ? 'Selected' : 'Available'}
                             </span>
                           )}
 
                           {slot.status === 'Blocked' && (
-                            <span className="bg-rose-600 text-white font-black text-caption px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-xs">
+                            <span className="bg-rose-600 text-white font-black text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
                               Unavailable
                             </span>
                           )}
@@ -453,6 +533,10 @@ export default function AvailabilityPage() {
           fetchAvailability();
         }}
         selectedSlots={selectedSlots}
+        onBookingSuccess={() => {
+          setSelectedSlots([]);
+          fetchAvailability();
+        }}
       />
     </div>
   );
