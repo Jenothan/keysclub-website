@@ -13,6 +13,7 @@ import api from '@/lib/axios';
 import { formatPhoneWithCountryCode } from '@/lib/phoneUtils';
 import PhoneInput from '@/components/PhoneInput';
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type PhoneFlowState = 'INITIAL' | 'OLD_OTP' | 'NEW_PHONE' | 'NEW_OTP' | 'SUCCESS';
 
@@ -111,8 +112,25 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="p-6 md:p-10 w-full min-h-[60vh] flex justify-center items-center">
-        <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+      <div className="p-6 md:p-10 w-full space-y-8 pb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-5 xl:col-span-4 bg-white p-8 rounded-2xl border border-slate-100 flex flex-col items-center shadow-sm">
+            <Skeleton className="w-28 h-28 rounded-full mb-6" />
+            <Skeleton className="h-6 w-36 mb-2" />
+            <Skeleton className="h-4 w-28 mb-6" />
+            <Skeleton className="h-10 w-full rounded-lg" />
+          </div>
+          <div className="lg:col-span-7 xl:col-span-8 space-y-8">
+            <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+              <Skeleton className="h-6 w-44" />
+              <Skeleton className="h-20 w-full rounded-xl" />
+            </div>
+            <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+              <Skeleton className="h-6 w-44" />
+              <Skeleton className="h-32 w-full rounded-xl" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

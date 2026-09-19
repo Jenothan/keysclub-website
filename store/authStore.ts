@@ -7,8 +7,10 @@ export interface User {
   id: number;
   name: string;
   phone: string;
-  email: string;
+  email?: string;
   role: Role;
+  is_guest?: boolean;
+  is_member?: boolean;
   created_at?: string;
 }
 

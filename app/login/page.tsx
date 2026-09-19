@@ -69,8 +69,13 @@ export default function LoginPage() {
       setAuth(user, access_token);
       toast.success('Login successful!');
 
+      const shouldOpenMembership = typeof window !== 'undefined' && 
+        (sessionStorage.getItem('open_membership_modal') === 'true' || window.location.search.includes('redirect=membership'));
+
       if (user.role === 'Super Admin' || user.role === 'Admin') {
         router.push('/admin');
+      } else if (shouldOpenMembership) {
+        router.push('/availability?open_membership=true');
       } else {
         router.push('/dashboard');
       }
@@ -131,10 +136,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col-reverse md:flex-row min-h-screen bg-white md:bg-[#f8fafc]">
+    <div className="min-h-screen w-full bg-[#f8fafc] flex flex-col lg:landscape:flex-row justify-center items-stretch">
 
       {/* Left Pane (Form) */}
-      <div className="w-full h-full md:w-[55%] lg:w-[50%] flex flex-col justify-center items-center p-4 md:p-10 lg:p-14 relative overflow-y-auto">
+      <div className="w-full min-h-screen lg:landscape:w-[50%] flex flex-col justify-center items-center p-4 sm:p-6 md:p-10 relative">
 
         {/* Back Button */}
         <div className="absolute top-6 left-6 md:top-10 md:left-12 z-10">
@@ -337,7 +342,7 @@ export default function LoginPage() {
       </Dialog>
 
       {/* Right Pane (Image Background) */}
-      <div className="hidden md:flex relative w-full md:w-[45%] lg:w-[50%] bg-[#0f172a] flex-col justify-center px-8 md:px-12 lg:px-20 py-12 md:py-0 overflow-hidden shrink-0">
+      <div className="hidden lg:landscape:flex relative w-full lg:landscape:w-[50%] min-h-screen bg-[#0f172a] flex-col justify-between p-8 md:p-12 lg:p-16 overflow-hidden shrink-0">
         {/* Background Image */}
         <div
           className="absolute inset-0 z-0"
@@ -350,45 +355,45 @@ export default function LoginPage() {
         {/* Dark Blue Overlay */}
         <div className="absolute inset-0 bg-[#0f172a]/70 z-0" />
 
-        <div className="relative z-10 h-full flex flex-col">
+        <div className="relative z-10 h-full flex flex-col justify-between">
           {/* Top Section */}
-          <div className="flex flex-col md:flex-row justify-end items-start md:items-center mb-auto gap-4 pt-4 md:pt-10">
+          <div className="flex justify-end items-center w-full">
             {/* Pill */}
             <div className="inline-block border border-yellow-400/80 rounded-full px-4 py-1.5">
-              <span className="text-yellow-400 text-caption font-bold tracking-wider uppercase">
+              <span className="text-yellow-400 text-xs font-bold tracking-wider uppercase">
                 KEYS Sports Initiative
               </span>
             </div>
           </div>
 
           {/* Middle Content */}
-          <div className="my-auto mt-24 md:mt-auto pt-16 md:pt-0">
-            <div className="flex items-center gap-3 mb-10">
+          <div className="my-auto py-4">
+            <div className="flex items-center gap-3 mb-6">
               <Image
                 src="/logo.png"
                 alt="KEYS Club Logo"
-                width={64}
-                height={64}
+                width={50}
+                height={50}
                 className="object-contain"
               />
               <div className="flex flex-col">
-                <span className="font-extrabold text-2xl leading-none tracking-tight text-white mb-1">KEYS CLUB</span>
-                <span className="text-caption text-yellow-400 font-bold uppercase tracking-widest">KARANAVAI EAST YOUTH SPORTS CLUB</span>
+                <span className="font-extrabold text-xl leading-none tracking-tight text-white mb-1">KEYS CLUB</span>
+                <span className="text-[10px] text-yellow-400 font-bold uppercase tracking-widest">KARANAVAI EAST YOUTH SPORTS CLUB</span>
               </div>
             </div>
 
-            <h1 className="text-display font-black text-white mb-6 tracking-tight leading-tight">
-              Play <span className="text-slate-400 font-normal px-2">•</span> Grow <span className="text-slate-400 font-normal px-2">•</span> Win
+            <h1 className="text-3xl lg:text-4xl font-black text-white mb-4 tracking-tight leading-tight">
+              Play <span className="text-slate-400 font-normal px-1.5">•</span> Grow <span className="text-slate-400 font-normal px-1.5">•</span> Win
             </h1>
 
-            <p className="max-w-md text-slate-300 leading-relaxed text-body">
+            <p className="max-w-md text-slate-300 leading-relaxed text-sm lg:text-base">
               Welcome to KEYS Club — your premier home for professional badminton court bookings, tournament organization, and community sports development in Karaveddy.
             </p>
           </div>
 
           {/* Bottom Footer Area */}
-          <div className="mt-auto pt-12 pb-6 md:pb-10 border-t border-slate-700/50">
-            <div className="flex items-center gap-3 text-slate-300 text-body-sm">
+          <div className="pt-4 border-t border-slate-700/50">
+            <div className="flex items-center gap-3 text-slate-300 text-sm">
               <ShieldCheck className="w-5 h-5 text-yellow-400 shrink-0" />
               <span>National standard court mats & equipment setup</span>
             </div>

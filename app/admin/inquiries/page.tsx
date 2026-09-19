@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 import InquiryDetailsModal from '@/components/InquiryDetailsModal';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminInquiriesPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -236,8 +237,19 @@ export default function AdminInquiriesPage() {
       <div className="block md:hidden">
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-100 overflow-hidden">
           {loading ? (
-            <div className="p-8 text-center">
-              <div className="w-6 h-6 border-3 border-yellow-400 border-t-transparent rounded-full animate-spin mx-auto" />
+            <div className="p-4 space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <Skeleton className="w-10 h-10 rounded-xl shrink-0" />
+                    <div className="space-y-1.5 flex-1 min-w-0">
+                      <Skeleton className="h-4 w-32 rounded-md" />
+                      <Skeleton className="h-3 w-48 rounded-md" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-6 w-20 rounded-full shrink-0" />
+                </div>
+              ))}
             </div>
           ) : inquiries.length > 0 ? (
             inquiries.map((inq) => {
@@ -293,8 +305,16 @@ export default function AdminInquiriesPage() {
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col">
           <div className="overflow-x-auto p-4 md:p-6 pb-0">
             {loading ? (
-              <div className="py-16 flex justify-center items-center">
-                <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+              <div className="p-6 space-y-4">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <div key={n} className="flex items-center justify-between gap-4">
+                    <Skeleton className="h-4 w-32 rounded-md" />
+                    <Skeleton className="h-4 w-44 rounded-md" />
+                    <Skeleton className="h-4 w-28 rounded-md" />
+                    <Skeleton className="h-6 w-20 rounded-full" />
+                    <Skeleton className="h-8 w-8 rounded-lg" />
+                  </div>
+                ))}
               </div>
             ) : (
               <table className="w-full text-sm text-left whitespace-nowrap">

@@ -3,6 +3,7 @@ import { Outfit, Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
+import AuthInitializer from "@/components/AuthInitializer";
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -27,6 +28,7 @@ export default function RootLayout({
       className={cn("h-full", "antialiased", outfit.variable, "font-sans", geist.variable)}
     >
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans select-none">
+        <AuthInitializer />
         {children}
         <Toaster />
       </body>

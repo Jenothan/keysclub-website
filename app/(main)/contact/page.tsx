@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Phone from '@mui/icons-material/Phone';
 import Mail from '@mui/icons-material/Email';
 import MapPin from '@mui/icons-material/LocationOn';
-import MessageCircle from '@mui/icons-material/Chat';
+import WhatsApp from '@mui/icons-material/WhatsApp';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -27,11 +28,44 @@ const Instagram = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export default function ContactPage() {
+function ContactFormContent() {
+  const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [websiteData, setWebsiteData] = useState<any>(null);
-  const [subject, setSubject] = useState("Tournament");
   const [mobile, setMobile] = useState("");
+
+  const getSubjectFromUrl = () => {
+    let paramSubject = searchParams?.get('subject');
+    if (!paramSubject && typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      paramSubject = urlParams.get('subject');
+    }
+    if (paramSubject) {
+      const cleanSubject = decodeURIComponent(paramSubject).split('#')[0].trim();
+      if (cleanSubject) {
+        return cleanSubject;
+      }
+    }
+    return null;
+  };
+
+  const urlSubject = getSubjectFromUrl();
+  const [subject, setSubject] = useState(urlSubject || "");
+
+  React.useEffect(() => {
+    const currentSubject = getSubjectFromUrl();
+    if (currentSubject) {
+      setSubject(currentSubject);
+    }
+    if (typeof window !== 'undefined' && (window.location.hash === '#enquiry_form' || window.location.href.includes('#enquiry_form'))) {
+      const el = document.getElementById('enquiry_form');
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }, 150);
+      }
+    }
+  }, [searchParams]);
 
   React.useEffect(() => {
     api.get('/website-data').then(res => {
@@ -41,13 +75,20 @@ export default function ContactPage() {
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const inquirySubject = (formData.get('type') as string) || subject;
+
+    if (!inquirySubject) {
+      toast.error('Please select a subject');
+      return;
+    }
+
     setIsSubmitting(true);
 
-    const formData = new FormData(event.currentTarget);
     const data = {
       name: formData.get('name'),
       mobile: formatPhoneWithCountryCode(mobile),
-      subject: formData.get('type'),
+      subject: inquirySubject,
       message: formData.get('message'),
     };
 
@@ -55,6 +96,7 @@ export default function ContactPage() {
       await api.post('/inquiries', data);
       toast.success('Inquiry submitted successfully! We will contact you soon.');
       (event.target as HTMLFormElement).reset();
+      setSubject("");
     } catch (error) {
       toast.error('Failed to submit inquiry. Please try again.');
     } finally {
@@ -155,7 +197,7 @@ export default function ContactPage() {
                   className="w-9.5 h-9.5 sm:w-10.5 sm:h-10.5 rounded-full flex items-center justify-center text-yellow-500 hover:text-emerald-600 bg-yellow-400/10 border border-yellow-400/20 hover:border-emerald-300 hover:bg-emerald-50 transition-all cursor-pointer hover:scale-105"
                   aria-label="WhatsApp"
                 >
-                  <MessageCircle className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+                  <WhatsApp className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
                 </a>
               </div>
             </div>
@@ -171,7 +213,7 @@ export default function ContactPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-1.5">
                   <label className="text-[11px] sm:text-xs font-bold text-[#0f172a]">Full Name</label>
-                  <Input name="name" required placeholder="your name" className="h-10 sm:h-11 bg-slate-50/50 focus:border-yellow-400 focus:ring-yellow-400 text-xs sm:text-sm placeholder:text-[11px] sm:placeholder:text-xs" />
+                  <Input name="name" required placeholder="your name" className="h-10 sm:h-11 bg-slate-50/50 focus:border-yellow-400 focus:ring-yellow-400 text-xs sm:text-xs placeholder:text-xs sm:placeholder:text-xs" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[11px] sm:text-xs font-bold text-[#0f172a]">Mobile Number</label>
@@ -180,28 +222,29 @@ export default function ContactPage() {
                     value={mobile}
                     onChange={(val) => setMobile(val)}
                     placeholder="7xxxxxxxx"
+                    className="h-10 sm:h-11 bg-slate-50/50 text-xs sm:text-xs"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-[11px] sm:text-xs font-bold text-[#0f172a]">Email Address</label>
-                <Input name="email" placeholder="your email" type="email" className="h-10 sm:h-11 bg-slate-50/50 focus:border-yellow-400 focus:ring-yellow-400 text-xs sm:text-sm placeholder:text-[11px] sm:placeholder:text-xs" />
+                <Input name="email" placeholder="your email" type="email" className="h-10 sm:h-11 bg-slate-50/50 focus:border-yellow-400 focus:ring-yellow-400 text-xs sm:text-xs placeholder:text-xs sm:placeholder:text-xs" />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-[11px] sm:text-xs font-bold text-[#0f172a]">Subject</label>
                 <input type="hidden" name="type" value={subject} />
-                <Select value={subject} onValueChange={setSubject}>
-                  <SelectTrigger className="h-10 sm:h-11 bg-slate-50/50 text-xs sm:text-sm">
+                <Select key={subject} value={subject} onValueChange={setSubject}>
+                  <SelectTrigger className="h-10 sm:h-11 bg-slate-50/50 text-xs sm:text-xs font-normal text-slate-700">
                     <SelectValue placeholder="Select Subject" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Tournament">Tournament</SelectItem>
-                    <SelectItem value="Full Day Court Booking">Full Day Court Booking</SelectItem>
-                    <SelectItem value="Badminton Court Membership">Badminton Court Membership</SelectItem>
-                    <SelectItem value="General Inquiry">General Inquiry</SelectItem>
-                    <SelectItem value="Others">Others</SelectItem>
+                  <SelectContent className="text-xs sm:text-xs">
+                    <SelectItem value="Tournament" className="text-xs sm:text-xs">Tournament</SelectItem>
+                    <SelectItem value="Full Day Court Booking" className="text-xs sm:text-xs">Full Day Court Booking</SelectItem>
+                    <SelectItem value="Badminton Court Membership" className="text-xs sm:text-xs">Badminton Court Membership</SelectItem>
+                    <SelectItem value="General Inquiry" className="text-xs sm:text-xs">General Inquiry</SelectItem>
+                    <SelectItem value="Others" className="text-xs sm:text-xs">Others</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -211,7 +254,7 @@ export default function ContactPage() {
                 <textarea
                   name="message"
                   required
-                  className="flex w-full rounded-md border border-input bg-slate-50/50 px-3 py-2 text-xs sm:text-sm ring-offset-background placeholder:text-muted-foreground placeholder:text-[11px] sm:placeholder:text-xs focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 disabled:cursor-not-allowed disabled:opacity-50 min-h-24 sm:min-h-30"
+                  className="flex w-full rounded-md border border-input bg-slate-50/50 px-3 py-2 text-xs sm:text-xs ring-offset-background placeholder:text-muted-foreground placeholder:text-xs sm:placeholder:text-xs focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 disabled:cursor-not-allowed disabled:opacity-50 min-h-24 sm:min-h-30"
                   placeholder="Outline any custom equipment, boards, umpire needs or schedule preferences..."
                 />
               </div>
@@ -226,5 +269,17 @@ export default function ContactPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ContactPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
+      <ContactFormContent />
+    </Suspense>
   );
 }

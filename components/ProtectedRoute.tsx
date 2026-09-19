@@ -47,7 +47,15 @@ export default function ProtectedRoute({
       return;
     }
 
-    // 3. Case-insensitive role check
+    // 3. Block guest users (is_guest === true) from accessing user dashboard
+    if (user.is_guest) {
+      logout();
+      setIsAuthorized(false);
+      router.replace('/availability');
+      return;
+    }
+
+    // 4. Case-insensitive role check
     const userRoleLower = user.role ? String(user.role).toLowerCase() : 'user';
     const hasAccess = allowedRoles.length === 0 || allowedRoles.some(
       r => r && String(r).toLowerCase() === userRoleLower
