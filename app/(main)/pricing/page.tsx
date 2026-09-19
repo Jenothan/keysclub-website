@@ -37,6 +37,15 @@ export default function PricingPage() {
       }
     };
     fetchData();
+
+    if (typeof window !== 'undefined' && (window.location.hash === '#membership_pricing' || window.location.href.includes('#membership_pricing'))) {
+      const el = document.getElementById('membership_pricing');
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 200);
+      }
+    }
   }, []);
 
   return (
@@ -140,7 +149,7 @@ export default function PricingPage() {
             </div>
 
             {/* Membership Pricing */}
-            <div className="bg-[#0f172a] rounded-2xl p-6 sm:p-8 shadow-xl border border-slate-800 flex flex-col relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-2xl md:-translate-y-2 z-10">
+            <div id="membership_pricing" className="bg-[#0f172a] rounded-2xl p-6 sm:p-8 shadow-xl border border-slate-800 flex flex-col relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-2xl md:-translate-y-2 z-10 scroll-mt-24">
               <div className="absolute top-0 right-0 bg-yellow-400 text-[#0f172a] text-[10px] sm:text-xs font-bold px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-bl-xl rounded-tr-2xl uppercase tracking-wider shadow-sm">
                 Most Popular
               </div>

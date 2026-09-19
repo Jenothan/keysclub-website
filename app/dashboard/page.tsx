@@ -64,6 +64,17 @@ export default function UserDashboard() {
   useEffect(() => {
     if (user) {
       fetchDashboardData();
+
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const openFromUrl = urlParams.get('open_membership') === 'true';
+        const openFromStorage = sessionStorage.getItem('open_membership_modal') === 'true';
+
+        if (openFromUrl || openFromStorage) {
+          sessionStorage.removeItem('open_membership_modal');
+          setIsRequestModalOpen(true);
+        }
+      }
     }
   }, [user]);
 

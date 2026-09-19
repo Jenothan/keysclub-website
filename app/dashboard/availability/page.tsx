@@ -1,7 +1,5 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import ChevronLeft from '@mui/icons-material/ChevronLeft';
-import ChevronRight from '@mui/icons-material/ChevronRight';
 import Clock from '@mui/icons-material/AccessTime';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import { useRouter } from 'next/navigation';
@@ -13,6 +11,8 @@ import api from '@/lib/axios';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import Lock from '@mui/icons-material/LockOutlined';
+import MembershipRequestModal from '@/components/MembershipRequestModal';
 import { isPeakDay, isPeakSlot, PeakConfig, DEFAULT_PEAK_CONFIG } from '@/lib/peakUtils';
 
 export default function DashboardAvailabilityPage() {
@@ -21,6 +21,7 @@ export default function DashboardAvailabilityPage() {
   const isLoggedIn = !!user;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMembershipModalOpen, setIsMembershipModalOpen] = useState(false);
   const [selectedSlots, setSelectedSlots] = useState<any[]>([]);
   const [calendarDate, setCalendarDate] = useState<Date | undefined>(new Date());
   const [slots, setSlots] = useState<{ time: string; status: string; start_time: string; end_time: string; court_id: number; is_peak?: boolean; is_peak_day?: boolean }[]>([]);
@@ -36,7 +37,7 @@ export default function DashboardAvailabilityPage() {
           peak_off_days: Array.isArray(res.data.peak_off_days) ? res.data.peak_off_days : ['Saturday', 'Sunday'],
         });
       }
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   const fetchAvailability = async () => {
@@ -45,7 +46,7 @@ export default function DashboardAvailabilityPage() {
     try {
       const dateStr = format(calendarDate, 'yyyy-MM-dd');
       const res = await api.get(`/availability?date=${dateStr}`);
-      
+
       const formatTime = (timeStr: string) => {
         if (!timeStr) return '';
         const [hours, minutes] = timeStr.split(':');
@@ -68,7 +69,7 @@ export default function DashboardAvailabilityPage() {
       for (let hour = 6; hour < 22; hour++) {
         const startStr = `${hour.toString().padStart(2, '0')}:00:00`;
         const endStr = `${(hour + 1).toString().padStart(2, '0')}:00:00`;
-        
+
         const backendSlot = backendSlots.find((bs: any) => bs.start_time === startStr);
         let status = backendSlot ? backendSlot.status : 'Available';
 
@@ -82,7 +83,7 @@ export default function DashboardAvailabilityPage() {
             status = 'Past';
           }
         }
-        
+
         const isPeak = isPeakSlot(startStr, endStr, calendarDate, peakConfig);
 
         hardcodedSlots.push({
@@ -95,7 +96,7 @@ export default function DashboardAvailabilityPage() {
           is_peak_day: isCurrentPeakDay
         });
       }
-      
+
       setSlots(hardcodedSlots);
       setSelectedSlots([]);
     } catch (error) {
@@ -110,17 +111,35 @@ export default function DashboardAvailabilityPage() {
     fetchAvailability();
   }, [calendarDate, peakConfig]);
 
+  const isAdmin = user?.role === 'Admin' || user?.role === 'Super Admin';
+  const isMember = !!user && !user.is_guest && !!user.is_member;
+  const isMemberOrAdmin = isAdmin || isMember;
+
+  const showPeakRestrictionToast = () => {
+    const offDaysText = peakConfig.peak_off_days.join(' & ');
+    toast.error(
+      `Peak hour slots are reserved exclusively for registered Members. Please select non-peak days (${offDaysText}) or non-peak hours to book.`,
+      { duration: 10000, id: 'peak-hour-toast' }
+    );
+  };
+
+  const hidePeakRestrictionToast = () => {
+    toast.dismiss('peak-hour-toast');
+  };
+
+  const handleUpgradeClick = () => {
+    toast.dismiss('peak-hour-toast');
+    router.push('/pricing#membership_pricing');
+  };
+
   const handleToggleSlot = (slot: any) => {
     const isSelected = selectedSlots.some(s => s.start_time === slot.start_time);
     if (isSelected) {
       setSelectedSlots(selectedSlots.filter(s => s.start_time !== slot.start_time));
     } else {
-      const isAdmin = user?.role === 'Admin' || user?.role === 'Super Admin';
-      const isMember = !!user && !user.is_guest;
-
       // 1. Peak Hour Member Restriction Check
-      if (slot.is_peak && slot.is_peak_day && !isAdmin && !isMember) {
-        toast.error('Peak hour slots are reserved exclusively for registered Members. Please log in or choose non-peak slots.', { duration: 4000 });
+      if (slot.is_peak && slot.is_peak_day && !isMemberOrAdmin) {
+        showPeakRestrictionToast();
         return;
       }
 
@@ -140,7 +159,7 @@ export default function DashboardAvailabilityPage() {
       }
 
       setSelectedSlots([...selectedSlots, {
-        date: calendarDate ? format(calendarDate, "EEEE, dd MMMM yyyy") : "No date selected", 
+        date: calendarDate ? format(calendarDate, "EEEE, dd MMMM yyyy") : "No date selected",
         time: slot.time,
         court: 'KEYS Club Badminton Court',
         court_id: slot.court_id || 1,
@@ -184,11 +203,11 @@ export default function DashboardAvailabilityPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 md:p-10 w-full space-y-6 sm:space-y-8 pb-28 md:pb-20 min-h-screen">
-      <div className="max-w-7xl mx-auto">
+    <div className="bg-slate-50 min-h-screen pb-28 sm:pb-16 pt-6 sm:pt-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 sm:mb-10">
           <div>
             <h1 className="text-xl sm:text-2xl font-black text-[#0f172a] tracking-tight mb-1">
               Badminton Court Availability
@@ -216,7 +235,7 @@ export default function DashboardAvailabilityPage() {
                   selected={calendarDate}
                   onSelect={setCalendarDate}
                   disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                  className="rounded-md border-0"
+                  className="rounded-md border-0 w-full flex justify-center"
                 />
               </div>
             </div>
@@ -230,7 +249,7 @@ export default function DashboardAvailabilityPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                 <div>
                   <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                    Slots for {calendarDate ? format(calendarDate, "EEEE, MMM dd") : "Selected Date"}
+                    Available Slots for {calendarDate ? format(calendarDate, "EEEE, MMM dd") : "Selected Date"}
                   </h2>
                   <p className="text-slate-400 text-xs font-bold mt-0.5">Tap available slots to select multiple</p>
                 </div>
@@ -262,8 +281,8 @@ export default function DashboardAvailabilityPage() {
               {/* ========================================================================= */}
               <div className="grid grid-cols-2 gap-2 sm:hidden">
                 {isLoading ? (
-                  Array.from({ length: 12 }).map((_, i) => (
-                    <Skeleton key={i} className="h-16 rounded-xl w-full" />
+                  Array.from({ length: 8 }).map((_, i) => (
+                    <Skeleton key={i} className="h-16 w-full rounded-xl" />
                   ))
                 ) : slots.length === 0 ? (
                   <div className="col-span-full py-8 text-center text-xs font-bold text-slate-400">
@@ -283,16 +302,47 @@ export default function DashboardAvailabilityPage() {
                     const isPending = slot.status === 'Pending';
                     const isBlocked = slot.status === 'Blocked';
                     const isPeakActive = slot.is_peak && slot.is_peak_day && isAvailable;
+                    const isPeakGlowingForUser = isPeakActive && isMemberOrAdmin;
+                    const isPeakRestrictedForUser = isPeakActive && !isMemberOrAdmin;
+
+                    if (isPeakRestrictedForUser) {
+                      return (
+                        <div
+                          key={index}
+                          onMouseEnter={() => showPeakRestrictionToast()}
+                          onMouseLeave={() => hidePeakRestrictionToast()}
+                          onClick={handleUpgradeClick}
+                          className="p-2.5 rounded-xl border border-amber-200/80 bg-amber-50/60 transition-all flex flex-col justify-between select-none cursor-pointer min-h-[68px] overflow-hidden hover:border-amber-400 active:scale-95"
+                        >
+                          <div className="flex items-center justify-between gap-1 min-w-0">
+                            <span className="text-[10px] font-extrabold text-slate-900 tracking-tighter whitespace-nowrap truncate min-w-0 flex-1">
+                              {slot.time}
+                            </span>
+                            <Lock className="w-3.5 h-3.5 text-amber-700 shrink-0 ml-0.5" />
+                          </div>
+
+                          <div className="flex items-center justify-between gap-1 mt-1 pt-1 border-t border-amber-200/60">
+                            <span className="uppercase tracking-wider font-extrabold text-[8.5px] text-amber-900">
+                              🔒 Members Only
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
 
                     return (
                       <div
                         key={index}
-                        onClick={() => isAvailable && handleToggleSlot(slot)}
+                        onClick={() => {
+                          if (isAvailable) {
+                            handleToggleSlot(slot);
+                          }
+                        }}
                         className={cn(
                           "relative p-2.5 rounded-xl border transition-all flex flex-col justify-center select-none cursor-pointer min-h-[64px] overflow-hidden",
                           isSelected && "bg-yellow-400/15 border-2 border-yellow-400 shadow-xs ring-1 ring-yellow-400/30",
                           !isSelected && isAvailable && !isPeakActive && "bg-slate-50 border-slate-200 active:scale-95 hover:border-yellow-400",
-                          !isSelected && isPeakActive && "bg-amber-50/30 border-2 border-amber-400 ring-2 ring-yellow-400/80 shadow-[0_0_15px_rgba(250,204,21,0.5)] animate-pulse active:scale-95",
+                          !isSelected && isPeakGlowingForUser && "bg-amber-50/30 border-2 border-amber-400 ring-2 ring-yellow-400/80 shadow-[0_0_15px_rgba(250,204,21,0.5)] animate-pulse active:scale-95",
                           isPast && "bg-slate-100/60 border-slate-200 opacity-50 pointer-events-none cursor-not-allowed",
                           isBooked && "bg-red-50/80 border-red-200 text-red-950",
                           isPending && "bg-amber-50/80 border-amber-200 text-amber-950",
@@ -316,11 +366,11 @@ export default function DashboardAvailabilityPage() {
                           )}>
                             {slot.time}
                           </span>
-                          
+
                           {/* Status Dot */}
                           <span className={cn(
                             "w-2 h-2 rounded-full shrink-0 ml-0.5",
-                            isAvailable && (isSelected ? "bg-slate-900" : (isPeakActive ? "bg-amber-500 animate-pulse" : "bg-emerald-500")),
+                            isAvailable && (isSelected ? "bg-slate-900" : (isPeakGlowingForUser ? "bg-amber-500 animate-pulse" : (isPeakRestrictedForUser ? "bg-amber-500" : "bg-emerald-500"))),
                             isPast && "bg-slate-300",
                             isPending && "bg-amber-500",
                             isBooked && "bg-red-500",
@@ -332,13 +382,13 @@ export default function DashboardAvailabilityPage() {
                         <div className="flex items-center justify-between text-[9px] mt-1 pt-0.5 border-t border-slate-200/50">
                           <span className={cn(
                             "uppercase tracking-wider font-extrabold text-[9px]",
-                            isAvailable && (isSelected ? "text-slate-900" : (isPeakActive ? "text-amber-800" : "text-emerald-700")),
+                            isAvailable && (isSelected ? "text-slate-900" : (isPeakGlowingForUser ? "text-amber-800 font-black" : (isPeakRestrictedForUser ? "text-amber-800" : "text-emerald-700"))),
                             isPast && "text-slate-400 font-normal",
                             isPending && "text-amber-700",
                             isBooked && "text-red-700",
                             isBlocked && "text-rose-700"
                           )}>
-                            {isPast ? 'Past' : (isSelected ? 'Selected' : (isPeakActive ? '⚡ Peak' : (isBlocked ? 'Unavailable' : slot.status)))}
+                            {isPast ? 'Past' : (isSelected ? 'Selected' : (isPeakGlowingForUser ? '⚡ Peak Hour' : (isPeakRestrictedForUser ? '⚡ Peak (Member)' : (isBlocked ? 'Unavailable' : slot.status))))}
                           </span>
                         </div>
                       </div>
@@ -372,22 +422,55 @@ export default function DashboardAvailabilityPage() {
                 ) : (
                   slots.map((slot, index) => {
                     const isSelected = selectedSlots.some(s => s.start_time === slot.start_time);
-                    const isPeakActive = slot.is_peak && slot.is_peak_day && slot.status === 'Available';
-                    
+                    const isAvailable = slot.status === 'Available';
+                    const isPeakActive = slot.is_peak && slot.is_peak_day && isAvailable;
+                    const isPeakGlowingForUser = isPeakActive && isMemberOrAdmin;
+                    const isPeakRestrictedForUser = isPeakActive && !isMemberOrAdmin;
+
+                    if (isPeakRestrictedForUser) {
+                      return (
+                        <div
+                          key={index}
+                          onMouseEnter={() => showPeakRestrictionToast()}
+                          onMouseLeave={() => hidePeakRestrictionToast()}
+                          onClick={handleUpgradeClick}
+                          className="flex items-center justify-between p-3.5 sm:p-4 rounded-xl border border-amber-200/80 bg-amber-50/40 text-slate-900 shadow-2xs hover:border-amber-400 hover:bg-amber-100/30 transition-all cursor-pointer group"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-amber-100 text-amber-800 border border-amber-200 shadow-2xs">
+                              <Lock className="w-4 h-4 text-amber-700" />
+                            </div>
+                            <div>
+                              <span className="font-bold text-body-sm tracking-tight text-slate-900">{slot.time}</span>
+                              {/* <div className="flex items-center gap-1.5 text-[10.5px] font-extrabold text-amber-900 mt-0.5">
+                                <span>🔒 Peak Hour</span>
+                                <span>•</span>
+                                <span>Members Only</span>
+                              </div> */}
+                            </div>
+                          </div>
+
+                          <span className="bg-amber-100 text-amber-900 border border-amber-300 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                            ⚡ Members Only
+                          </span>
+                        </div>
+                      );
+                    }
+
                     let cardStyle = 'border-slate-100 bg-slate-50 opacity-70';
                     let clockStyle = 'bg-white text-slate-400';
                     let textStyle = 'text-slate-800';
 
                     if (isSelected) {
-                      cardStyle = 'border-[#fbbf24] bg-[#fbbf24] text-slate-900 shadow-[0_0_0_1px_#fbbf24]';
-                      clockStyle = 'bg-slate-900 text-[#fbbf24]';
+                      cardStyle = 'border-yellow-400 bg-yellow-400 text-slate-900 shadow-[0_0_0_1px_#facc15]';
+                      clockStyle = 'bg-slate-900 text-yellow-400';
                       textStyle = 'text-slate-900';
-                    } else if (isPeakActive) {
+                    } else if (isPeakGlowingForUser) {
                       cardStyle = 'cursor-pointer bg-amber-50/30 border-2 border-amber-400 ring-2 ring-yellow-400/80 shadow-[0_0_15px_rgba(250,204,21,0.5)] animate-pulse hover:bg-yellow-100/30';
                       clockStyle = 'bg-amber-100 text-amber-900 border border-amber-300';
                       textStyle = 'text-amber-950 font-extrabold';
                     } else if (slot.status === 'Available') {
-                      cardStyle = 'cursor-pointer hover:border-[#fbbf24] hover:shadow-sm bg-[#f8fafc] border-slate-200';
+                      cardStyle = 'cursor-pointer hover:border-yellow-400 hover:shadow-sm bg-[#f8fafc] border-slate-200';
                       clockStyle = 'bg-white text-slate-400 group-hover:text-slate-900';
                       textStyle = 'text-slate-800';
                     } else if (slot.status === 'Past') {
@@ -411,14 +494,21 @@ export default function DashboardAvailabilityPage() {
                     return (
                       <div
                         key={index}
-                        onClick={() => slot.status === 'Available' && handleToggleSlot(slot)}
+                        onMouseEnter={() => isPeakRestrictedForUser && showPeakRestrictionToast()}
+                        onClick={() => {
+                          if (isPeakRestrictedForUser) {
+                            showPeakRestrictionToast();
+                          } else if (isAvailable) {
+                            handleToggleSlot(slot);
+                          }
+                        }}
                         className={`flex items-center justify-between p-4 rounded-xl border transition-all group ${cardStyle}`}
                       >
                         <div className="flex items-center gap-3">
-                          {slot.status === 'Available' && (
+                          {slot.status === 'Available' && !isPeakRestrictedForUser && (
                             <div className="relative flex items-center justify-center w-5 h-5">
-                              <input 
-                                type="checkbox" 
+                              <input
+                                type="checkbox"
                                 checked={isSelected}
                                 readOnly
                                 className="peer appearance-none w-5 h-5 border-2 border-slate-300 rounded focus:ring-[#fbbf24] checked:bg-slate-900 checked:border-slate-900 transition-colors cursor-pointer"
@@ -454,8 +544,21 @@ export default function DashboardAvailabilityPage() {
                           )}
 
                           {slot.status === 'Available' && (
-                            <span className={`font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider ${isSelected ? 'bg-slate-900 text-yellow-400' : 'bg-emerald-100 text-emerald-700'}`}>
-                              {isSelected ? 'Selected' : 'Available'}
+                            <span className={`font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider ${isSelected
+                              ? 'bg-slate-900 text-yellow-400'
+                              : (isPeakGlowingForUser
+                                ? 'bg-amber-400 text-slate-950 font-black border border-amber-500 shadow-2xs animate-pulse'
+                                : (isPeakRestrictedForUser
+                                  ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                                  : 'bg-emerald-100 text-emerald-700'))
+                              }`}>
+                              {isSelected
+                                ? 'Selected'
+                                : (isPeakGlowingForUser
+                                  ? '⚡ Peak Hour'
+                                  : (isPeakRestrictedForUser
+                                    ? '⚡ Peak (Members Only)'
+                                    : 'Available'))}
                             </span>
                           )}
 
@@ -480,11 +583,10 @@ export default function DashboardAvailabilityPage() {
                   <button
                     onClick={handleBookSelected}
                     disabled={selectedSlots.length === 0}
-                    className={`font-bold text-body-sm px-8 py-3 rounded-lg transition shadow-sm w-full sm:w-auto ${
-                      selectedSlots.length > 0 
-                        ? 'bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 cursor-pointer' 
-                        : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                    }`}
+                    className={`font-bold text-body-sm px-8 py-3 rounded-lg transition shadow-sm w-full sm:w-auto ${selectedSlots.length > 0
+                      ? 'bg-yellow-400 hover:bg-yellow-400/90 text-slate-900 cursor-pointer'
+                      : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                      }`}
                   >
                     Book Selected Slots
                   </button>
@@ -535,6 +637,15 @@ export default function DashboardAvailabilityPage() {
         onBookingSuccess={() => {
           setSelectedSlots([]);
           fetchAvailability();
+        }}
+      />
+
+      <MembershipRequestModal
+        isOpen={isMembershipModalOpen}
+        onClose={() => setIsMembershipModalOpen(false)}
+        onSuccess={() => {
+          setIsMembershipModalOpen(false);
+          toast.success('Membership request submitted successfully!');
         }}
       />
     </div>

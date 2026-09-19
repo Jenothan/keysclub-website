@@ -69,7 +69,7 @@ export default function MembershipRequestModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100">
+      <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-lg bg-white rounded-3xl p-5 sm:p-8 shadow-2xl border border-slate-100 max-h-[85vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none">
         <DialogHeader className="border-b border-slate-100 pb-4 mb-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-yellow-400/20 text-slate-900 border border-yellow-400/40 flex items-center justify-center font-black shrink-0 shadow-sm">

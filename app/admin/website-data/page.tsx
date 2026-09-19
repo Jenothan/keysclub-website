@@ -20,7 +20,7 @@ export default function WebsiteDataPage() {
   const { user } = useAuthStore();
   const role = user?.role;
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const [savingSection, setSavingSection] = useState<'contact' | 'peak' | 'court' | null>(null);
 
   const [formData, setFormData] = useState({
     primary_phone: '',
@@ -64,15 +64,16 @@ export default function WebsiteDataPage() {
     }
   }, [role]);
 
-  const handleSave = async () => {
-    setIsSaving(true);
+  const handleSave = async (section: 'contact' | 'peak' | 'court') => {
+    if (savingSection) return;
+    setSavingSection(section);
     try {
       await api.post('/super-admin/website-data', formData);
       toast.success('Website data and peak settings updated successfully');
     } catch (error) {
       toast.error('Failed to update website data');
     } finally {
-      setIsSaving(false);
+      setSavingSection(null);
     }
   };
 
@@ -186,24 +187,32 @@ export default function WebsiteDataPage() {
             </div>
           </div>
           <div className="mt-6 flex justify-end">
-            <button onClick={handleSave} disabled={isSaving} className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold text-xs sm:text-sm h-11 px-8 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer">
-              <Save className="w-4 h-4" />
-              {isSaving ? 'Saving...' : 'Save Changes'}
+            <button
+              onClick={() => handleSave('contact')}
+              disabled={savingSection === 'contact'}
+              className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold text-xs sm:text-sm h-11 px-8 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
+            >
+              {savingSection === 'contact' ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  <span>Save Changes</span>
+                </>
+              )}
             </button>
           </div>
         </div>
 
-        {/* ⚡ PEAK HOURS CONFIGURATION SECTION FOR SUPER ADMIN */}
-        <div className="bg-yellow-50/60 rounded-2xl border border-yellow-200 shadow-sm p-5 sm:p-8">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-base sm:text-lg font-black text-[#0f172a] flex items-center gap-2">
-              ⚡ Member-Only Peak Hours Configuration
-            </h2>
-            <span className="text-[10px] font-black text-slate-900 bg-yellow-400 border border-yellow-500 px-3 py-1 rounded-full uppercase tracking-wider shadow-2xs">
-              Super Admin Exclusive
-            </span>
-          </div>
-          <p className="text-xs text-slate-600 mb-6 leading-relaxed">
+        {/* Member-Only Peak Hours Configuration */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-8">
+          <h2 className="text-base sm:text-lg font-extrabold text-[#0f172a] mb-2 flex items-center gap-2">
+            ⚡ Member-Only Peak Hours Configuration
+          </h2>
+          <p className="text-xs text-slate-500 mb-6 leading-relaxed">
             During Peak Hours, court slots are restricted exclusively to registered <strong>Members</strong> (guest bookings not allowed).
             Peak slots display glowing borders on peak days. Set daily time range and select 2 Off-Days per week when Peak Hours are inactive.
           </p>
@@ -212,13 +221,13 @@ export default function WebsiteDataPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-1.5">
                 <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
-                  <Clock className="w-3.5 h-3.5 text-yellow-600" /> Peak Hours Start Time
+                  <Clock className="w-3.5 h-3.5 text-yellow-500" /> Peak Hours Start Time
                 </label>
                 <Select
                   value={formData.peak_start_time}
                   onValueChange={(val) => setFormData({ ...formData, peak_start_time: val })}
                 >
-                  <SelectTrigger className="h-11 bg-white border-yellow-300 text-xs sm:text-sm font-bold rounded-xl focus:border-yellow-500">
+                  <SelectTrigger className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl border-slate-200">
                     <SelectValue placeholder="Select Start Time" />
                   </SelectTrigger>
                   <SelectContent>
@@ -233,13 +242,13 @@ export default function WebsiteDataPage() {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-extrabold text-[#0f172a] flex items-center gap-2 uppercase tracking-wider">
-                  <Clock className="w-3.5 h-3.5 text-yellow-600" /> Peak Hours End Time
+                  <Clock className="w-3.5 h-3.5 text-yellow-500" /> Peak Hours End Time
                 </label>
                 <Select
                   value={formData.peak_end_time}
                   onValueChange={(val) => setFormData({ ...formData, peak_end_time: val })}
                 >
-                  <SelectTrigger className="h-11 bg-white border-yellow-300 text-xs sm:text-sm font-bold rounded-xl focus:border-yellow-500">
+                  <SelectTrigger className="h-11 bg-slate-50/50 font-medium text-xs sm:text-sm rounded-xl border-slate-200">
                     <SelectValue placeholder="Select End Time" />
                   </SelectTrigger>
                   <SelectContent>
@@ -254,12 +263,12 @@ export default function WebsiteDataPage() {
             </div>
 
             {/* Peak Off Days Selection */}
-            <div className="space-y-2 pt-2 border-t border-yellow-200">
+            <div className="space-y-2 pt-4 border-t border-slate-100">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-extrabold text-[#0f172a] uppercase tracking-wider">
                   Peak Off-Days (Select 2 Days where Peak Hours do NOT apply)
                 </label>
-                <span className="text-[11px] font-black text-slate-800">
+                <span className="text-[11px] font-bold text-slate-500">
                   {formData.peak_off_days.length}/2 Off-Days Selected
                 </span>
               </div>
@@ -271,9 +280,9 @@ export default function WebsiteDataPage() {
                       key={day}
                       type="button"
                       onClick={() => togglePeakOffDay(day)}
-                      className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer border ${isSelected
-                          ? "bg-yellow-400 text-slate-900 border-yellow-500 shadow-sm"
-                          : "bg-white text-slate-700 border-slate-200 hover:border-yellow-400"
+                      className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer border ${isSelected
+                        ? "bg-yellow-400 text-slate-900 border-yellow-500 shadow-xs"
+                        : "bg-slate-50 text-slate-700 border-slate-200 hover:border-yellow-400"
                         }`}
                     >
                       {day} {isSelected ? "✓ (Off-Day)" : ""}
@@ -285,9 +294,22 @@ export default function WebsiteDataPage() {
           </div>
 
           <div className="mt-6 flex justify-end">
-            <button onClick={handleSave} disabled={isSaving} className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold text-xs sm:text-sm h-11 px-8 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer">
-              <Save className="w-4 h-4" />
-              {isSaving ? 'Saving...' : 'Save Peak Settings'}
+            <button
+              onClick={() => handleSave('peak')}
+              disabled={savingSection === 'peak'}
+              className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold text-xs sm:text-sm h-11 px-8 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
+            >
+              {savingSection === 'peak' ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  <span>Save Changes</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -324,9 +346,22 @@ export default function WebsiteDataPage() {
             </div>
           </div>
           <div className="mt-6 flex justify-end">
-            <button onClick={handleSave} disabled={isSaving} className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold text-xs sm:text-sm h-11 px-8 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer">
-              <Save className="w-4 h-4" />
-              {isSaving ? 'Saving...' : 'Save Changes'}
+            <button
+              onClick={() => handleSave('court')}
+              disabled={savingSection === 'court'}
+              className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold text-xs sm:text-sm h-11 px-8 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
+            >
+              {savingSection === 'court' ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  <span>Save Changes</span>
+                </>
+              )}
             </button>
           </div>
         </div>

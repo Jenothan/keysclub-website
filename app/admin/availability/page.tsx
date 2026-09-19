@@ -639,13 +639,13 @@ export default function AdminAvailabilityPage() {
 
                           <span className={cn(
                             "text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs",
-                            slot.status === 'Available' && (isSelected ? "bg-slate-900 text-yellow-400" : "bg-emerald-100 text-emerald-700"),
+                            slot.status === 'Available' && (isSelected ? "bg-slate-900 text-yellow-400" : (isPeakActive ? "bg-amber-400 text-slate-950 font-black border border-amber-500 shadow-2xs animate-pulse" : "bg-emerald-100 text-emerald-700")),
                             slot.status === 'Past' && "bg-slate-200 text-slate-500 font-extrabold",
                             slot.status === 'Pending' && "bg-amber-500 text-white",
                             slot.status === 'Booked' && "bg-red-600 text-white font-black",
                             slot.status === 'Blocked' && "bg-rose-600 text-white font-black"
                           )}>
-                            {slot.status === 'Past' ? 'Past Slot' : slot.status}
+                            {slot.status === 'Past' ? 'Past Slot' : (isSelected ? 'Selected' : (isPeakActive ? '⚡ Peak Hour' : slot.status))}
                           </span>
                         </div>
                       </div>

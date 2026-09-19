@@ -32,6 +32,7 @@ export default function BookingModal({ isOpen, onClose, selectedSlots, onBooking
 
   const [step, setStep] = useState(1);
   const [isInitiallyLoggedIn, setIsInitiallyLoggedIn] = useState(false);
+  const [hasSetPasswordInSession, setHasSetPasswordInSession] = useState(false);
 
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
@@ -55,7 +56,7 @@ export default function BookingModal({ isOpen, onClose, selectedSlots, onBooking
 
   const handleModalClose = () => {
     const currentState = useAuthStore.getState();
-    if (currentState.user?.is_guest) {
+    if (!isInitiallyLoggedIn && !hasSetPasswordInSession) {
       currentState.logout();
     }
     if (onBookingSuccess) {
@@ -69,6 +70,7 @@ export default function BookingModal({ isOpen, onClose, selectedSlots, onBooking
     if (isOpen) {
       const loggedIn = !!user && !user.is_guest;
       setIsInitiallyLoggedIn(loggedIn);
+      setHasSetPasswordInSession(false);
       if (loggedIn) {
         setStep(5); // Direct to Review & Notes if logged in as registered user
       } else {
@@ -206,6 +208,7 @@ export default function BookingModal({ isOpen, onClose, selectedSlots, onBooking
 
       if (response.data?.user) {
         setUser(response.data.user);
+        setHasSetPasswordInSession(true);
       }
       toast.success('Account created successfully!');
       setStep(5);
@@ -477,17 +480,17 @@ export default function BookingModal({ isOpen, onClose, selectedSlots, onBooking
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   <Button
                     onClick={() => handleAccountChoice('no')}
                     variant="outline"
-                    className="flex-1 h-12 text-slate-700 font-bold text-body border-slate-200 cursor-pointer"
+                    className="w-full h-11 sm:h-12 text-[11px] sm:text-sm font-black text-slate-700 border-slate-200 cursor-pointer px-1.5 text-center whitespace-normal leading-tight rounded-xl"
                   >
                     No, Continue as Guest
                   </Button>
                   <Button
                     onClick={() => handleAccountChoice('yes')}
-                    className="flex-1 h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-body cursor-pointer"
+                    className="w-full h-11 sm:h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-black text-[11px] sm:text-sm cursor-pointer px-1.5 text-center whitespace-normal leading-tight rounded-xl shadow-xs"
                   >
                     Yes, Set Password
                   </Button>
@@ -646,7 +649,7 @@ export default function BookingModal({ isOpen, onClose, selectedSlots, onBooking
                     disabled={isSubmitting}
                     className="flex-1 h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-body cursor-pointer"
                   >
-                    {isSubmitting ? 'Submitting...' : 'Submit Booking'}
+                    {isSubmitting ? 'Confirming...' : 'Confirm & Book Slot'}
                   </Button>
                 </div>
               </div>
@@ -659,9 +662,9 @@ export default function BookingModal({ isOpen, onClose, selectedSlots, onBooking
                   <Check className="w-8 h-8" />
                 </div>
 
-                <h2 className="text-[24px] font-extrabold text-[#0f172a] mb-2 tracking-tight text-center">Booking Request Submitted!</h2>
+                <h2 className="text-[24px] font-extrabold text-[#0f172a] mb-2 tracking-tight text-center">Booking Confirmed!</h2>
                 <p className="text-slate-500 text-body-sm mb-8 text-center max-w-sm">
-                  Your request has been sent to the club administrator. Your booking will be confirmed after admin approval.
+                  Your court booking is confirmed! Details have been sent via SMS to your mobile number.
                 </p>
 
                 <div className="w-full bg-slate-50/80 rounded-xl p-5 border border-slate-100 mb-8">
@@ -684,7 +687,7 @@ export default function BookingModal({ isOpen, onClose, selectedSlots, onBooking
                     </div>
                     <div className="flex justify-between items-center text-body-sm pt-1">
                       <span className="text-slate-500">Status</span>
-                      <span className="bg-yellow-100 text-yellow-700 font-bold text-[10px] px-2.5 py-1 rounded-md">Pending Confirmation</span>
+                      <span className="bg-emerald-100 text-emerald-700 font-bold text-[10px] px-2.5 py-1 rounded-md">Confirmed</span>
                     </div>
                   </div>
                 </div>
@@ -693,10 +696,10 @@ export default function BookingModal({ isOpen, onClose, selectedSlots, onBooking
                   onClick={handleModalClose}
                   className="w-full h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-body mb-4 cursor-pointer"
                 >
-                  {user && !user.is_guest ? 'Close & View My Bookings' : 'Close'}
+                  {isInitiallyLoggedIn ? 'Close & View My Bookings' : 'Close'}
                 </Button>
 
-                <p className="text-[11px] text-slate-400 text-center">Confirmation will be sent through SMS.</p>
+                <p className="text-[11px] text-slate-400 text-center">Confirmation details sent through SMS.</p>
               </div>
             )}
 

@@ -35,7 +35,7 @@ export default function AdminDashboardPage() {
   });
   const [stats, setStats] = useState({
     todays_bookings: 0,
-    pending_requests: 0,
+    pending_memberships: 0,
     new_inquiries: 0,
     confirmed_bookings: 0,
   });
@@ -71,8 +71,12 @@ export default function AdminDashboardPage() {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/admin/bookings');
-      const rawBookings = response.data;
+      const [bookingsRes, statsRes] = await Promise.all([
+        api.get('/admin/bookings'),
+        api.get('/admin/stats').catch(() => ({ data: {} }))
+      ]);
+
+      const rawBookings = bookingsRes.data;
       const groupedBookings = groupBookings(rawBookings);
 
       const todayStr = format(new Date(), 'yyyy-MM-dd');
@@ -83,13 +87,12 @@ export default function AdminDashboardPage() {
         return bDateStr === todayStr && b.status !== 'Cancelled' && b.status !== 'Rejected';
       }).length;
 
-      const pendingCount = groupedBookings.filter((b: GroupedBooking) => b.status === 'Pending').length;
       const confirmedCount = groupedBookings.filter((b: GroupedBooking) => b.status === 'Confirmed' || b.status === 'Ongoing').length;
 
       setStats({
         todays_bookings: todaysCount,
-        pending_requests: pendingCount,
-        new_inquiries: 0,
+        pending_memberships: statsRes.data?.pending_memberships ?? 0,
+        new_inquiries: statsRes.data?.new_inquiries ?? 0,
         confirmed_bookings: confirmedCount,
       });
 
@@ -173,10 +176,10 @@ export default function AdminDashboardPage() {
           {/* Left Column (2 stacked cards) */}
           <div className="space-y-4">
             
-            {/* Pending Requests Card */}
+            {/* Membership Requests Card */}
             <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Pending</span>
+                <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Memberships</span>
                 <div className="w-7 h-7 rounded-lg bg-yellow-400/20 text-yellow-600 border border-yellow-400/30 flex items-center justify-center">
                   <Calendar className="w-4 h-4" />
                 </div>
@@ -186,10 +189,10 @@ export default function AdminDashboardPage() {
                   <Skeleton className="h-8 w-14 rounded-lg my-0.5" />
                 ) : (
                   <h3 className="text-2xl font-black text-[#0f172a]">
-                    {stats.pending_requests.toString().padStart(2, '0')}
+                    {(stats.pending_memberships || 0).toString().padStart(2, '0')}
                   </h3>
                 )}
-                <p className="text-[10px] font-bold text-amber-600 mt-0.5">Requests</p>
+                <p className="text-[10px] font-bold text-amber-600 mt-0.5">Pending Approvals</p>
               </div>
             </div>
 
@@ -248,7 +251,7 @@ export default function AdminDashboardPage() {
         {/* 3. Bottom Latest Booking Requests List */}
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between px-1">
-            <h3 className="text-sm sm:text-base font-black text-[#0f172a] tracking-tight">Recent Booking Requests</h3>
+            <h3 className="text-sm sm:text-base font-black text-[#0f172a] tracking-tight">Recent Bookings</h3>
             <Link href="/admin/bookings" className="text-xs font-extrabold text-yellow-600 hover:underline">
               View All
             </Link>
@@ -329,91 +332,91 @@ export default function AdminDashboardPage() {
       <div className="hidden md:block space-y-8">
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
 
           {/* Today's Bookings */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-bold text-slate-500">Today's Bookings</span>
-              <div className="w-10 h-10 rounded-xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-5 md:p-6 border border-slate-100 shadow-sm flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-4 gap-2">
+              <span className="text-sm font-bold text-slate-500 truncate">Today's Bookings</span>
+              <div className="w-10 h-10 rounded-xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center shrink-0">
                 <Clock className="w-5 h-5" />
               </div>
             </div>
-            <div className="flex items-baseline gap-2">
+            <div className="flex items-baseline gap-2 flex-wrap">
               {loading ? (
                 <Skeleton className="h-9 w-16 rounded-lg my-0.5" />
               ) : (
                 <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.todays_bookings.toString().padStart(2, '0')}</h3>
               )}
-              <span className="text-lg font-bold text-[#0f172a]">Sessions</span>
+              <span className="text-base sm:text-lg font-bold text-[#0f172a]">Sessions</span>
             </div>
           </div>
 
-          {/* Pending Requests */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-bold text-slate-500">Pending Requests</span>
-              <div className="w-10 h-10 rounded-xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center">
+          {/* Membership Requests */}
+          <div className="bg-white rounded-2xl p-5 md:p-6 border border-slate-100 shadow-sm flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-4 gap-2">
+              <span className="text-sm font-bold text-slate-500 truncate">Membership Requests</span>
+              <div className="w-10 h-10 rounded-xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center shrink-0">
                 <Calendar className="w-5 h-5" />
               </div>
             </div>
-            <div className="flex items-baseline gap-2">
+            <div className="flex items-baseline gap-2 flex-wrap">
               {loading ? (
                 <Skeleton className="h-9 w-16 rounded-lg my-0.5" />
               ) : (
-                <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.pending_requests.toString().padStart(2, '0')}</h3>
+                <h3 className="text-3xl font-extrabold text-[#0f172a]">{(stats.pending_memberships || 0).toString().padStart(2, '0')}</h3>
               )}
-              <span className="text-lg font-bold text-[#0f172a]">Requests</span>
+              <span className="text-base sm:text-lg font-bold text-[#0f172a]">Applications</span>
             </div>
           </div>
 
           {/* Confirmed Bookings */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-bold text-slate-500">Confirmed Bookings</span>
-              <div className="w-10 h-10 rounded-xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-5 md:p-6 border border-slate-100 shadow-sm flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-4 gap-2">
+              <span className="text-sm font-bold text-slate-500 truncate">Confirmed Bookings</span>
+              <div className="w-10 h-10 rounded-xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-5 h-5" />
               </div>
             </div>
-            <div className="flex items-baseline gap-2">
+            <div className="flex items-baseline gap-2 flex-wrap">
               {loading ? (
                 <Skeleton className="h-9 w-16 rounded-lg my-0.5" />
               ) : (
                 <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.confirmed_bookings.toString().padStart(2, '0')}</h3>
               )}
-              <span className="text-lg font-bold text-[#0f172a]">Sessions</span>
+              <span className="text-base sm:text-lg font-bold text-[#0f172a]">Sessions</span>
             </div>
           </div>
 
           {/* New Inquiries */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-bold text-slate-500">New Inquiries</span>
-              <div className="w-10 h-10 rounded-xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-5 md:p-6 border border-slate-100 shadow-sm flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-4 gap-2">
+              <span className="text-sm font-bold text-slate-500 truncate">New Inquiries</span>
+              <div className="w-10 h-10 rounded-xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center shrink-0">
                 <MessageSquare className="w-5 h-5" />
               </div>
             </div>
-            <div className="flex items-baseline gap-2">
+            <div className="flex items-baseline gap-2 flex-wrap">
               {loading ? (
                 <Skeleton className="h-9 w-16 rounded-lg my-0.5" />
               ) : (
                 <h3 className="text-3xl font-extrabold text-[#0f172a]">{stats.new_inquiries.toString().padStart(2, '0')}</h3>
               )}
-              <span className="text-lg font-bold text-[#0f172a]">Messages</span>
+              <span className="text-base sm:text-lg font-bold text-[#0f172a]">Messages</span>
             </div>
           </div>
 
         </div>
 
-        {/* Recent Booking Requests Table */}
+        {/* Recent Bookings Table */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="p-6 border-b border-slate-100 flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-extrabold text-[#0f172a]">Recent Booking Requests</h3>
+              <h3 className="text-lg font-extrabold text-[#0f172a]">Recent Bookings</h3>
               <p className="text-xs text-slate-400 font-medium">Click any row to view full details</p>
             </div>
             <Link href="/admin/bookings" className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold text-xs h-9 px-4 rounded-md transition-colors shadow-sm flex items-center justify-center">
-              View All Requests
+              View All Bookings
             </Link>
           </div>
 

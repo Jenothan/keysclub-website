@@ -93,7 +93,15 @@ export default function SignUpPage() {
       });
       setAuth(res.data.user, res.data.access_token);
       toast.success('Account created successfully');
-      router.push('/dashboard');
+      
+      const shouldOpenMembership = typeof window !== 'undefined' && 
+        (sessionStorage.getItem('open_membership_modal') === 'true' || window.location.search.includes('redirect=membership'));
+
+      if (shouldOpenMembership) {
+        router.push('/availability?open_membership=true');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Invalid OTP');
     } finally {
@@ -102,9 +110,9 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen md:h-screen bg-white md:bg-[#f8fafc] md:overflow-hidden">
+    <div className="min-h-screen w-full bg-[#f8fafc] flex flex-col lg:landscape:flex-row justify-center items-stretch">
       {/* Left Pane (Image Background) */}
-      <div className="hidden md:flex relative w-full md:w-[45%] lg:w-[50%] bg-[#0f172a] flex-col justify-between p-8 md:p-12 lg:p-16 overflow-hidden shrink-0 h-screen">
+      <div className="hidden lg:landscape:flex relative w-full lg:landscape:w-[50%] min-h-screen bg-[#0f172a] flex-col justify-between p-8 md:p-12 lg:p-16 overflow-hidden shrink-0">
         {/* Background Image */}
         <div
           className="absolute inset-0 z-0"
@@ -121,13 +129,13 @@ export default function SignUpPage() {
           {/* Top Section */}
           <div className="flex justify-between items-center w-full">
             {/* Back Button */}
-            <Link href="/" className="inline-flex items-center gap-2 text-slate-300 hover:text-white transition group">
+            <Link href="/" className="inline-flex items-center gap-2 text-slate-300 hover:text-white transition group shrink-0">
               <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
               <span className="font-semibold text-sm">Back</span>
             </Link>
 
             {/* Pill */}
-            <div className="inline-block border border-yellow-400/80 rounded-full px-4 py-1.5">
+            <div className="inline-block border border-yellow-400/80 rounded-full px-4 py-1.5 shrink-0">
               <span className="text-yellow-400 text-xs font-bold tracking-wider uppercase">
                 KEYS Sports Initiative
               </span>
@@ -170,10 +178,10 @@ export default function SignUpPage() {
       </div>
 
       {/* Right Pane (Form) */}
-      <div className="w-full md:w-[55%] lg:w-[50%] flex flex-col justify-center items-center p-4 sm:p-6 md:p-8 lg:p-10 relative md:h-screen md:overflow-y-auto">
+      <div className="w-full min-h-screen lg:landscape:w-[50%] flex flex-col justify-center items-center p-4 sm:p-6 md:p-8 lg:p-10 relative">
 
-        {/* Back Button (Mobile Only) */}
-        <div className="md:hidden absolute top-4 left-4 z-10">
+        {/* Back Button (Only visible on mobile/portrait when side image is hidden) */}
+        <div className="lg:landscape:hidden absolute top-6 left-6 md:top-10 md:left-12 z-10">
           <Link href="/" className="inline-flex items-center gap-2 text-slate-800 hover:text-slate-900 transition group">
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             <span className="font-bold text-sm">Back</span>

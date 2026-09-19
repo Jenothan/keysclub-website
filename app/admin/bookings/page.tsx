@@ -176,7 +176,7 @@ export default function AdminBookingsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-[#0f172a] tracking-tight mb-1">
-            Booking Requests Management
+            Bookings Management
           </h1>
           <p className="text-slate-500 text-xs sm:text-sm">
             Review, confirm, reschedule or reject customer court reservations. Click any item for full details.

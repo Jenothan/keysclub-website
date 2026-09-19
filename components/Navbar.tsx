@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import LogOut from '@mui/icons-material/Logout';
 import Menu from '@mui/icons-material/Menu';
 import X from '@mui/icons-material/Close';
+import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button";
 
@@ -16,6 +17,7 @@ export default function Navbar() {
   const { user, logout } = useAuthStore();
   const isRegisteredUser = !!user && !user.is_guest;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -36,17 +38,34 @@ export default function Navbar() {
     router.push("/login");
   };
 
-  const navLinks = [
+  const dashboardHref = (user?.role === 'Admin' || user?.role === 'Super Admin') ? "/admin" : "/dashboard";
+
+  // Desktop links when logged in vs logged out
+  const desktopMainLinks = isRegisteredUser ? [
     { name: "Home", href: "/" },
-    ...(isRegisteredUser ? [{ name: "Dashboard", href: (user?.role === 'Admin' || user?.role === 'Super Admin') ? "/admin" : "/dashboard" }] : []),
+    { name: "Dashboard", href: dashboardHref },
+    { name: "Availability", href: "/availability" },
+  ] : [
+    { name: "Home", href: "/" },
     { name: "Availability", href: "/availability" },
     { name: "Pricing", href: "/pricing" },
     { name: "About Us", href: "/about" },
     { name: "Contact", href: "/contact" },
   ];
 
-  const activeLink = navLinks.find(link => link.href === pathname);
+  // Mobile drawer links
+  const mobileNavLinks = [
+    { name: "Home", href: "/" },
+    ...(isRegisteredUser ? [{ name: "Dashboard", href: dashboardHref }] : []),
+    { name: "Availability", href: "/availability" },
+    { name: "Pricing", href: "/pricing" },
+    { name: "About Us", href: "/about" },
+    { name: "Contact", href: "/contact" },
+  ];
+
+  const activeLink = mobileNavLinks.find(link => link.href === pathname);
   const activePageName = activeLink?.name || "Home";
+  const isMoreActive = pathname === '/pricing' || pathname === '/about' || pathname === '/contact';
 
   return (
     <>
@@ -69,8 +88,8 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop Navigation Links */}
-            <div className="hidden md:flex items-center space-x-8">
-              {navLinks.map((link) => {
+            <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
+              {desktopMainLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
                   <Link
@@ -88,6 +107,68 @@ export default function Navbar() {
                   </Link>
                 );
               })}
+
+              {/* More Dropdown (for Logged In Users: Pricing, About Us & Contact) */}
+              {isRegisteredUser && (
+                <div 
+                  className="relative"
+                  onMouseEnter={() => setIsMoreDropdownOpen(true)}
+                  onMouseLeave={() => setIsMoreDropdownOpen(false)}
+                >
+                  <button
+                    onClick={() => setIsMoreDropdownOpen(!isMoreDropdownOpen)}
+                    className={`relative py-1.5 text-sm transition-all duration-200 flex items-center gap-0.5 cursor-pointer ${isMoreActive
+                        ? "text-slate-900 font-black"
+                        : "text-slate-600 font-semibold hover:text-yellow-500"
+                      }`}
+                  >
+                    <span>More</span>
+                    <KeyboardArrowDown className={`w-4 h-4 transition-transform duration-200 ${isMoreDropdownOpen ? 'rotate-180 text-yellow-500' : ''}`} />
+                    {isMoreActive && (
+                      <span className="absolute -bottom-1.5 left-0 right-0 h-0.5 bg-yellow-400 rounded-full shadow-xs animate-in fade-in zoom-in-50 duration-200" />
+                    )}
+                  </button>
+
+                  {/* Dropdown Menu Box */}
+                  {isMoreDropdownOpen && (
+                    <div className="absolute top-full left-0 mt-1 w-44 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+                      <Link
+                        href="/pricing"
+                        onClick={() => setIsMoreDropdownOpen(false)}
+                        className={`flex items-center gap-2 px-4 py-2.5 text-xs transition-colors ${
+                          pathname === '/pricing'
+                            ? 'bg-yellow-400/15 text-slate-950 font-black border-l-3 border-yellow-400'
+                            : 'text-slate-700 font-bold hover:bg-slate-50 hover:text-yellow-600'
+                        }`}
+                      >
+                        Pricing
+                      </Link>
+                      <Link
+                        href="/about"
+                        onClick={() => setIsMoreDropdownOpen(false)}
+                        className={`flex items-center gap-2 px-4 py-2.5 text-xs transition-colors ${
+                          pathname === '/about'
+                            ? 'bg-yellow-400/15 text-slate-950 font-black border-l-3 border-yellow-400'
+                            : 'text-slate-700 font-bold hover:bg-slate-50 hover:text-yellow-600'
+                        }`}
+                      >
+                        About Us
+                      </Link>
+                      <Link
+                        href="/contact"
+                        onClick={() => setIsMoreDropdownOpen(false)}
+                        className={`flex items-center gap-2 px-4 py-2.5 text-xs transition-colors ${
+                          pathname === '/contact'
+                            ? 'bg-yellow-400/15 text-slate-950 font-black border-l-3 border-yellow-400'
+                            : 'text-slate-700 font-bold hover:bg-slate-50 hover:text-yellow-600'
+                        }`}
+                      >
+                        Contact
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Desktop Auth / Profile Area */}
@@ -153,7 +234,7 @@ export default function Navbar() {
         {isMobileMenuOpen && (
           <div className="md:hidden fixed top-0 left-0 w-full max-h-screen overflow-y-auto bg-white/98 backdrop-blur-xl border-b border-slate-200 shadow-2xl pt-20 pb-8 px-5 flex flex-col gap-4 z-[998] animate-in slide-in-from-top-2 duration-200">
             <div className="flex flex-col space-y-2 pb-4 border-b border-slate-100">
-              {navLinks.map((link) => {
+              {mobileNavLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
                   <Link
