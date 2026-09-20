@@ -11,6 +11,7 @@ import PhoneInput from '@/components/PhoneInput';
 import { OTPInput } from '@/components/OTPInput';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -51,6 +52,8 @@ export default function BookingModal({ isOpen, onClose, selectedSlots, onBooking
   const [isSettingPassword, setIsSettingPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingId, setBookingId] = useState('');
+  const [confirmedSlots, setConfirmedSlots] = useState<any[]>([]);
+  const [confirmedDate, setConfirmedDate] = useState<string>('');
 
   const isAdmin = user?.role === 'Admin' || user?.role === 'Super Admin';
 
@@ -86,13 +89,15 @@ export default function BookingModal({ isOpen, onClose, selectedSlots, onBooking
       setCustomerName('');
       setCustomerPhone('');
       setBookingId('');
+      setConfirmedSlots([]);
+      setConfirmedDate('');
     }
   }, [isOpen]); // Only re-run when modal opens, NOT on user state change!
 
   // Helper to compute contiguous merged time badges
-  const getMergedSlotBadges = () => {
-    if (!selectedSlots || selectedSlots.length === 0) return [];
-    const sorted = [...selectedSlots].sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''));
+  const getMergedSlotBadges = (slotsToMerge = selectedSlots) => {
+    if (!slotsToMerge || slotsToMerge.length === 0) return [];
+    const sorted = [...slotsToMerge].sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''));
     const merged: { start_time: string; end_time: string }[] = [];
     for (const slot of sorted) {
       if (merged.length === 0) {
@@ -264,6 +269,14 @@ export default function BookingModal({ isOpen, onClose, selectedSlots, onBooking
         payload.customer_name = customerName;
         payload.customer_phone = formatPhoneWithCountryCode(customerPhone);
       }
+
+      // Snapshot date & slots before onBookingSuccess clears selectedSlots
+      const rawDateStr = selectedSlots[0]?.rawDate;
+      const dateDisplay = selectedSlots[0]?.date || 
+        (rawDateStr ? format(new Date(rawDateStr), 'EEEE, dd MMMM yyyy') : '');
+
+      setConfirmedDate(dateDisplay);
+      setConfirmedSlots([...selectedSlots]);
 
       const response = await api.post('/bookings', payload);
       const ref = response.data?.booking_reference || response.data?.booking?.booking_reference || `KEYS-${Date.now().toString().slice(-4)}`;
@@ -656,52 +669,65 @@ export default function BookingModal({ isOpen, onClose, selectedSlots, onBooking
             )}
 
             {/* STEP 6: Done / Booking Confirmation */}
-            {step === 6 && (
-              <div className="animate-in zoom-in-95 duration-500 flex flex-col items-center">
-                <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-6">
-                  <Check className="w-8 h-8" />
-                </div>
+            {step === 6 && (() => {
+              const displaySlots = confirmedSlots.length > 0 ? confirmedSlots : selectedSlots;
+              const rawDateStr = displaySlots[0]?.rawDate;
+              const displayDate = confirmedDate || displaySlots[0]?.date || (rawDateStr ? format(new Date(rawDateStr), 'EEEE, dd MMMM yyyy') : '');
+              const timeBadges = getMergedSlotBadges(displaySlots);
 
-                <h2 className="text-[24px] font-extrabold text-[#0f172a] mb-2 tracking-tight text-center">Booking Confirmed!</h2>
-                <p className="text-slate-500 text-body-sm mb-8 text-center max-w-sm">
-                  Your court booking is confirmed! Details have been sent via SMS to your mobile number.
-                </p>
+              return (
+                <div className="animate-in zoom-in-95 duration-500 flex flex-col items-center">
+                  <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-6">
+                    <Check className="w-8 h-8" />
+                  </div>
 
-                <div className="w-full bg-slate-50/80 rounded-xl p-5 border border-slate-100 mb-8">
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center text-body-sm">
-                      <span className="text-slate-500">Booking ID</span>
-                      <span className="font-semibold text-[#0f172a]">{bookingId}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-body-sm">
-                      <span className="text-slate-500">Date</span>
-                      <span className="font-semibold text-[#0f172a]">{selectedSlots[0]?.date}</span>
-                    </div>
-                    <div className="flex justify-between items-start text-body-sm pb-4 border-b border-slate-200">
-                      <span className="text-slate-500">Time(s)</span>
-                      <div className="flex flex-col items-end gap-1">
-                        {selectedSlots.map((slot, i) => (
-                          <span key={i} className="font-semibold text-[#0f172a]">{slot.time}</span>
-                        ))}
+                  <h2 className="text-[24px] font-extrabold text-[#0f172a] mb-2 tracking-tight text-center">Booking Confirmed!</h2>
+                  <p className="text-slate-500 text-body-sm mb-8 text-center max-w-sm">
+                    Your court booking is confirmed! Details have been sent via SMS to your mobile number.
+                  </p>
+
+                  <div className="w-full bg-slate-50/80 rounded-xl p-5 border border-slate-100 mb-8">
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center text-body-sm">
+                        <span className="text-slate-500">Booking ID</span>
+                        <span className="font-semibold text-[#0f172a]">{bookingId}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-body-sm">
+                        <span className="text-slate-500">Date</span>
+                        <span className="font-semibold text-[#0f172a]">{displayDate || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between items-start text-body-sm pb-4 border-b border-slate-200">
+                        <span className="text-slate-500">Time(s)</span>
+                        <div className="flex flex-col items-end gap-1">
+                          {timeBadges.length > 0 ? (
+                            timeBadges.map((badge, i) => (
+                              <span key={i} className="font-semibold text-[#0f172a]">{badge}</span>
+                            ))
+                          ) : (
+                            displaySlots.map((slot, i) => (
+                              <span key={i} className="font-semibold text-[#0f172a]">{slot.time}</span>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center text-body-sm pt-1">
+                        <span className="text-slate-500">Status</span>
+                        <span className="bg-emerald-100 text-emerald-700 font-bold text-[10px] px-2.5 py-1 rounded-md">Confirmed</span>
                       </div>
                     </div>
-                    <div className="flex justify-between items-center text-body-sm pt-1">
-                      <span className="text-slate-500">Status</span>
-                      <span className="bg-emerald-100 text-emerald-700 font-bold text-[10px] px-2.5 py-1 rounded-md">Confirmed</span>
-                    </div>
                   </div>
+
+                  <Button
+                    onClick={handleModalClose}
+                    className="w-full h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-body mb-4 cursor-pointer"
+                  >
+                    {isInitiallyLoggedIn ? 'Close & View My Bookings' : 'Close'}
+                  </Button>
+
+                  <p className="text-[11px] text-slate-400 text-center">Confirmation details sent through SMS.</p>
                 </div>
-
-                <Button
-                  onClick={handleModalClose}
-                  className="w-full h-12 bg-[#fbbf24] hover:bg-[#f5b81a] text-slate-900 font-bold text-body mb-4 cursor-pointer"
-                >
-                  {isInitiallyLoggedIn ? 'Close & View My Bookings' : 'Close'}
-                </Button>
-
-                <p className="text-[11px] text-slate-400 text-center">Confirmation details sent through SMS.</p>
-              </div>
-            )}
+              );
+            })()}
 
           </div>
         </div>

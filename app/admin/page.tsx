@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { computeBookingStatus, groupBookings, GroupedBooking } from '@/lib/bookingUtils';
 import BookingDetailsModal from '@/components/BookingDetailsModal';
+import RescheduleModal from '@/components/RescheduleModal';
 import ConfirmActionModal from '@/components/ConfirmActionModal';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/store/authStore';
@@ -22,6 +23,7 @@ export default function AdminDashboardPage() {
   const { user } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<GroupedBooking | null>(null);
+  const [rescheduleBooking, setRescheduleBooking] = useState<any | null>(null);
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     action: 'confirm' | 'reject' | 'cancel' | null;
@@ -87,7 +89,7 @@ export default function AdminDashboardPage() {
         return bDateStr === todayStr && b.status !== 'Cancelled' && b.status !== 'Rejected';
       }).length;
 
-      const confirmedCount = groupedBookings.filter((b: GroupedBooking) => b.status === 'Confirmed' || b.status === 'Ongoing').length;
+      const confirmedCount = groupedBookings.filter((b: GroupedBooking) => b.status === 'Confirmed' || b.status === 'Booked' || b.status === 'Ongoing').length;
 
       setStats({
         todays_bookings: todaysCount,
@@ -222,7 +224,7 @@ export default function AdminDashboardPage() {
           <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Confirmed</span>
+                <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Booked</span>
                 <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center justify-center">
                   <ShieldCheck className="w-4 h-4" />
                 </div>
@@ -370,10 +372,10 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Confirmed Bookings */}
+          {/* Active Bookings */}
           <div className="bg-white rounded-2xl p-5 md:p-6 border border-slate-100 shadow-sm flex flex-col justify-between">
             <div className="flex items-center justify-between mb-4 gap-2">
-              <span className="text-sm font-bold text-slate-500 truncate">Confirmed Bookings</span>
+              <span className="text-sm font-bold text-slate-500 truncate">Booked Sessions</span>
               <div className="w-10 h-10 rounded-xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-5 h-5" />
               </div>
@@ -540,11 +542,26 @@ export default function AdminDashboardPage() {
           const target = recentRequests.find(b => b.id === id) || selectedBooking;
           if (target) requestConfirmAction(target, 'reject');
         }}
+        onReschedule={(b) => setRescheduleBooking(b)}
         onCancel={(id) => {
           const target = recentRequests.find(b => b.id === id) || selectedBooking;
           if (target) requestConfirmAction(target, 'cancel');
         }}
       />
+
+      {/* Reschedule Modal */}
+      {rescheduleBooking && (
+        <RescheduleModal
+          isOpen={!!rescheduleBooking}
+          onClose={() => setRescheduleBooking(null)}
+          booking={rescheduleBooking}
+          isAdmin={true}
+          onSuccess={() => {
+            setRescheduleBooking(null);
+            fetchDashboardData();
+          }}
+        />
+      )}
 
       {/* Action Confirmation Modal */}
       <ConfirmActionModal

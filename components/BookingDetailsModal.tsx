@@ -237,7 +237,7 @@ export default function BookingDetailsModal({
               </>
             )}
 
-            {isAdmin && statusInfo.status === 'Confirmed' && (
+            {isAdmin && (statusInfo.status === 'Booked' || statusInfo.status === 'Rescheduled') && (
               <>
                 <button
                   onClick={() => { onReschedule && onReschedule(booking); onClose(); }}
@@ -254,13 +254,21 @@ export default function BookingDetailsModal({
               </>
             )}
 
-            {!isAdmin && statusInfo.status === 'Confirmed' && (
-              <button
-                onClick={() => { onCancel && onCancel(booking.id); onClose(); }}
-                className="px-5 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 font-extrabold text-xs rounded-xl border border-red-200 transition-all cursor-pointer"
-              >
-                Cancel My Booking
-              </button>
+            {!isAdmin && (statusInfo.status === 'Booked' || statusInfo.status === 'Rescheduled') && (
+              <>
+                <button
+                  onClick={() => { onReschedule && onReschedule(booking); onClose(); }}
+                  className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+                >
+                  Reschedule Slot
+                </button>
+                <button
+                  onClick={() => { onCancel && onCancel(booking.id); onClose(); }}
+                  className="px-5 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 font-extrabold text-xs rounded-xl border border-red-200 transition-all cursor-pointer"
+                >
+                  Cancel My Booking
+                </button>
+              </>
             )}
 
             <button

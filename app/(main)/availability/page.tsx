@@ -267,9 +267,6 @@ export default function AvailabilityPage() {
                     <span className="w-2.5 h-2.5 rounded-full bg-yellow-400"></span> Selected
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Pending Admin
-                  </div>
-                  <div className="flex items-center gap-1">
                     <span className="w-2.5 h-2.5 rounded-full bg-red-600"></span> Booked
                   </div>
                   <div className="flex items-center gap-1">
@@ -301,7 +298,6 @@ export default function AvailabilityPage() {
                     const isAvailable = slot.status === 'Available';
                     const isPast = slot.status === 'Past';
                     const isBooked = slot.status === 'Booked';
-                    const isPending = slot.status === 'Pending';
                     const isBlocked = slot.status === 'Blocked';
                     const isPeakActive = slot.is_peak && slot.is_peak_day && isAvailable;
                     const isPeakGlowingForUser = isPeakActive && isMemberOrAdmin;
@@ -347,7 +343,6 @@ export default function AvailabilityPage() {
                           !isSelected && isPeakGlowingForUser && "bg-amber-50/30 border-2 border-amber-400 ring-2 ring-yellow-400/80 shadow-[0_0_15px_rgba(250,204,21,0.5)] animate-pulse active:scale-95",
                           isPast && "bg-slate-100/60 border-slate-200 opacity-50 pointer-events-none cursor-not-allowed",
                           isBooked && "bg-red-50/80 border-red-200 text-red-950",
-                          isPending && "bg-amber-50/80 border-amber-200 text-amber-950",
                           isBlocked && "bg-rose-50/80 border-rose-200 text-rose-950"
                         )}
                       >
@@ -374,7 +369,6 @@ export default function AvailabilityPage() {
                             "w-2 h-2 rounded-full shrink-0 ml-0.5",
                             isAvailable && (isSelected ? "bg-slate-900" : (isPeakGlowingForUser ? "bg-amber-500 animate-pulse" : (isPeakRestrictedForUser ? "bg-amber-500" : "bg-emerald-500"))),
                             isPast && "bg-slate-300",
-                            isPending && "bg-amber-500",
                             isBooked && "bg-red-500",
                             isBlocked && "bg-rose-600"
                           )} />
@@ -386,7 +380,6 @@ export default function AvailabilityPage() {
                             "uppercase tracking-wider font-extrabold text-[9px]",
                             isAvailable && (isSelected ? "text-slate-900" : (isPeakGlowingForUser ? "text-amber-800 font-black" : (isPeakRestrictedForUser ? "text-amber-800" : "text-emerald-700"))),
                             isPast && "text-slate-400 font-normal",
-                            isPending && "text-amber-700",
                             isBooked && "text-red-700",
                             isBlocked && "text-rose-700"
                           )}>
@@ -483,10 +476,6 @@ export default function AvailabilityPage() {
                       cardStyle = 'bg-red-50/90 border-red-200 shadow-xs';
                       clockStyle = 'bg-red-100 text-red-600';
                       textStyle = 'text-red-950';
-                    } else if (slot.status === 'Pending') {
-                      cardStyle = 'bg-amber-50/90 border-amber-200 shadow-xs';
-                      clockStyle = 'bg-amber-100 text-amber-600';
-                      textStyle = 'text-amber-950';
                     } else if (slot.status === 'Blocked') {
                       cardStyle = 'bg-rose-50/90 border-rose-200 shadow-xs';
                       clockStyle = 'bg-rose-100 text-rose-600';
@@ -536,12 +525,6 @@ export default function AvailabilityPage() {
                           {slot.status === 'Booked' && (
                             <span className="bg-red-600 text-white font-black text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
                               Booked
-                            </span>
-                          )}
-
-                          {slot.status === 'Pending' && (
-                            <span className="bg-amber-500 text-white font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
-                              Pending Admin
                             </span>
                           )}
 

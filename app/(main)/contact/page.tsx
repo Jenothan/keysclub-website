@@ -191,7 +191,12 @@ function ContactFormContent() {
                   <Instagram className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
                 </a>
                 <a
-                  href={websiteData?.primary_phone ? `https://wa.me/${websiteData.primary_phone.replace(/[^0-9]/g, '')}` : "#"}
+                  href={(() => {
+                    if (!websiteData?.primary_phone) return '#';
+                    let clean = websiteData.primary_phone.replace(/\D/g, '');
+                    if (clean.startsWith('0')) clean = '94' + clean.substring(1);
+                    return clean ? `https://wa.me/${clean}` : '#';
+                  })()}
                   target={websiteData?.primary_phone ? "_blank" : undefined}
                   rel={websiteData?.primary_phone ? "noopener noreferrer" : undefined}
                   className="w-9.5 h-9.5 sm:w-10.5 sm:h-10.5 rounded-full flex items-center justify-center text-yellow-500 hover:text-emerald-600 bg-yellow-400/10 border border-yellow-400/20 hover:border-emerald-300 hover:bg-emerald-50 transition-all cursor-pointer hover:scale-105"

@@ -317,9 +317,9 @@ export default function AboutPage() {
             <p className="text-slate-500 mb-8 max-w-2xl mx-auto text-xs sm:text-sm">
               Membership, court booking, payment, cancellation and usage rules are subject to the club's Terms & Conditions.
             </p>
-            <Button variant="outline" className="bg-transparent border border-slate-300 text-slate-700 hover:bg-slate-100 font-bold px-8 h-11 rounded-md transition duration-200">
+            <Link href="/terms" className="bg-transparent border border-slate-300 text-slate-700 hover:bg-slate-100 font-bold px-8 py-2.5 h-11 rounded-md transition duration-200">
               View Terms & Conditions
-            </Button>
+            </Link>
           </div>
         </div>
       </section>

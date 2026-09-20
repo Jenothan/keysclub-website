@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 
 export interface ComputedStatus {
-  status: 'Pending' | 'Confirmed' | 'Ongoing' | 'Completed' | 'Rejected' | 'Cancelled';
+  status: 'Booked' | 'Rescheduled' | 'Ongoing' | 'Completed' | 'Rejected' | 'Cancelled' | 'Blocked';
   label: string;
   badgeClass: string;
 }
@@ -9,21 +9,14 @@ export interface ComputedStatus {
 export function computeBookingStatus(booking: any): ComputedStatus {
   if (!booking) {
     return {
-      status: 'Pending',
-      label: 'Pending',
-      badgeClass: 'bg-yellow-400 text-slate-900 border border-yellow-500 font-black shadow-2xs'
+      status: 'Booked',
+      label: 'Booked',
+      badgeClass: 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-extrabold shadow-2xs'
     };
   }
 
-  const rawStatus = booking.status || 'Pending';
+  const rawStatus = booking.status || 'Confirmed';
 
-  if (rawStatus === 'Pending') {
-    return {
-      status: 'Pending',
-      label: 'Pending Admin',
-      badgeClass: 'bg-yellow-400 text-slate-900 border border-yellow-500 font-black shadow-2xs'
-    };
-  }
   if (rawStatus === 'Rejected') {
     return {
       status: 'Rejected',
@@ -38,6 +31,13 @@ export function computeBookingStatus(booking: any): ComputedStatus {
       badgeClass: 'bg-slate-100 text-slate-600 border border-slate-200 font-medium'
     };
   }
+  if (rawStatus === 'Blocked') {
+    return {
+      status: 'Blocked',
+      label: 'Blocked',
+      badgeClass: 'bg-rose-100 text-rose-800 border border-rose-200 font-bold'
+    };
+  }
   if (rawStatus === 'Completed') {
     return {
       status: 'Completed',
@@ -46,87 +46,88 @@ export function computeBookingStatus(booking: any): ComputedStatus {
     };
   }
 
-  // If status === 'Confirmed', evaluate real-time ongoing vs completed status based on slot times
-  if (rawStatus === 'Confirmed') {
-    try {
-      const now = new Date();
+  // Evaluate real-time ongoing vs completed status based on slot times
+  try {
+    const now = new Date();
 
-      let bookingDateStr = booking.booking_date;
-      if (typeof bookingDateStr === 'string' && bookingDateStr.includes('T')) {
-        bookingDateStr = bookingDateStr.split('T')[0];
-      }
-
-      const parseTimeStrToDate = (dateStr: string, timeStr: string) => {
-        if (!dateStr || !timeStr) return new Date();
-        const [year, month, day] = dateStr.split('-').map(Number);
-        let hours = 0;
-        let minutes = 0;
-
-        if (timeStr.toLowerCase().includes('pm') || timeStr.toLowerCase().includes('am')) {
-          const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
-          if (match) {
-            hours = parseInt(match[1], 10);
-            minutes = parseInt(match[2], 10);
-            const isPM = match[3].toUpperCase() === 'PM';
-            if (isPM && hours < 12) hours += 12;
-            if (!isPM && hours === 12) hours = 0;
-          }
-        } else {
-          const parts = timeStr.split(':').map(Number);
-          hours = parts[0] || 0;
-          minutes = parts[1] || 0;
-        }
-
-        return new Date(year, month - 1, day, hours, minutes, 0);
-      };
-
-      const slotsToCheck = Array.isArray(booking.slots) && booking.slots.length > 0 
-        ? booking.slots 
-        : [{ start_time: booking.start_time, end_time: booking.end_time }];
-
-      let isAnyOngoing = false;
-      let isAllCompleted = true;
-
-      for (const slot of slotsToCheck) {
-        const startDateTime = parseTimeStrToDate(bookingDateStr, slot.start_time);
-        const endDateTime = parseTimeStrToDate(bookingDateStr, slot.end_time);
-
-        if (now >= startDateTime && now <= endDateTime) {
-          isAnyOngoing = true;
-        }
-        if (now <= endDateTime) {
-          isAllCompleted = false;
-        }
-      }
-
-      if (isAnyOngoing) {
-        return {
-          status: 'Ongoing',
-          label: 'Ongoing Now ⚡',
-          badgeClass: 'bg-blue-600 text-white font-black animate-pulse shadow-xs tracking-wider'
-        };
-      } else if (isAllCompleted) {
-        return {
-          status: 'Completed',
-          label: 'Completed',
-          badgeClass: 'bg-purple-100 text-purple-800 border border-purple-200 font-extrabold'
-        };
-      } else {
-        return {
-          status: 'Confirmed',
-          label: 'Confirmed',
-          badgeClass: 'bg-emerald-100 text-emerald-800 border border-emerald-200 font-extrabold'
-        };
-      }
-    } catch (e) {
-      console.error('Failed to compute dynamic booking status', e);
+    let bookingDateStr = booking.booking_date;
+    if (typeof bookingDateStr === 'string' && bookingDateStr.includes('T')) {
+      bookingDateStr = bookingDateStr.split('T')[0];
     }
+
+    const parseTimeStrToDate = (dateStr: string, timeStr: string) => {
+      if (!dateStr || !timeStr) return new Date();
+      const [year, month, day] = dateStr.split('-').map(Number);
+      let hours = 0;
+      let minutes = 0;
+
+      if (timeStr.toLowerCase().includes('pm') || timeStr.toLowerCase().includes('am')) {
+        const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        if (match) {
+          hours = parseInt(match[1], 10);
+          minutes = parseInt(match[2], 10);
+          const isPM = match[3].toUpperCase() === 'PM';
+          if (isPM && hours < 12) hours += 12;
+          if (!isPM && hours === 12) hours = 0;
+        }
+      } else {
+        const parts = timeStr.split(':').map(Number);
+        hours = parts[0] || 0;
+        minutes = parts[1] || 0;
+      }
+
+      return new Date(year, month - 1, day, hours, minutes, 0);
+    };
+
+    const slotsToCheck = Array.isArray(booking.slots) && booking.slots.length > 0 
+      ? booking.slots 
+      : [{ start_time: booking.start_time, end_time: booking.end_time }];
+
+    let isAnyOngoing = false;
+    let isAllCompleted = true;
+
+    for (const slot of slotsToCheck) {
+      const startDateTime = parseTimeStrToDate(bookingDateStr, slot.start_time);
+      const endDateTime = parseTimeStrToDate(bookingDateStr, slot.end_time);
+
+      if (now >= startDateTime && now <= endDateTime) {
+        isAnyOngoing = true;
+      }
+      if (now <= endDateTime) {
+        isAllCompleted = false;
+      }
+    }
+
+    if (isAnyOngoing) {
+      return {
+        status: 'Ongoing',
+        label: 'Ongoing Now ⚡',
+        badgeClass: 'bg-blue-600 text-white font-black animate-pulse shadow-xs tracking-wider'
+      };
+    } else if (isAllCompleted) {
+      return {
+        status: 'Completed',
+        label: 'Completed',
+        badgeClass: 'bg-purple-100 text-purple-800 border border-purple-200 font-extrabold'
+      };
+    }
+  } catch (e) {
+    console.error('Failed to compute dynamic booking status', e);
+  }
+
+  // Check if rescheduled
+  if (booking.rescheduled_by || rawStatus === 'Rescheduled') {
+    return {
+      status: 'Rescheduled',
+      label: 'Rescheduled',
+      badgeClass: 'bg-sky-100 text-sky-800 border border-sky-200 font-extrabold'
+    };
   }
 
   return {
-    status: 'Confirmed',
-    label: 'Confirmed',
-    badgeClass: 'bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold'
+    status: 'Booked',
+    label: 'Booked',
+    badgeClass: 'bg-emerald-100 text-emerald-800 border border-emerald-200 font-extrabold'
   };
 }
 

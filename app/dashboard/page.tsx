@@ -17,6 +17,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { computeBookingStatus } from '@/lib/bookingUtils';
 import BookingDetailsModal from '@/components/BookingDetailsModal';
+import RescheduleModal from '@/components/RescheduleModal';
 import { Skeleton } from '@/components/ui/skeleton';
 
 import ShieldIcon from '@mui/icons-material/ShieldOutlined';
@@ -28,6 +29,7 @@ export default function UserDashboard() {
   const [upcoming, setUpcoming] = useState<any | null>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
+  const [rescheduleBooking, setRescheduleBooking] = useState<any | null>(null);
 
   // Membership Request State
   const [membershipData, setMembershipData] = useState<{ is_member: boolean; latest_request: any } | null>(null);
@@ -383,8 +385,23 @@ export default function UserDashboard() {
         onClose={() => setSelectedBooking(null)}
         booking={selectedBooking}
         isAdmin={false}
+        onReschedule={(b) => setRescheduleBooking(b)}
         onCancel={handleCancelBooking}
       />
+
+      {/* Reschedule Modal */}
+      {rescheduleBooking && (
+        <RescheduleModal
+          isOpen={!!rescheduleBooking}
+          onClose={() => setRescheduleBooking(null)}
+          booking={rescheduleBooking}
+          isAdmin={false}
+          onSuccess={() => {
+            setRescheduleBooking(null);
+            fetchDashboardData();
+          }}
+        />
+      )}
 
       {/* Membership Request Modal */}
       <MembershipRequestModal
