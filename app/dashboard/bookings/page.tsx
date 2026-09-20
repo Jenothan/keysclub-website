@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { computeBookingStatus, groupBookings, GroupedBooking } from '@/lib/bookingUtils';
 import { Skeleton } from '@/components/ui/skeleton';
 import BookingDetailsModal from '@/components/BookingDetailsModal';
+import RescheduleModal from '@/components/RescheduleModal';
 
 export default function MyBookingsPage() {
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
@@ -21,6 +22,7 @@ export default function MyBookingsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<GroupedBooking | null>(null);
+  const [rescheduleBooking, setRescheduleBooking] = useState<any | null>(null);
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -315,8 +317,23 @@ export default function MyBookingsPage() {
         onClose={() => setSelectedBooking(null)}
         booking={selectedBooking}
         isAdmin={false}
+        onReschedule={(b) => setRescheduleBooking(b)}
         onCancel={handleCancel}
       />
+
+      {/* Reschedule Modal */}
+      {rescheduleBooking && (
+        <RescheduleModal
+          isOpen={!!rescheduleBooking}
+          onClose={() => setRescheduleBooking(null)}
+          booking={rescheduleBooking}
+          isAdmin={false}
+          onSuccess={() => {
+            setRescheduleBooking(null);
+            fetchBookings();
+          }}
+        />
+      )}
 
     </div>
   );

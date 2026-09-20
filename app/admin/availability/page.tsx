@@ -413,9 +413,6 @@ export default function AdminAvailabilityPage() {
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse border border-amber-500"></span> Peak (Member)
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Pending
-                  </div>
-                  <div className="flex items-center gap-1">
                     <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span> Booked / Blocked
                   </div>
                 </div>
@@ -439,7 +436,6 @@ export default function AdminAvailabilityPage() {
                     const isAvailable = slot.status === 'Available';
                     const isPast = slot.status === 'Past';
                     const isBooked = slot.status === 'Booked';
-                    const isPending = slot.status === 'Pending';
                     const isBlocked = slot.status === 'Blocked';
                     const isPeakActive = slot.is_peak && slot.is_peak_day && isAvailable;
 
@@ -454,7 +450,6 @@ export default function AdminAvailabilityPage() {
                           !isSelected && isPeakActive && "bg-amber-50/30 border-2 border-amber-400 ring-2 ring-yellow-400/80 shadow-[0_0_15px_rgba(250,204,21,0.5)] animate-pulse active:scale-95",
                           isPast && "bg-slate-100/60 border-slate-200 opacity-50 pointer-events-none cursor-not-allowed",
                           isBooked && "bg-red-50/80 border-red-200 text-red-950",
-                          isPending && "bg-amber-50/80 border-amber-200 text-amber-950",
                           isBlocked && "bg-rose-50/80 border-rose-200 text-rose-950"
                         )}
                       >
@@ -481,7 +476,6 @@ export default function AdminAvailabilityPage() {
                             "w-2 h-2 rounded-full shrink-0 ml-0.5",
                             isAvailable && (isSelected ? "bg-slate-900" : (isPeakActive ? "bg-amber-500 animate-pulse" : "bg-emerald-500")),
                             isPast && "bg-slate-300",
-                            isPending && "bg-amber-500",
                             isBooked && "bg-red-500",
                             isBlocked && "bg-rose-600"
                           )} />
@@ -493,7 +487,6 @@ export default function AdminAvailabilityPage() {
                             "uppercase tracking-wider font-extrabold text-[9px]",
                             isAvailable && (isSelected ? "text-slate-900" : "text-emerald-700"),
                             isPast && "text-slate-400 font-normal",
-                            isPending && "text-amber-700",
                             isBooked && "text-red-700",
                             isBlocked && "text-rose-700"
                           )}>
@@ -567,10 +560,6 @@ export default function AdminAvailabilityPage() {
                       cardStyle = 'bg-red-50/90 border-red-200 shadow-xs';
                       clockStyle = 'bg-red-100 text-red-600';
                       textStyle = 'text-red-950';
-                    } else if (slot.status === 'Pending') {
-                      cardStyle = 'bg-amber-50/90 border-amber-200 shadow-xs';
-                      clockStyle = 'bg-amber-100 text-amber-600';
-                      textStyle = 'text-amber-950';
                     } else if (slot.status === 'Blocked') {
                       cardStyle = 'bg-rose-50/90 border-rose-200 shadow-xs';
                       clockStyle = 'bg-rose-100 text-rose-600';

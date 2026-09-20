@@ -253,11 +253,12 @@ export default function AdminBookingsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="All Statuses">All Statuses</SelectItem>
-                    <SelectItem value="Pending">Pending</SelectItem>
-                    <SelectItem value="Confirmed">Confirmed</SelectItem>
+                    <SelectItem value="Booked">Booked</SelectItem>
+                    <SelectItem value="Rescheduled">Rescheduled</SelectItem>
                     <SelectItem value="Ongoing">Ongoing Now</SelectItem>
                     <SelectItem value="Completed">Completed</SelectItem>
                     <SelectItem value="Rejected">Rejected</SelectItem>
+                    <SelectItem value="Cancelled">Cancelled</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -342,11 +343,12 @@ export default function AdminBookingsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="All Statuses">All Statuses</SelectItem>
-              <SelectItem value="Pending">Pending</SelectItem>
-              <SelectItem value="Confirmed">Confirmed</SelectItem>
+              <SelectItem value="Booked">Booked</SelectItem>
+              <SelectItem value="Rescheduled">Rescheduled</SelectItem>
               <SelectItem value="Ongoing">Ongoing Now</SelectItem>
               <SelectItem value="Completed">Completed</SelectItem>
               <SelectItem value="Rejected">Rejected</SelectItem>
+              <SelectItem value="Cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -598,7 +600,7 @@ export default function AdminBookingsPage() {
                               </div>
                             ) : (
                               <div className="relative">
-                                {statusInfo.status === 'Confirmed' && (
+                                {(statusInfo.status === 'Booked' || statusInfo.status === 'Rescheduled') && (
                                   <>
                                     <button 
                                       onClick={(e) => handleDropdownClick(e, req.id)}
@@ -609,7 +611,7 @@ export default function AdminBookingsPage() {
                                     {openDropdownId === req.id && (
                                       <div className="absolute right-0 top-10 mt-1 w-36 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden text-left">
                                         <button 
-                                          onClick={() => { setRescheduleBooking(req); setOpenDropdownId(null); }}
+                                          onClick={(e) => { e.stopPropagation(); setRescheduleBooking(req); setOpenDropdownId(null); }}
                                           className="w-full px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-yellow-400 hover:text-slate-900 transition-colors block cursor-pointer"
                                         >
                                           Reschedule Slot

@@ -46,6 +46,17 @@ export default function Footer() {
       .catch((err) => console.error("Failed to load website data in footer", err));
   }, []);
 
+  const formatWhatsappUrl = (phoneStr?: string) => {
+    if (!phoneStr) return '#';
+    let clean = phoneStr.replace(/\D/g, '');
+    if (clean.startsWith('0')) {
+      clean = '94' + clean.substring(1);
+    }
+    return clean ? `https://wa.me/${clean}` : '#';
+  };
+
+  const whatsappUrl = formatWhatsappUrl(websiteData?.primary_phone);
+
   return (
     <footer className="bg-[#0f172a] text-slate-400 py-12 border-t border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -83,6 +94,7 @@ export default function Footer() {
               <li><Link href="/pricing" className="hover:text-yellow-400 transition">Pricing Plans</Link></li>
               <li><Link href="/about" className="hover:text-yellow-400 transition">About Us</Link></li>
               <li><Link href="/contact" className="hover:text-yellow-400 transition">Contact Us</Link></li>
+              <li><Link href="/terms" className="hover:text-yellow-400 transition">Terms & Conditions</Link></li>
             </ul>
           </div>
 
@@ -153,9 +165,9 @@ export default function Footer() {
                 <Instagram className="w-5 h-5" />
               </a>
               <a
-                href={websiteData?.primary_phone ? `https://wa.me/${websiteData.primary_phone.replace(/[^0-9]/g, '')}` : "#"}
-                target={websiteData?.primary_phone ? "_blank" : undefined}
-                rel={websiteData?.primary_phone ? "noopener noreferrer" : undefined}
+                href={whatsappUrl}
+                target={whatsappUrl.startsWith("https") ? "_blank" : undefined}
+                rel={whatsappUrl.startsWith("https") ? "noopener noreferrer" : undefined}
                 className="text-slate-400 hover:text-emerald-400 transition-colors"
                 aria-label="WhatsApp"
               >
